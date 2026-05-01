@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/store"
@@ -118,6 +120,15 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) {
 
 	if isCorrect {
 		h.gamification.AwardXP(userID, 10)
+	} else {
+		h.store.AddWrongAnswer(userID, models.WrongAnswer{
+			ID:            uuid.New(),
+			QuestionID:    question.ID,
+			QuizID:        quizID,
+			UserAnswer:    answer,
+			CorrectAnswer: question.CorrectAnswer,
+			Timestamp:     time.Now(),
+		})
 	}
 
 	feedback := &pages.QuestionFeedbackData{
