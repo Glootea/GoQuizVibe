@@ -7,21 +7,21 @@ import (
 type DashboardData struct {
 	User        *models.User
 	Quizzes     []*models.Quiz
-	Stats       *models.UserProgress
+	Stats       *models.UserStats
 	Leaderboard []*models.LeaderboardEntry
 }
 
 type QuizPageData struct {
 	User      *models.User
 	Quiz      *models.Quiz
-	Stats     *models.UserProgress
+	Stats     *models.UserStats
 	SessionID string
 }
 
 type QuizResultData struct {
 	User         *models.User
 	Quiz         *models.Quiz
-	Stats        *models.UserProgress
+	Stats        *models.UserStats
 	Score        int
 	MaxScore     int
 	CorrectCount int
@@ -37,8 +37,9 @@ type AnswerDetail struct {
 }
 
 type ErrorsPageData struct {
-	User         *models.User
-	QuizErrors   []QuizErrors
+	User       *models.User
+	QuizErrors []QuizErrors
+	Stats      *models.UserStats
 }
 
 type QuizErrors struct {

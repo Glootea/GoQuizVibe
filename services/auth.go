@@ -12,15 +12,15 @@ import (
 )
 
 type AuthService struct {
-	store        *store.MemoryStore
-	jwtSecret    []byte
+	repo        *store.Repository
+	jwtSecret   []byte
 	jwtExpiration time.Duration
 }
 
-func NewAuthService(s *store.MemoryStore, secret string) *AuthService {
+func NewAuthService(r *store.Repository, secret string) *AuthService {
 	return &AuthService{
-		store:        s,
-		jwtSecret:    []byte(secret),
+		repo:        r,
+		jwtSecret:   []byte(secret),
 		jwtExpiration: 24 * time.Hour * 7,
 	}
 }
@@ -40,7 +40,7 @@ func (s *AuthService) Register(name, email, password string, role models.Role) (
 		CreatedAt:    time.Now(),
 	}
 
-	if err := s.store.CreateUser(user); err != nil {
+	if err := s.repo.CreateUser(user); err != nil {
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func (s *AuthService) Register(name, email, password string, role models.Role) (
 }
 
 func (s *AuthService) Login(email, password string) (*models.User, error) {
-	user, err := s.store.GetUserByEmail(email)
+	user, err := s.repo.GetUserByEmail(email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}

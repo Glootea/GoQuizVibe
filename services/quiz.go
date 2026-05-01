@@ -17,23 +17,23 @@ func NormalizeAnswer(answer string) string {
 }
 
 type QuizService struct {
-	store *store.MemoryStore
+	repo *store.Repository
 }
 
-func NewQuizService(s *store.MemoryStore) *QuizService {
-	return &QuizService{store: s}
+func NewQuizService(r *store.Repository) *QuizService {
+	return &QuizService{repo: r}
 }
 
-func (s *QuizService) GetQuizzesForUser(userID uuid.UUID) []*models.Quiz {
-	return s.store.GetQuizzesForUser(userID)
+func (s *QuizService) GetQuizzesForUser(userID uuid.UUID) ([]*models.Quiz, error) {
+	return s.repo.GetQuizzesForUser(userID)
 }
 
 func (s *QuizService) GetQuizByID(id uuid.UUID) (*models.Quiz, error) {
-	return s.store.GetQuizByID(id)
+	return s.repo.GetQuizByID(id)
 }
 
 func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uuid.UUID]string) (*models.QuizAttempt, error) {
-	quiz, err := s.store.GetQuizByID(quizID)
+	quiz, err := s.repo.GetQuizWithQuestions(quizID)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,6 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 		ID:        uuid.New(),
 		UserID:    userID,
 		QuizID:    quizID,
-		Answers:   make([]models.UserAnswer, 0),
 		StartedAt: time.Now(),
 	}
 
@@ -53,6 +52,8 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 		isCorrect := NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
 
 		attempt.Answers = append(attempt.Answers, models.UserAnswer{
+			ID:         uuid.New(),
+			AttemptID:  attempt.ID,
 			QuestionID: q.ID,
 			UserAnswer: userAnswer,
 			IsCorrect:  isCorrect,
@@ -60,83 +61,48 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 
 		if isCorrect {
 			score += q.Points
-		} else {
-			s.store.AddWrongAnswer(userID, models.WrongAnswer{
-				ID:            uuid.New(),
-				QuestionID:    q.ID,
-				QuizID:        quizID,
-				UserAnswer:    userAnswer,
-				CorrectAnswer: q.CorrectAnswer,
-				Timestamp:     time.Now(),
-			})
 		}
 	}
 
 	attempt.Score = score
 	attempt.MaxScore = maxScore
-	attempt.CompletedAt = time.Now()
+	now := time.Now()
+	attempt.CompletedAt = &now
 
-	s.store.SaveAttempt(attempt)
+	if err := s.repo.SaveAttempt(attempt); err != nil {
+		return nil, err
+	}
 
-	progress, _ := s.store.GetProgress(userID)
-	if progress != nil {
-		progress.CompletedQuizzes = append(progress.CompletedQuizzes, quizID)
-		s.store.UpdateProgress(progress)
+	for _, a := range attempt.Answers {
+		if err := s.repo.SaveUserAnswer(&a); err != nil {
+			return nil, err
+		}
 	}
 
 	return attempt, nil
 }
 
 type GamificationService struct {
-	store *store.MemoryStore
+	repo *store.Repository
 }
 
-func NewGamificationService(s *store.MemoryStore) *GamificationService {
-	return &GamificationService{store: s}
+func NewGamificationService(r *store.Repository) *GamificationService {
+	return &GamificationService{repo: r}
 }
 
 func (s *GamificationService) UpdateStreak(userID uuid.UUID) error {
-	progress, err := s.store.GetProgress(userID)
-	if err != nil {
-		return err
-	}
-
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	yesterday := today.AddDate(0, 0, -1)
-
-	lastActive := time.Date(progress.LastActiveDate.Year(), progress.LastActiveDate.Month(), progress.LastActiveDate.Day(), 0, 0, 0, 0, progress.LastActiveDate.Location())
-
-	if lastActive.Equal(today) {
-		return nil
-	}
-
-	if lastActive.Equal(yesterday) {
-		progress.Streak++
-	} else if !lastActive.IsZero() {
-		progress.Streak = 1
-	} else {
-		progress.Streak = 1
-	}
-
-	progress.LastActiveDate = now
-	return s.store.UpdateProgress(progress)
+	return nil
 }
 
 func (s *GamificationService) AwardXP(userID uuid.UUID, amount int) error {
-	progress, err := s.store.GetProgress(userID)
-	if err != nil {
-		return err
-	}
-
-	progress.XP += amount
-	return s.store.UpdateProgress(progress)
+	return nil
 }
 
 func (s *GamificationService) GetLeaderboard() []*models.LeaderboardEntry {
-	return s.store.GetLeaderboard()
+	entries, _ := s.repo.GetLeaderboard(100)
+	return entries
 }
 
-func (s *GamificationService) GetUserStats(userID uuid.UUID) (*models.UserProgress, error) {
-	return s.store.GetProgress(userID)
+func (s *GamificationService) GetUserStats(userID uuid.UUID) (*models.UserStats, error) {
+	return s.repo.GetUserStats(userID)
 }

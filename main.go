@@ -5,42 +5,36 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/goquizvibe/config"
+	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/handlers"
-	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/store"
-	"github.com/google/uuid"
 )
 
 func main() {
 	cfg := config.Load()
 
-	memStore := store.NewMemoryStore()
-
-	teacherID := uuid.New()
-	teacher := &models.User{
-		ID:           teacherID,
-		Name:         "Учитель",
-		Email:        "teacher@example.com",
-		Role:         models.RoleTeacher,
-		PasswordHash: "$2a$10$dummy",
-		CreatedAt:    time.Now(),
+	db, err := database.Connect(*cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	memStore.CreateUser(teacher)
 
-	memStore.SeedMathQuizzes(teacherID)
+	if err := database.SeedData(db); err != nil {
+		log.Fatalf("Failed to seed data: %v", err)
+	}
 
-	authService := services.NewAuthService(memStore, cfg.JWTSecret)
-	quizService := services.NewQuizService(memStore)
-	gamification := services.NewGamificationService(memStore)
+	repo := store.NewRepository(db)
 
-	authHandler := handlers.NewAuth(memStore, authService)
-	dashboardHandler := handlers.NewDashboard(memStore, quizService, gamification, authService)
-	quizHandler := handlers.NewQuiz(memStore, quizService, gamification, authService)
+	authService := services.NewAuthService(repo, cfg.JWTSecret)
+	quizService := services.NewQuizService(repo)
+	gamification := services.NewGamificationService(repo)
+
+	authHandler := handlers.NewAuth(repo, authService)
+	dashboardHandler := handlers.NewDashboard(repo, quizService, gamification, authService)
+	quizHandler := handlers.NewQuiz(repo, quizService, gamification, authService)
 
 	mux := http.NewServeMux()
 

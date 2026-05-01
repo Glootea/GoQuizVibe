@@ -26,7 +26,7 @@ templ QuestionCard(quiz *models.Quiz, questionIndex int, sessionID string) {
 
 			if quiz.Questions[questionIndex].Type == models.QuestionTypeChoice {
 				<div class="space-y-3">
-					for _, option := range quiz.Questions[questionIndex].Options {
+					for _, option := range quiz.Questions[questionIndex].GetOptions() {
 						<label class="block p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition">
 							<input
 								type="radio"

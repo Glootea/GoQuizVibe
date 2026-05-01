@@ -11,15 +11,15 @@ import (
 )
 
 type DashboardHandler struct {
-	store        *store.MemoryStore
+	repo        *store.Repository
 	quizService  *services.QuizService
 	gamification *services.GamificationService
 	authService  *services.AuthService
 }
 
-func NewDashboard(s *store.MemoryStore, qs *services.QuizService, gs *services.GamificationService, as *services.AuthService) *DashboardHandler {
+func NewDashboard(r *store.Repository, qs *services.QuizService, gs *services.GamificationService, as *services.AuthService) *DashboardHandler {
 	return &DashboardHandler{
-		store:        s,
+		repo:        r,
 		quizService:  qs,
 		gamification: gs,
 		authService:  as,
@@ -33,12 +33,12 @@ func (h *DashboardHandler) DashboardPage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := h.store.GetUserByID(userID)
+	user, err := h.repo.GetUserByID(userID)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	quizzes := h.quizService.GetQuizzesForUser(userID)
+	quizzes, _ := h.quizService.GetQuizzesForUser(userID)
 	stats, _ := h.gamification.GetUserStats(userID)
 	leaderboard := h.gamification.GetLeaderboard()
 

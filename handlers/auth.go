@@ -11,12 +11,12 @@ import (
 )
 
 type AuthHandler struct {
-	store       *store.MemoryStore
+	repo        *store.Repository
 	authService *services.AuthService
 }
 
-func NewAuth(s *store.MemoryStore, a *services.AuthService) *AuthHandler {
-	return &AuthHandler{store: s, authService: a}
+func NewAuth(r *store.Repository, a *services.AuthService) *AuthHandler {
+	return &AuthHandler{repo: r, authService: a}
 }
 
 func (h *AuthHandler) LandingPage(w http.ResponseWriter, r *http.Request) {

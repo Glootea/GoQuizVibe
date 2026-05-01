@@ -41,7 +41,7 @@ templ Navbar(user *models.User) {
 	</nav>
 }
 
-templ StatsCards(stats *models.UserProgress) {
+templ StatsCards(stats *models.UserStats) {
 	<div class="grid md:grid-cols-4 gap-4 mb-8">
 		<div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white">
 			<div class="flex items-center justify-between">
@@ -80,7 +80,7 @@ templ StatsCards(stats *models.UserProgress) {
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="text-purple-100 text-sm">Ошибок в работе</p>
-					<p class="text-3xl font-bold">{ len(stats.WrongAnswers) }</p>
+					<p class="text-3xl font-bold">{ stats.WrongCount }</p>
 				</div>
 				<i class="fas fa-times-circle text-4xl text-purple-300"></i>
 			</div>
