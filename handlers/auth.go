@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"slices"
 
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
@@ -46,7 +47,12 @@ func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) {
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.Redirect(w, r, "/dashboard", http.StatusFound)
+
+	if user.Role == models.RoleTeacher {
+		http.Redirect(w, r, "/admin", http.StatusFound)
+	} else {
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
+	}
 }
 
 func (h *AuthHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
@@ -105,4 +111,38 @@ func (h *AuthHandler) RequireAuth(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (h *AuthHandler) RequireRole(roles ...models.Role) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			cookie, err := r.Cookie("token")
+			if err != nil {
+				http.Redirect(w, r, "/login", http.StatusFound)
+				return
+			}
+			claims, err := h.authService.ValidateToken(cookie.Value)
+			if err != nil {
+				http.Redirect(w, r, "/login", http.StatusFound)
+				return
+			}
+			if slices.Contains(roles, claims.Role) {
+				next.ServeHTTP(w, r)
+				return
+			}
+			http.Redirect(w, r, "/dashboard", http.StatusFound)
+		})
+	}
+}
+
+func (h *AuthHandler) GetUserFromRequest(r *http.Request) (*models.User, error) {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return nil, err
+	}
+	claims, err := h.authService.ValidateToken(cookie.Value)
+	if err != nil {
+		return nil, err
+	}
+	return h.repo.GetUserByID(claims.UserID)
 }

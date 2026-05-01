@@ -9,6 +9,7 @@ import (
 	"github.com/goquizvibe/config"
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/handlers"
+	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/store"
@@ -35,6 +36,9 @@ func main() {
 	authHandler := handlers.NewAuth(repo, authService)
 	dashboardHandler := handlers.NewDashboard(repo, quizService, gamification, authService)
 	quizHandler := handlers.NewQuiz(repo, quizService, gamification, authService)
+	adminHandler := handlers.NewAdmin(repo, authService)
+
+	adminMiddleware := authHandler.RequireRole(models.RoleTeacher)
 
 	mux := http.NewServeMux()
 
@@ -102,6 +106,15 @@ func main() {
 	mux.HandleFunc("/leaderboard", func(w http.ResponseWriter, r *http.Request) {
 		quizHandler.LeaderboardPage(w, r)
 	})
+
+	adminMux := http.NewServeMux()
+	adminMux.HandleFunc("/", adminHandler.Dashboard)
+	adminMux.HandleFunc("/quizzes", adminHandler.QuizzesCreate)
+	adminMux.HandleFunc("/quizzes/", adminHandler.QuizOp)
+	mux.Handle("/admin/", adminMiddleware(adminMux))
+
+	mux.Handle("/admin/results", adminMiddleware(http.HandlerFunc(adminHandler.Results)))
+	mux.Handle("/admin/statistics", adminMiddleware(http.HandlerFunc(adminHandler.Statistics)))
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))

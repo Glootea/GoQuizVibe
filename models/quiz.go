@@ -13,6 +13,7 @@ const (
 	QuizStatusAssigned  QuizStatus = "assigned"
 	QuizStatusCompleted QuizStatus = "completed"
 	QuizStatusAvailable QuizStatus = "available"
+	QuizStatusArchived  QuizStatus = "archived"
 )
 
 type Quiz struct {
