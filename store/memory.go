@@ -1,0 +1,213 @@
+package store
+
+import (
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/goquizvibe/models"
+)
+
+var (
+	ErrEmailExists  = fmt.Errorf("email already registered")
+	ErrUserNotFound = fmt.Errorf("user not found")
+	ErrQuizNotFound = fmt.Errorf("quiz not found")
+)
+
+type MemoryStore struct {
+	mu         sync.RWMutex
+	Users      map[uuid.UUID]*models.User
+	Quizzes    map[uuid.UUID]*models.Quiz
+	Progress   map[uuid.UUID]*models.UserProgress
+	Attempts   map[uuid.UUID]*models.QuizAttempt
+	EmailIndex map[string]uuid.UUID
+}
+
+func NewMemoryStore() *MemoryStore {
+	return &MemoryStore{
+		Users:      make(map[uuid.UUID]*models.User),
+		Quizzes:    make(map[uuid.UUID]*models.Quiz),
+		Progress:   make(map[uuid.UUID]*models.UserProgress),
+		Attempts:   make(map[uuid.UUID]*models.QuizAttempt),
+		EmailIndex: make(map[string]uuid.UUID),
+	}
+}
+
+func (s *MemoryStore) CreateUser(u *models.User) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, exists := s.EmailIndex[u.Email]; exists {
+		return ErrEmailExists
+	}
+
+	s.Users[u.ID] = u
+	s.EmailIndex[u.Email] = u.ID
+	s.Progress[u.ID] = &models.UserProgress{
+		UserID:           u.ID,
+		XP:               0,
+		Streak:           0,
+		LastActiveDate:   time.Time{},
+		CompletedQuizzes: []uuid.UUID{},
+		WrongAnswers:     []models.WrongAnswer{},
+	}
+	return nil
+}
+
+func (s *MemoryStore) GetUserByEmail(email string) (*models.User, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	id, ok := s.EmailIndex[email]
+	if !ok {
+		return nil, ErrUserNotFound
+	}
+
+	u, ok := s.Users[id]
+	if !ok {
+		return nil, ErrUserNotFound
+	}
+
+	return u, nil
+}
+
+func (s *MemoryStore) GetUserByID(id uuid.UUID) (*models.User, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	u, ok := s.Users[id]
+	if !ok {
+		return nil, ErrUserNotFound
+	}
+
+	return u, nil
+}
+
+func (s *MemoryStore) GetQuizzes() []*models.Quiz {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	quizzes := make([]*models.Quiz, 0, len(s.Quizzes))
+	for _, q := range s.Quizzes {
+		quizzes = append(quizzes, q)
+	}
+	return quizzes
+}
+
+func (s *MemoryStore) GetQuizByID(id uuid.UUID) (*models.Quiz, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	q, ok := s.Quizzes[id]
+	if !ok {
+		return nil, ErrQuizNotFound
+	}
+	return q, nil
+}
+
+func (s *MemoryStore) GetQuizzesForUser(userID uuid.UUID) []*models.Quiz {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var quizzes []*models.Quiz
+	for _, q := range s.Quizzes {
+		if q.Status == models.QuizStatusAvailable {
+			quizzes = append(quizzes, q)
+			continue
+		}
+		for _, assigned := range q.AssignedTo {
+			if assigned == userID {
+				quizzes = append(quizzes, q)
+				break
+			}
+		}
+	}
+	return quizzes
+}
+
+func (s *MemoryStore) SaveAttempt(attempt *models.QuizAttempt) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.Attempts[attempt.ID] = attempt
+	return nil
+}
+
+func (s *MemoryStore) GetAttemptsByUser(userID uuid.UUID) []*models.QuizAttempt {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var attempts []*models.QuizAttempt
+	for _, a := range s.Attempts {
+		if a.UserID == userID {
+			attempts = append(attempts, a)
+		}
+	}
+	return attempts
+}
+
+func (s *MemoryStore) GetProgress(userID uuid.UUID) (*models.UserProgress, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	p, ok := s.Progress[userID]
+	if !ok {
+		return nil, ErrUserNotFound
+	}
+	return p, nil
+}
+
+func (s *MemoryStore) UpdateProgress(p *models.UserProgress) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.Progress[p.UserID] = p
+	return nil
+}
+
+func (s *MemoryStore) AddWrongAnswer(userID uuid.UUID, wa models.WrongAnswer) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	p, ok := s.Progress[userID]
+	if !ok {
+		return ErrUserNotFound
+	}
+
+	p.WrongAnswers = append(p.WrongAnswers, wa)
+	s.Progress[userID] = p
+	return nil
+}
+
+func (s *MemoryStore) GetLeaderboard() []*models.LeaderboardEntry {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	entries := make([]*models.LeaderboardEntry, 0, len(s.Progress))
+	for userID, p := range s.Progress {
+		if user, ok := s.Users[userID]; ok {
+			entries = append(entries, &models.LeaderboardEntry{
+				UserID:   userID,
+				UserName: user.Name,
+				XP:       p.XP,
+				Streak:   p.Streak,
+				Rank:     0,
+			})
+		}
+	}
+
+	for i := 0; i < len(entries); i++ {
+		for j := i + 1; j < len(entries); j++ {
+			if entries[j].XP > entries[i].XP {
+				entries[i], entries[j] = entries[j], entries[i]
+			}
+		}
+	}
+
+	for i, e := range entries {
+		e.Rank = i + 1
+	}
+
+	return entries
+}

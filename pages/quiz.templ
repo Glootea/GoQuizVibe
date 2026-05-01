@@ -1,0 +1,201 @@
+package pages
+
+import (
+	"github.com/goquizvibe/models"
+	"github.com/goquizvibe/types"
+)
+
+templ QuizPage(data types.QuizPageData) {
+	@Base("Тест") {
+		<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+			<div class="max-w-2xl mx-auto px-4 py-8">
+				<div class="flex justify-between items-center mb-6">
+					<a href="/dashboard" class="text-gray-600 hover:text-gray-900">
+						<i class="fas fa-arrow-left mr-2"></i>Назад
+					</a>
+					<div class="text-right">
+						<p class="font-bold text-lg">{ data.Quiz.Title }</p>
+						<p class="text-sm text-gray-500">{ len(data.Quiz.Questions) } вопросов</p>
+					</div>
+				</div>
+
+				<div id="quiz-container" hx-ext="json-enc">
+					<div class="bg-white rounded-2xl shadow-xl p-8">
+						<div id="question-content">
+							<div class="mb-6">
+								<span id="question-counter" class="text-sm text-indigo-600 font-medium">Вопрос 1 из { len(data.Quiz.Questions) }</span>
+							</div>
+
+							<form
+								id="quiz-form"
+								hx-post={ "/quiz/" + data.Quiz.ID.String() + "/submit" }
+								hx-target="#question-content"
+								hx-swap="innerHTML"
+								hx-ext="json-enc"
+								json-enc="application/json"
+							>
+								<input type="hidden" name="question_index" id="question-index" value="0"/>
+
+								<div id="question-text" class="text-xl font-medium mb-6">
+									{ data.Quiz.Questions[0].Text }
+								</div>
+
+								if data.Quiz.Questions[0].Type == models.QuestionTypeChoice {
+									<div id="options-container" class="space-y-3">
+										for _, option := range data.Quiz.Questions[0].Options {
+											<label class="block p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition">
+												<input
+													type="radio"
+													name="answer"
+													value={ option }
+													class="mr-3"
+													required
+												/>
+												{ option }
+											</label>
+										}
+									</div>
+								} else {
+									<input
+										type="text"
+										name="answer"
+										id="answer-input"
+										class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+										placeholder="Введите ответ..."
+										required
+									/>
+								}
+
+								<button
+									type="submit"
+									class="w-full mt-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition"
+								>
+									Ответить
+								</button>
+							</form>
+						</div>
+
+						<div id="feedback-container" class="hidden mt-6"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ QuizResultPage(data types.QuizResultData) {
+	@Base("Результат") {
+		<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+			<div class="max-w-2xl mx-auto px-4 py-8">
+				<div class="text-center mb-8">
+					<div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+						<i class="fas fa-check text-4xl text-white"></i>
+					</div>
+					<h1 class="text-3xl font-bold mb-2">Тест завершён!</h1>
+					<p class="text-xl text-gray-600">{ data.Quiz.Title }</p>
+				</div>
+
+				<div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+					<div class="grid grid-cols-2 gap-6 mb-6">
+						<div class="text-center p-4 bg-green-50 rounded-xl">
+							<p class="text-3xl font-bold text-green-600">+50</p>
+							<p class="text-sm text-gray-600">XP заработано</p>
+						</div>
+						<div class="text-center p-4 bg-indigo-50 rounded-xl">
+							<p class="text-3xl font-bold text-indigo-600">100%</p>
+							<p class="text-sm text-gray-600">Результат</p>
+						</div>
+					</div>
+
+					<a
+						href="/dashboard"
+						class="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition text-center"
+					>
+						Вернуться к тестам
+					</a>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ ErrorsPage(data types.ErrorsPageData) {
+	@Base("Ошибки") {
+		@Navbar(data.User)
+
+		<main class="max-w-4xl mx-auto px-4 py-8">
+			<h1 class="text-2xl font-bold mb-6">Ретроспектива ошибок</h1>
+
+			if len(data.WrongAnswers) == 0 {
+				<div class="bg-white rounded-xl p-8 text-center">
+					<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+						<i class="fas fa-check text-3xl text-green-600"></i>
+					</div>
+					<h2 class="text-xl font-semibold mb-2">Отличная работа!</h2>
+					<p class="text-gray-600">У вас пока нет ошибок. Продолжайте в том же духе!</p>
+				</div>
+			} else {
+				<div class="space-y-4">
+					for _, wa := range data.WrongAnswers {
+						<div class="bg-white rounded-xl p-5 shadow-sm">
+							<div class="flex justify-between items-start mb-3">
+								<span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">Ошибка</span>
+								<span class="text-sm text-gray-500">{ wa.Timestamp.Format("02.01.2006 15:04") }</span>
+							</div>
+							<div class="mb-3">
+								<p class="text-gray-600 text-sm">Ваш ответ:</p>
+								<p class="text-red-600 font-medium">{ wa.UserAnswer }</p>
+							</div>
+							<div>
+								<p class="text-gray-600 text-sm">Правильный ответ:</p>
+								<p class="text-green-600 font-medium">{ wa.CorrectAnswer }</p>
+							</div>
+						</div>
+					}
+				</div>
+			}
+		</main>
+	}
+}
+
+templ LeaderboardPage(data types.LeaderboardPageData) {
+	@Base("Таблица лидеров") {
+		@Navbar(data.User)
+
+		<main class="max-w-4xl mx-auto px-4 py-8">
+			<h1 class="text-2xl font-bold mb-6">Таблица лидеров</h1>
+
+			<div class="bg-white rounded-xl shadow-sm p-5">
+				if len(data.Entries) == 0 {
+					<div class="text-center text-gray-500 py-8">
+						<p>Пока нет участников</p>
+					</div>
+				} else {
+					<div class="space-y-3">
+						for i, entry := range data.Entries {
+							@FullLeaderboardRow(entry, i+1)
+						}
+					</div>
+				}
+			</div>
+		</main>
+	}
+}
+
+templ FullLeaderboardRow(entry *models.LeaderboardEntry, position int) {
+	<div class={ RowClass(position) }>
+		<div class={ PositionClass(position) }>
+			{ position }
+		</div>
+		<div class="flex-1">
+			<p class="font-semibold text-lg">{ entry.UserName }</p>
+			<p class="text-sm text-gray-500">
+				<i class="fas fa-fire mr-1"></i>{ entry.Streak } дней streak
+			</p>
+		</div>
+		<div class="text-right">
+			<p class="text-2xl font-bold text-indigo-600">{ entry.XP }</p>
+			<p class="text-sm text-gray-500">XP</p>
+		</div>
+	</div>
+}
