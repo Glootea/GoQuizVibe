@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"fmt"
+
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
 )
@@ -95,38 +97,98 @@ templ QuestionFeedback(answer string, isCorrect bool, explanation string) {
 
 templ QuizResultPage(data types.QuizResultData) {
 	@Base("Результат") {
-		<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
-			<div class="max-w-2xl mx-auto px-4 py-8">
-				<div class="text-center mb-8">
-					<div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-						<i class="fas fa-check text-4xl text-white"></i>
+		@Navbar(data.User)
+
+		<main class="max-w-3xl mx-auto px-4 py-8">
+			<div class="text-center mb-8">
+				<div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+					<i class="fas fa-check text-4xl text-white"></i>
+				</div>
+				<h1 class="text-3xl font-bold mb-2">Тест завершён!</h1>
+				<p class="text-xl text-gray-600">{ data.Quiz.Title }</p>
+			</div>
+
+			<div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+				<div class="grid grid-cols-3 gap-4 mb-6">
+					<div class="text-center p-4 bg-green-50 rounded-xl">
+						<p class="text-2xl font-bold text-green-600">{ data.Score }/{ data.MaxScore }</p>
+						<p class="text-sm text-gray-600">Баллы</p>
 					</div>
-					<h1 class="text-3xl font-bold mb-2">Тест завершён!</h1>
-					<p class="text-xl text-gray-600">{ data.Quiz.Title }</p>
+					<div class="text-center p-4 bg-green-50 rounded-xl">
+						<p class="text-2xl font-bold text-green-600">{ data.CorrectCount }</p>
+						<p class="text-sm text-gray-600">Правильных</p>
+					</div>
+					<div class="text-center p-4 bg-red-50 rounded-xl">
+						<p class="text-2xl font-bold text-red-600">{ data.WrongCount }</p>
+						<p class="text-sm text-gray-600">Ошибок</p>
+					</div>
 				</div>
 
-				<div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
-					<div class="grid grid-cols-2 gap-6 mb-6">
-						<div class="text-center p-4 bg-green-50 rounded-xl">
-							<p class="text-3xl font-bold text-green-600">+50</p>
-							<p class="text-sm text-gray-600">XP заработано</p>
-						</div>
-						<div class="text-center p-4 bg-indigo-50 rounded-xl">
-							<p class="text-3xl font-bold text-indigo-600">100%</p>
-							<p class="text-sm text-gray-600">Результат</p>
-						</div>
-					</div>
+				<div class="mb-4 text-center">
+					<span class="text-lg font-semibold">
+						Результат: { floatToPercent(data.Score, data.MaxScore) }%
+					</span>
+				</div>
 
-					<a
-						href="/dashboard"
-						class="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition text-center"
-					>
-						Вернуться к тестам
-					</a>
+				<a
+					href="/dashboard"
+					class="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition text-center"
+				>
+					Вернуться к тестам
+				</a>
+			</div>
+
+			<div class="bg-white rounded-2xl shadow-xl p-8">
+				<h2 class="text-xl font-bold mb-4">Детализация ответов</h2>
+				<div class="space-y-4">
+					for i, answer := range data.Answers {
+						<div class={ "p-4 rounded-xl border " + ternary(answer.IsCorrect, "bg-green-50 border-green-200", "bg-red-50 border-red-200") }>
+							<div class="flex justify-between items-start mb-2">
+								<span class="font-medium">Вопрос { i + 1 }</span>
+								if answer.IsCorrect {
+									<span class="px-2 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+										<i class="fas fa-check mr-1"></i>Правильно
+									</span>
+								} else {
+									<span class="px-2 py-1 bg-red-100 text-red-700 text-sm rounded-full">
+										<i class="fas fa-times mr-1"></i>Ошибка
+									</span>
+								}
+							</div>
+							<p class="text-gray-700 mb-2">{ answer.Question }</p>
+							<div class="grid grid-cols-2 gap-4 text-sm">
+								<div>
+									<span class="text-gray-500">Ваш ответ: </span>
+									<span class={ "font-medium " + ternary(answer.IsCorrect, "text-green-700", "text-red-700") }>{ answer.UserAnswer }</span>
+								</div>
+								if !answer.IsCorrect {
+									<div>
+										<span class="text-gray-500">Правильный: </span>
+										<span class="font-medium text-green-700">{ answer.CorrectAnswer }</span>
+									</div>
+								}
+							</div>
+						</div>
+					}
 				</div>
 			</div>
-		</div>
+		</main>
 	}
+}
+
+func floatToPercent(score int, maxScore int) string {
+	if maxScore == 0 {
+		return "0"
+	}
+	percent := (score * 100) / maxScore
+	return fmt.Sprintf("%d", percent)
+}
+
+func ternary(condition bool, trueVal string, falseVal string) string {
+	if condition {
+		return trueVal
+	}
+	return falseVal
 }
 
 templ ErrorsPage(data types.ErrorsPageData) {

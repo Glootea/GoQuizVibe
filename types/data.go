@@ -19,9 +19,21 @@ type QuizPageData struct {
 }
 
 type QuizResultData struct {
-	User  *models.User
-	Quiz  *models.Quiz
-	Stats *models.UserProgress
+	User         *models.User
+	Quiz         *models.Quiz
+	Stats        *models.UserProgress
+	Score        int
+	MaxScore     int
+	CorrectCount int
+	WrongCount   int
+	Answers      []AnswerDetail
+}
+
+type AnswerDetail struct {
+	Question     string
+	UserAnswer   string
+	CorrectAnswer string
+	IsCorrect    bool
 }
 
 type ErrorsPageData struct {

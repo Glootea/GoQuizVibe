@@ -17,30 +17,33 @@ var (
 )
 
 type MemoryStore struct {
-	mu         sync.RWMutex
-	Users      map[uuid.UUID]*models.User
-	Quizzes    map[uuid.UUID]*models.Quiz
-	Progress   map[uuid.UUID]*models.UserProgress
-	Attempts   map[uuid.UUID]*models.QuizAttempt
-	EmailIndex map[string]uuid.UUID
-	Sessions   map[string]*QuizSession
+	mu               sync.RWMutex
+	Users            map[uuid.UUID]*models.User
+	Quizzes          map[uuid.UUID]*models.Quiz
+	Progress         map[uuid.UUID]*models.UserProgress
+	Attempts         map[uuid.UUID]*models.QuizAttempt
+	EmailIndex       map[string]uuid.UUID
+	Sessions         map[string]*QuizSession
+	CompletedResults map[string]*models.QuizAttempt
 }
 
 type QuizSession struct {
-	AttemptID     uuid.UUID
-	QuizID        uuid.UUID
-	UserID        uuid.UUID
-	CurrentIndex  int
-	Answers       map[int]string
+	AttemptID    uuid.UUID
+	QuizID       uuid.UUID
+	UserID       uuid.UUID
+	CurrentIndex int
+	Answers      map[int]string
 }
 
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		Users:      make(map[uuid.UUID]*models.User),
-		Quizzes:    make(map[uuid.UUID]*models.Quiz),
-		Progress:   make(map[uuid.UUID]*models.UserProgress),
-		Attempts:   make(map[uuid.UUID]*models.QuizAttempt),
-		EmailIndex: make(map[string]uuid.UUID),
+		Users:            make(map[uuid.UUID]*models.User),
+		Quizzes:          make(map[uuid.UUID]*models.Quiz),
+		Progress:         make(map[uuid.UUID]*models.UserProgress),
+		Attempts:         make(map[uuid.UUID]*models.QuizAttempt),
+		EmailIndex:       make(map[string]uuid.UUID),
+		Sessions:         make(map[string]*QuizSession),
+		CompletedResults: make(map[string]*models.QuizAttempt),
 	}
 }
 
@@ -232,8 +235,8 @@ func (s *MemoryStore) CreateSession(sessionID string, userID, quizID uuid.UUID) 
 
 	attempt := &models.QuizAttempt{
 		ID:        uuid.New(),
-		UserID:   userID,
-		QuizID:   quizID,
+		UserID:    userID,
+		QuizID:    quizID,
 		Answers:   make([]models.UserAnswer, 0),
 		StartedAt: time.Now(),
 	}
@@ -241,10 +244,14 @@ func (s *MemoryStore) CreateSession(sessionID string, userID, quizID uuid.UUID) 
 
 	session := &QuizSession{
 		AttemptID:    attempt.ID,
-		QuizID:      quizID,
-		UserID:      userID,
+		QuizID:       quizID,
+		UserID:       userID,
 		CurrentIndex: 0,
-		Answers:     make(map[int]string),
+		Answers:      make(map[int]string),
+	}
+
+	if sessionID == "" {
+		sessionID = attempt.ID.String()
 	}
 	s.Sessions[sessionID] = session
 	return session
@@ -279,8 +286,13 @@ func (s *MemoryStore) CompleteSession(sessionID string) (*models.QuizAttempt, er
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if attempt, ok := s.CompletedResults[sessionID]; ok {
+		return attempt, nil
+	}
+
 	session, ok := s.Sessions[sessionID]
 	if !ok {
+		println("Session not found")
 		return nil, fmt.Errorf("session not found")
 	}
 
@@ -314,7 +326,19 @@ func (s *MemoryStore) CompleteSession(sessionID string) (*models.QuizAttempt, er
 	attempt.MaxScore = maxScore
 	attempt.CompletedAt = time.Now()
 
+	s.CompletedResults[sessionID] = attempt
 	delete(s.Sessions, sessionID)
+	return attempt, nil
+}
+
+func (s *MemoryStore) GetCompletedResult(sessionID string) (*models.QuizAttempt, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	attempt, ok := s.CompletedResults[sessionID]
+	if !ok {
+		return nil, fmt.Errorf("result not found")
+	}
 	return attempt, nil
 }
 

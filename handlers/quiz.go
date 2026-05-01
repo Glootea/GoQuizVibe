@@ -174,8 +174,14 @@ func (h *QuizHandler) QuizNextHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) {
-	quizID, err := uuid.Parse(r.URL.Query().Get("id"))
+	quizID, err := extractQuizIDFromPath(r.URL.Path)
 	if err != nil {
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
+		return
+	}
+
+	sessionID := r.URL.Query().Get("session")
+	if sessionID == "" {
 		http.Redirect(w, r, "/dashboard", http.StatusFound)
 		return
 	}
@@ -197,12 +203,52 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
+
 	stats, _ := h.gamification.GetUserStats(userID)
 
+	attempt, err := h.store.CompleteSession(sessionID)
+	if err != nil {
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
+		return
+	}
+
+	var correctCount, wrongCount int
+	var answers []types.AnswerDetail
+	for i, q := range quiz.Questions {
+		var userAnswer string
+		var isCorrect bool
+		if i < len(attempt.Answers) {
+			ua := attempt.Answers[i]
+			userAnswer = ua.UserAnswer
+			isCorrect = ua.IsCorrect
+		} else {
+			userAnswer = "Нет ответа"
+			isCorrect = false
+		}
+
+		if isCorrect {
+			correctCount++
+		} else {
+			wrongCount++
+		}
+
+		answers = append(answers, types.AnswerDetail{
+			Question:      q.Text,
+			UserAnswer:    userAnswer,
+			CorrectAnswer: q.CorrectAnswer,
+			IsCorrect:     isCorrect,
+		})
+	}
+
 	data := types.QuizResultData{
-		User:  user,
-		Quiz:  quiz,
-		Stats: stats,
+		User:         user,
+		Quiz:         quiz,
+		Stats:        stats,
+		Score:        attempt.Score,
+		MaxScore:     attempt.MaxScore,
+		CorrectCount: correctCount,
+		WrongCount:   wrongCount,
+		Answers:      answers,
 	}
 
 	pages.QuizResultPage(data).Render(r.Context(), w)
