@@ -38,6 +38,11 @@ type AnswerDetail struct {
 
 type ErrorsPageData struct {
 	User         *models.User
+	QuizErrors   []QuizErrors
+}
+
+type QuizErrors struct {
+	Quiz        *models.Quiz
 	WrongAnswers []models.WrongAnswer
 }
 

@@ -279,9 +279,25 @@ func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) {
 	}
 	progress, _ := h.gamification.GetUserStats(userID)
 
+	quizErrorsMap := make(map[uuid.UUID][]models.WrongAnswer)
+	for _, wa := range progress.WrongAnswers {
+		quizErrorsMap[wa.QuizID] = append(quizErrorsMap[wa.QuizID], wa)
+	}
+
+	var quizErrors []types.QuizErrors
+	for quizID, wrongAnswers := range quizErrorsMap {
+		quiz, err := h.quizService.GetQuizByID(quizID)
+		if err == nil {
+			quizErrors = append(quizErrors, types.QuizErrors{
+				Quiz:        quiz,
+				WrongAnswers: wrongAnswers,
+			})
+		}
+	}
+
 	data := types.ErrorsPageData{
-		User:         user,
-		WrongAnswers: progress.WrongAnswers,
+		User:       user,
+		QuizErrors: quizErrors,
 	}
 
 	pages.ErrorsPage(data).Render(r.Context(), w)
