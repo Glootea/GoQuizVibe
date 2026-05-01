@@ -1,12 +1,20 @@
 package services
 
 import (
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/store"
-	"github.com/google/uuid"
 )
+
+func NormalizeAnswer(answer string) string {
+	answer = strings.TrimSpace(answer)
+	answer = strings.ToLower(answer)
+	answer = strings.TrimRight(answer, ".")
+	return answer
+}
 
 type QuizService struct {
 	store *store.MemoryStore
@@ -32,8 +40,8 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 
 	attempt := &models.QuizAttempt{
 		ID:        uuid.New(),
-		UserID:   userID,
-		QuizID:   quizID,
+		UserID:    userID,
+		QuizID:    quizID,
 		Answers:   make([]models.UserAnswer, 0),
 		StartedAt: time.Now(),
 	}
@@ -42,7 +50,7 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 	for _, q := range quiz.Questions {
 		maxScore += q.Points
 		userAnswer := answers[q.ID]
-		isCorrect := normalizeAnswer(userAnswer) == normalizeAnswer(q.CorrectAnswer)
+		isCorrect := NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
 
 		attempt.Answers = append(attempt.Answers, models.UserAnswer{
 			QuestionID: q.ID,
@@ -55,11 +63,11 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 		} else {
 			s.store.AddWrongAnswer(userID, models.WrongAnswer{
 				ID:            uuid.New(),
-				QuestionID:   q.ID,
-				QuizID:       quizID,
-				UserAnswer:   userAnswer,
+				QuestionID:    q.ID,
+				QuizID:        quizID,
+				UserAnswer:    userAnswer,
 				CorrectAnswer: q.CorrectAnswer,
-				Timestamp:    time.Now(),
+				Timestamp:     time.Now(),
 			})
 		}
 	}
@@ -77,10 +85,6 @@ func (s *QuizService) SubmitQuizAttempt(userID, quizID uuid.UUID, answers map[uu
 	}
 
 	return attempt, nil
-}
-
-func normalizeAnswer(answer string) string {
-	return ""
 }
 
 type GamificationService struct {

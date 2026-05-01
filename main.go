@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/goquizvibe/config"
 	"github.com/goquizvibe/handlers"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/store"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -80,18 +81,24 @@ func main() {
 	})
 
 	mux.HandleFunc("/quiz/", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			if len(r.URL.Path) > len("/quiz/") && r.URL.Path[len(r.URL.Path)-7:] == "/result" {
-				quizHandler.QuizResult(w, r)
-			} else {
-				quizHandler.QuizPage(w, r)
-			}
-		case "POST":
+		path := r.URL.Path
+		if r.Method == "POST" && strings.HasSuffix(path, "/submit") {
 			quizHandler.QuizSubmitHTMX(w, r)
-		default:
-			http.NotFound(w, r)
+			return
 		}
+		if r.Method == "GET" && strings.Contains(path, "/next") {
+			quizHandler.QuizNextHTMX(w, r)
+			return
+		}
+		if r.Method == "GET" && strings.HasSuffix(path, "/result") {
+			quizHandler.QuizResult(w, r)
+			return
+		}
+		if r.Method == "GET" {
+			quizHandler.QuizPage(w, r)
+			return
+		}
+		http.NotFound(w, r)
 	})
 
 	mux.HandleFunc("/errors", func(w http.ResponseWriter, r *http.Request) {

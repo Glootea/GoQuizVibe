@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +23,15 @@ type MemoryStore struct {
 	Progress   map[uuid.UUID]*models.UserProgress
 	Attempts   map[uuid.UUID]*models.QuizAttempt
 	EmailIndex map[string]uuid.UUID
+	Sessions   map[string]*QuizSession
+}
+
+type QuizSession struct {
+	AttemptID     uuid.UUID
+	QuizID        uuid.UUID
+	UserID        uuid.UUID
+	CurrentIndex  int
+	Answers       map[int]string
 }
 
 func NewMemoryStore() *MemoryStore {
@@ -210,4 +220,107 @@ func (s *MemoryStore) GetLeaderboard() []*models.LeaderboardEntry {
 	}
 
 	return entries
+}
+
+func (s *MemoryStore) CreateSession(sessionID string, userID, quizID uuid.UUID) *QuizSession {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.Sessions == nil {
+		s.Sessions = make(map[string]*QuizSession)
+	}
+
+	attempt := &models.QuizAttempt{
+		ID:        uuid.New(),
+		UserID:   userID,
+		QuizID:   quizID,
+		Answers:   make([]models.UserAnswer, 0),
+		StartedAt: time.Now(),
+	}
+	s.Attempts[attempt.ID] = attempt
+
+	session := &QuizSession{
+		AttemptID:    attempt.ID,
+		QuizID:      quizID,
+		UserID:      userID,
+		CurrentIndex: 0,
+		Answers:     make(map[int]string),
+	}
+	s.Sessions[sessionID] = session
+	return session
+}
+
+func (s *MemoryStore) GetSession(sessionID string) (*QuizSession, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	session, ok := s.Sessions[sessionID]
+	if !ok {
+		return nil, fmt.Errorf("session not found")
+	}
+	return session, nil
+}
+
+func (s *MemoryStore) UpdateSessionAnswer(sessionID string, questionIndex int, answer string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	session, ok := s.Sessions[sessionID]
+	if !ok {
+		return fmt.Errorf("session not found")
+	}
+
+	session.Answers[questionIndex] = answer
+	session.CurrentIndex = questionIndex + 1
+	return nil
+}
+
+func (s *MemoryStore) CompleteSession(sessionID string) (*models.QuizAttempt, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	session, ok := s.Sessions[sessionID]
+	if !ok {
+		return nil, fmt.Errorf("session not found")
+	}
+
+	attempt, ok := s.Attempts[session.AttemptID]
+	if !ok {
+		return nil, fmt.Errorf("attempt not found")
+	}
+
+	quiz, ok := s.Quizzes[session.QuizID]
+	if !ok {
+		return nil, fmt.Errorf("quiz not found")
+	}
+
+	var score, maxScore int
+	for i, q := range quiz.Questions {
+		maxScore += q.Points
+		if userAnswer, ok := session.Answers[i]; ok {
+			isCorrect := normalizeAnswer(userAnswer) == normalizeAnswer(q.CorrectAnswer)
+			attempt.Answers = append(attempt.Answers, models.UserAnswer{
+				QuestionID: q.ID,
+				UserAnswer: userAnswer,
+				IsCorrect:  isCorrect,
+			})
+			if isCorrect {
+				score += q.Points
+			}
+		}
+	}
+
+	attempt.Score = score
+	attempt.MaxScore = maxScore
+	attempt.CompletedAt = time.Now()
+
+	delete(s.Sessions, sessionID)
+	return attempt, nil
+}
+
+func normalizeAnswer(answer string) string {
+	answer = strings.TrimSpace(answer)
+	answer = strings.ToLower(answer)
+	answer = strings.TrimRight(answer, ".")
+	return answer
 }

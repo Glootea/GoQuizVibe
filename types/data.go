@@ -12,9 +12,10 @@ type DashboardData struct {
 }
 
 type QuizPageData struct {
-	User  *models.User
-	Quiz  *models.Quiz
-	Stats *models.UserProgress
+	User      *models.User
+	Quiz      *models.Quiz
+	Stats     *models.UserProgress
+	SessionID string
 }
 
 type QuizResultData struct {

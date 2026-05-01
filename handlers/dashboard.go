@@ -33,7 +33,11 @@ func (h *DashboardHandler) DashboardPage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, _ := h.store.GetUserByID(userID)
+	user, err := h.store.GetUserByID(userID)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 	quizzes := h.quizService.GetQuizzesForUser(userID)
 	stats, _ := h.gamification.GetUserStats(userID)
 	leaderboard := h.gamification.GetLeaderboard()
