@@ -395,8 +395,7 @@ func (r *Repository) DeleteQuestion(id uuid.UUID) error {
 
 func (r *Repository) GetAllQuizzesWithStats() ([]*types.QuizWithStats, error) {
 	var quizzes []*models.Quiz
-	err := r.db.Where("status != ?", models.QuizStatusArchived).
-		Preload("Questions").Find(&quizzes).Error
+	err := r.db.Preload("Questions").Find(&quizzes).Error
 	if err != nil {
 		return nil, err
 	}

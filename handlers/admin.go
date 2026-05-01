@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -93,26 +94,36 @@ func (h *AdminHandler) QuizOp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.HasSuffix(path, "/question") && r.Method == "POST" {
-		h.addQuestion(w, r)
+		if r.FormValue("question_id") != "" {
+			h.updateQuestion(w, r)
+		} else {
+			h.addQuestion(w, r)
+		}
+		return
+	}
+
+	idStr := strings.TrimPrefix(path, "/admin/quizzes/")
+	quizID, err := uuid.Parse(idStr)
+	if err != nil {
+		if strings.HasSuffix(path, "/restore") && r.Method == "POST" {
+			idStr2 := strings.TrimSuffix(strings.TrimPrefix(path, "/admin/quizzes/"), "/restore")
+			quizID, err = uuid.Parse(idStr2)
+			if err == nil {
+				h.RestoreQuiz(w, r)
+				return
+			}
+		}
+		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+		return
+	}
+
+	if strings.HasSuffix(path, "/restore") && r.Method == "POST" {
+		h.RestoreQuiz(w, r)
 		return
 	}
 
 	if strings.HasSuffix(path, "/delete") && r.Method == "POST" {
-		idStr := strings.TrimPrefix(path, "/quizzes/")
-		idStr = strings.TrimSuffix(idStr, "/delete")
-		quizID, err := uuid.Parse(idStr)
-		if err != nil {
-			http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
-			return
-		}
 		h.deleteQuiz(w, r, quizID)
-		return
-	}
-
-	idStr := strings.TrimPrefix(path, "/quizzes/")
-	quizID, err := uuid.Parse(idStr)
-	if err != nil {
-		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
 		return
 	}
 
@@ -151,9 +162,13 @@ func (h *AdminHandler) createQuiz(w http.ResponseWriter, r *http.Request) {
 		CreatedBy:   user.ID,
 	}
 
-	h.repo.CreateQuiz(quiz)
+	err = h.repo.CreateQuiz(quiz)
+	if err != nil {
+		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+		return
+	}
 
-	http.Redirect(w, r, "/admin/quizzes/"+quiz.ID.String(), http.StatusFound)
+	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
 }
 
 func (h *AdminHandler) editQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) {
@@ -202,8 +217,22 @@ func (h *AdminHandler) deleteQuiz(w http.ResponseWriter, r *http.Request, quizID
 	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
 }
 
+func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	idStr := strings.TrimPrefix(path, "/admin/quizzes/")
+	idStr = strings.TrimSuffix(idStr, "/restore")
+	quizID, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+		return
+	}
+
+	h.repo.UpdateQuizStatus(quizID, models.QuizStatusAvailable)
+	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+}
+
 func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) {
-	idStr := strings.TrimPrefix(r.URL.Path, "/quizzes/")
+	idStr := strings.TrimPrefix(r.URL.Path, "/admin/quizzes/")
 	idStr = strings.TrimSuffix(idStr, "/question")
 	quizID, err := uuid.Parse(idStr)
 	if err != nil {
@@ -225,16 +254,27 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var options []string
+	var correctAnswer string
+
 	if questionType == models.QuestionTypeChoice {
-		opts := r.FormValue("options")
-		if opts != "" {
-			options = []string{opts}
+		r.ParseForm()
+		for key, values := range r.Form {
+			if strings.HasPrefix(key, "option_") {
+				val := values[0]
+				if val != "" {
+					options = append(options, val)
+				}
+			}
 		}
+		correctAnswerRaw := r.FormValue("correct_answer")
+		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx < len(options) {
+			correctAnswer = options[idx]
+		}
+	} else {
+		correctAnswer = r.FormValue("correct_answer")
 	}
 
 	optionsJSON, _ := json.Marshal(options)
-
-	correctAnswer := r.FormValue("correct_answer")
 
 	question := &models.Question{
 		ID:            uuid.New(),
@@ -253,7 +293,45 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
 }
 
+func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request) {
+	questionIDStr := r.FormValue("question_id")
+	questionID, err := uuid.Parse(questionIDStr)
+	if err != nil {
+		if r.Header.Get("hx-request") == "true" {
+			http.Error(w, "Invalid question ID", http.StatusBadRequest)
+			return
+		}
+		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+		return
+	}
+
+	question, err := h.repo.GetQuestionByID(questionID)
+	if err != nil {
+		if r.Header.Get("hx-request") == "true" {
+			http.Error(w, "Question not found", http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+		return
+	}
+	quizID := question.QuizID
+
+	h.repo.DeleteQuestion(questionID)
+
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
+}
+
 func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+		return
+	}
+
 	questionIDStr := r.FormValue("question_id")
 	questionID, err := uuid.Parse(questionIDStr)
 	if err != nil {
@@ -270,40 +348,33 @@ func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request) {
 	question.Text = r.FormValue("text")
 	question.Type = models.QuestionType(r.FormValue("type"))
 	question.Explanation = r.FormValue("explanation")
-	question.CorrectAnswer = r.FormValue("correct_answer")
 	question.Points, _ = strconv.Atoi(r.FormValue("points"))
 
 	if question.Type == models.QuestionTypeChoice {
-		opts := r.FormValue("options")
-		if opts != "" {
-			options := []string{opts}
-			question.Options, _ = json.Marshal(options)
+		var options []string
+		for i := 0; i < 20; i++ {
+			key := fmt.Sprintf("option_%d", i)
+			if val, ok := r.Form[key]; ok && val[0] != "" {
+				options = append(options, val[0])
+			}
 		}
+		question.Options, _ = json.Marshal(options)
+		correctAnswerRaw := r.FormValue("correct_answer")
+		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx < len(options) {
+			question.CorrectAnswer = options[idx]
+		}
+	} else {
+		question.CorrectAnswer = r.FormValue("correct_answer")
 	}
 
 	h.repo.UpdateQuestion(question)
 
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	http.Redirect(w, r, "/admin/quizzes/"+question.QuizID.String(), http.StatusFound)
-}
-
-func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request) {
-	questionIDStr := r.FormValue("question_id")
-	questionID, err := uuid.Parse(questionIDStr)
-	if err != nil {
-		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
-		return
-	}
-
-	question, err := h.repo.GetQuestionByID(questionID)
-	if err != nil {
-		http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
-		return
-	}
-	quizID := question.QuizID
-
-	h.repo.DeleteQuestion(questionID)
-
-	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
 }
 
 func (h *AdminHandler) Results(w http.ResponseWriter, r *http.Request) {

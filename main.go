@@ -107,12 +107,10 @@ func main() {
 		quizHandler.LeaderboardPage(w, r)
 	})
 
-	adminMux := http.NewServeMux()
-	adminMux.HandleFunc("/", adminHandler.Dashboard)
-	adminMux.HandleFunc("/quizzes", adminHandler.QuizzesCreate)
-	adminMux.HandleFunc("/quizzes/", adminHandler.QuizOp)
-	mux.Handle("/admin/", adminMiddleware(adminMux))
-
+	mux.Handle("/admin/", adminMiddleware(http.HandlerFunc(adminHandler.Dashboard)))
+	mux.Handle("/admin/quizzes", adminMiddleware(http.HandlerFunc(adminHandler.QuizzesCreate)))
+	mux.Handle("/admin/quizzes/", adminMiddleware(http.HandlerFunc(adminHandler.QuizOp)))
+	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(http.HandlerFunc(adminHandler.RestoreQuiz)))
 	mux.Handle("/admin/results", adminMiddleware(http.HandlerFunc(adminHandler.Results)))
 	mux.Handle("/admin/statistics", adminMiddleware(http.HandlerFunc(adminHandler.Statistics)))
 

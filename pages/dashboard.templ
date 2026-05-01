@@ -24,6 +24,11 @@ templ Navbar(user *models.User) {
 				<i class="fas fa-graduation-cap mr-2"></i>GoQuizVibe
 			</a>
 			<div class="flex items-center gap-6">
+				if user.Role == models.RoleTeacher {
+					<a href="/admin" class="text-indigo-600 hover:text-indigo-800 font-medium">
+						<i class="fas fa-cog mr-1"></i>Админ
+					</a>
+				}
 				<a href="/leaderboard" class="text-gray-600 hover:text-indigo-600 font-medium">
 					<i class="fas fa-trophy mr-1"></i>Лидеры
 				</a>
