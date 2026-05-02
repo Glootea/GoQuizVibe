@@ -1,13 +1,15 @@
 package store
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
-	"github.com/goquizvibe/types"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5"
 )
 
 var (
@@ -18,151 +20,201 @@ var (
 )
 
 type Repository struct {
-	db *gorm.DB
+	pool *db.Queries
 }
 
-func NewRepository(db *gorm.DB) *Repository {
-	return &Repository{db: db}
+func NewRepository(pool *db.Queries) *Repository {
+	return &Repository{pool: pool}
 }
 
-func (r *Repository) CreateUser(u *models.User) error {
-	var existing User
-	err := r.db.Where("email = ?", u.Email).First(&existing).Error
-	if err == nil {
-		return ErrEmailExists
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+func (r *Repository) Close() {}
+
+func (r *Repository) CreateUser(ctx context.Context, u *db.User) error {
+	exists, err := r.pool.EmailExists(ctx, u.Email)
+	if err != nil {
 		return err
 	}
-	return r.db.Create(u).Error
+	if exists {
+		return ErrEmailExists
+	}
+	_, err = r.pool.CreateUser(ctx, db.CreateUserParams{
+		ID:           u.ID,
+		Name:         u.Name,
+		Email:        u.Email,
+		PasswordHash: u.PasswordHash,
+		Role:         u.Role,
+		CreatedAt:    u.CreatedAt,
+	})
+	return err
 }
 
-func (r *Repository) GetUserByEmail(email string) (*models.User, error) {
-	var user models.User
-	err := r.db.Where("email = ?", email).First(&user).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrUserNotFound
-	}
+func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*db.User, error) {
+	user, err := r.pool.GetUserByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *Repository) GetUserByID(id uuid.UUID) (*models.User, error) {
-	var user models.User
-	err := r.db.First(&user, "id = ?", id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrUserNotFound
-	}
+func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (*db.User, error) {
+	user, err := r.pool.GetUserByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *Repository) GetQuizzes() ([]*models.Quiz, error) {
-	var quizzes []*models.Quiz
-	err := r.db.Find(&quizzes).Error
-	return quizzes, err
+type QuizWithQuestions struct {
+	*db.Quiz
+	Questions []db.Question
 }
 
-func (r *Repository) GetQuizByID(id uuid.UUID) (*models.Quiz, error) {
-	var quiz models.Quiz
-	err := r.db.Preload("Questions", func(db *gorm.DB) *gorm.DB {
-		return db.Order("order_index ASC")
-	}).First(&quiz, "id = ?", id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrQuizNotFound
+func (q *QuizWithQuestions) GetOptions(index int) []string {
+	if index < 0 || index >= len(q.Questions) {
+		return nil
 	}
+	return GetOptions(q.Questions[index])
+}
+
+func (r *Repository) GetQuizzes(ctx context.Context) ([]*QuizWithQuestions, error) {
+	quizzes, err := r.pool.GetAvailableQuizzes(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &quiz, nil
-}
 
-func (r *Repository) GetQuizzesForUser(userID uuid.UUID) ([]*models.Quiz, error) {
-	var quizzes []*models.Quiz
-	err := r.db.Where("status = ?", models.QuizStatusAvailable).
-		Or("created_by = ?", userID).
-		Preload("Questions", func(db *gorm.DB) *gorm.DB {
-			return db.Order("order_index ASC")
-		}).
-		Find(&quizzes).Error
-	return quizzes, err
-}
-
-func (r *Repository) SaveAttempt(attempt *models.QuizAttempt) error {
-	return r.db.Create(attempt).Error
-}
-
-func (r *Repository) GetAttemptsByUser(userID uuid.UUID) ([]*models.QuizAttempt, error) {
-	var attempts []*models.QuizAttempt
-	err := r.db.Where("user_id = ?", userID).Find(&attempts).Error
-	return attempts, err
-}
-
-func (r *Repository) GetAttemptByID(id uuid.UUID) (*models.QuizAttempt, error) {
-	var attempt models.QuizAttempt
-	err := r.db.Preload("Answers").First(&attempt, "id = ?", id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrNotFound
+	result := make([]*QuizWithQuestions, len(quizzes))
+	for i := range quizzes {
+		q := &quizzes[i]
+		questions, err := r.pool.GetQuestionsByQuizID(ctx, q.ID)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = &QuizWithQuestions{Quiz: q, Questions: questions}
 	}
+	return result, nil
+}
+
+func (r *Repository) GetQuizByID(ctx context.Context, id uuid.UUID) (*QuizWithQuestions, error) {
+	quiz, err := r.pool.GetQuizByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrQuizNotFound
+		}
+		return nil, err
+	}
+	questions, err := r.pool.GetQuestionsByQuizID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &QuizWithQuestions{Quiz: &quiz, Questions: questions}, nil
+}
+
+func (r *Repository) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*QuizWithQuestions, error) {
+	quizzes, err := r.pool.GetQuizzesForUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*QuizWithQuestions, len(quizzes))
+	for i := range quizzes {
+		q := &quizzes[i]
+		questions, err := r.pool.GetQuestionsByQuizID(ctx, q.ID)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = &QuizWithQuestions{Quiz: q, Questions: questions}
+	}
+	return result, nil
+}
+
+func (r *Repository) SaveAttempt(ctx context.Context, attempt *db.QuizAttempt) error {
+	_, err := r.pool.CreateAttempt(ctx, db.CreateAttemptParams{
+		ID:        attempt.ID,
+		UserID:    attempt.UserID,
+		QuizID:    attempt.QuizID,
+		StartedAt: attempt.StartedAt,
+	})
+	return err
+}
+
+func (r *Repository) GetAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]*db.QuizAttempt, error) {
+	attempts, err := r.pool.GetAttemptsByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*db.QuizAttempt, len(attempts))
+	for i := range attempts {
+		result[i] = &attempts[i]
+	}
+	return result, nil
+}
+
+func (r *Repository) GetAttemptByID(ctx context.Context, id uuid.UUID) (*db.QuizAttempt, error) {
+	attempt, err := r.pool.GetAttemptByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return &attempt, nil
 }
 
-func (r *Repository) UpdateAttempt(attempt *models.QuizAttempt) error {
-	return r.db.Save(attempt).Error
+func (r *Repository) UpdateAttempt(ctx context.Context, attempt *db.QuizAttempt) error {
+	_, err := r.pool.UpdateAttempt(ctx, db.UpdateAttemptParams{
+		ID:          attempt.ID,
+		Score:       attempt.Score,
+		MaxScore:    attempt.MaxScore,
+		CompletedAt: attempt.CompletedAt,
+	})
+	return err
 }
 
-func (r *Repository) GetUserStats(userID uuid.UUID) (*models.UserStats, error) {
-	var result struct {
-		TotalXP    int
-		CorrectCnt int64
-		WrongCnt   int64
+func (r *Repository) GetUserStats(ctx context.Context, userID uuid.UUID) (*models.UserStats, error) {
+	stats, err := r.pool.GetUserStats(ctx, userID)
+	if err != nil {
+		return nil, err
 	}
 
-	r.db.Model(&models.UserAnswer{}).
-		Select("COALESCE(SUM(q.points), 0) as total_xp, COUNT(CASE WHEN ua.is_correct = true THEN 1 END) as correct_cnt, COUNT(CASE WHEN ua.is_correct = false THEN 1 END) as wrong_cnt").
-		Joins("JOIN questions q ON q.id = user_answers.question_id").
-		Joins("JOIN quiz_attempts a ON a.id = user_answers.attempt_id").
-		Where("a.user_id = ?", userID).
-		Scan(&result)
+	lastActive, _ := r.pool.GetLastActiveDate(ctx, userID)
+	_, _ = r.pool.GetCompletedAttemptsCount(ctx, userID)
 
-	var lastActive time.Time
-	r.db.Model(&models.QuizAttempt{}).
-		Select("MAX(completed_at)").
-		Where("user_id = ? AND completed_at IS NOT NULL", userID).
-		Scan(&lastActive)
+	streak := r.calculateStreak(ctx, userID)
 
-	var completedCount int64
-	r.db.Model(&models.QuizAttempt{}).
-		Where("user_id = ? AND completed_at IS NOT NULL", userID).
-		Count(&completedCount)
+	var lastActiveStr string
+	if lastActive != nil {
+		if t, ok := lastActive.(time.Time); ok && !t.IsZero() {
+			lastActiveStr = t.Format("2006-01-02")
+		}
+	}
 
-	streak := r.calculateStreak(userID)
+	var totalXP int
+	if stats.TotalXp != nil {
+		if v, ok := stats.TotalXp.(int64); ok {
+			totalXP = int(v)
+		}
+	}
 
 	return &models.UserStats{
 		UserID:           userID.String(),
-		XP:               result.TotalXP,
+		XP:               totalXP,
 		Streak:           streak,
-		LastActiveDate:   lastActive.Format("2006-01-02"),
+		LastActiveDate:   lastActiveStr,
 		CompletedQuizzes: nil,
-		CorrectCount:     int(result.CorrectCnt),
-		WrongCount:       int(result.WrongCnt),
+		CorrectCount:     int(stats.CorrectCnt),
+		WrongCount:       int(stats.WrongCnt),
 	}, nil
 }
 
-func (r *Repository) calculateStreak(userID uuid.UUID) int {
-	var attempts []models.QuizAttempt
-	r.db.Where("user_id = ? AND completed_at IS NOT NULL", userID).
-		Order("completed_at DESC").
-		Find(&attempts)
-
-	if len(attempts) == 0 {
+func (r *Repository) calculateStreak(ctx context.Context, userID uuid.UUID) int {
+	attempts, err := r.GetAttemptsByUser(ctx, userID)
+	if err != nil || len(attempts) == 0 {
 		return 0
 	}
 
@@ -170,15 +222,26 @@ func (r *Repository) calculateStreak(userID uuid.UUID) int {
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	for i := 0; i < len(attempts)-1; i++ {
-		if attempts[i].CompletedAt == nil {
+	var completed []*db.QuizAttempt
+	for _, a := range attempts {
+		if !a.CompletedAt.IsZero() {
+			completed = append(completed, a)
+		}
+	}
+
+	if len(completed) == 0 {
+		return 0
+	}
+
+	for i := 0; i < len(completed)-1; i++ {
+		if completed[i].CompletedAt.IsZero() {
 			continue
 		}
-		current := time.Date(attempts[i].CompletedAt.Year(), attempts[i].CompletedAt.Month(), attempts[i].CompletedAt.Day(), 0, 0, 0, 0, now.Location())
+		current := time.Date(completed[i].CompletedAt.Year(), completed[i].CompletedAt.Month(), completed[i].CompletedAt.Day(), 0, 0, 0, 0, now.Location())
 
 		var nextDay time.Time
-		if i+1 < len(attempts) && attempts[i+1].CompletedAt != nil {
-			nextDay = time.Date(attempts[i+1].CompletedAt.Year(), attempts[i+1].CompletedAt.Month(), attempts[i+1].CompletedAt.Day(), 0, 0, 0, 0, now.Location())
+		if i+1 < len(completed) && !completed[i+1].CompletedAt.IsZero() {
+			nextDay = time.Date(completed[i+1].CompletedAt.Year(), completed[i+1].CompletedAt.Month(), completed[i+1].CompletedAt.Day(), 0, 0, 0, 0, now.Location())
 		} else {
 			nextDay = current.AddDate(0, 0, -1)
 		}
@@ -191,8 +254,8 @@ func (r *Repository) calculateStreak(userID uuid.UUID) int {
 		}
 	}
 
-	if len(attempts) > 0 && attempts[0].CompletedAt != nil {
-		lastActive := time.Date(attempts[0].CompletedAt.Year(), attempts[0].CompletedAt.Month(), attempts[0].CompletedAt.Day(), 0, 0, 0, 0, now.Location())
+	if len(completed) > 0 && !completed[0].CompletedAt.IsZero() {
+		lastActive := time.Date(completed[0].CompletedAt.Year(), completed[0].CompletedAt.Month(), completed[0].CompletedAt.Day(), 0, 0, 0, 0, now.Location())
 		if lastActive.Before(today.AddDate(0, 0, -1)) {
 			return 0
 		}
@@ -201,384 +264,198 @@ func (r *Repository) calculateStreak(userID uuid.UUID) int {
 	return streak
 }
 
-func (r *Repository) GetLeaderboard(limit int) ([]*models.LeaderboardEntry, error) {
-	var results []struct {
+func (r *Repository) GetLeaderboard(ctx context.Context, limit int32) ([]*models.LeaderboardEntry, error) {
+	quizzes, err := r.pool.GetQuizzes(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	type xpEntry struct {
 		UserID   uuid.UUID
 		UserName string
 		TotalXP  int
 	}
 
-	r.db.Model(&models.UserAnswer{}).
-		Select("u.id as user_id, u.name as user_name, COALESCE(SUM(q.points), 0) as total_xp").
-		Joins("JOIN quiz_attempts a ON a.id = user_answers.attempt_id").
-		Joins("JOIN users u ON u.id = a.user_id").
-		Joins("JOIN questions q ON q.id = user_answers.question_id").
-		Where("user_answers.is_correct = true").
-		Group("u.id, u.name").
-		Order("total_xp DESC").
-		Limit(limit).
-		Scan(&results)
+	xpMap := make(map[uuid.UUID]*xpEntry)
 
-	entries := make([]*models.LeaderboardEntry, len(results))
-	for i, row := range results {
-		entries[i] = &models.LeaderboardEntry{
-			UserID:   row.UserID.String(),
-			UserName: row.UserName,
-			XP:       row.TotalXP,
-			Streak:   r.calculateStreak(row.UserID),
-			Rank:     i + 1,
+	for _, quiz := range quizzes {
+		attempts, err := r.GetAttemptsByUser(ctx, quiz.CreatedBy)
+		if err != nil {
+			continue
 		}
+
+		for _, a := range attempts {
+			answers, err := r.pool.GetAnswersByAttempt(ctx, a.ID)
+			if err != nil {
+				continue
+			}
+
+			for _, ans := range answers {
+				if ans.IsCorrect {
+					questions, err := r.pool.GetQuestionsByQuizID(ctx, a.QuizID)
+					if err != nil {
+						continue
+					}
+					for _, q := range questions {
+						if q.ID == ans.QuestionID {
+							pts := q.Points
+							if xpMap[a.UserID] == nil {
+								user, _ := r.GetUserByID(ctx, a.UserID)
+								name := ""
+								if user != nil {
+									name = user.Name
+								}
+								xpMap[a.UserID] = &xpEntry{
+									UserID:   a.UserID,
+									UserName: name,
+								}
+							}
+							xpMap[a.UserID].TotalXP += int(pts)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	var entries []*models.LeaderboardEntry
+	for _, e := range xpMap {
+		entries = append(entries, &models.LeaderboardEntry{
+			UserID:   e.UserID.String(),
+			UserName: e.UserName,
+			XP:       e.TotalXP,
+			Streak:   r.calculateStreak(ctx, e.UserID),
+		})
+	}
+
+	for i := range entries {
+		entries[i].Rank = i + 1
 	}
 
 	return entries, nil
 }
 
-func (r *Repository) CreateSession(session *models.QuizSession) error {
-	return r.db.Create(session).Error
+func (r *Repository) CreateSession(ctx context.Context, session *db.QuizSession) error {
+	_, err := r.pool.CreateSession(ctx, db.CreateSessionParams{
+		ID:           session.ID,
+		UserID:       session.UserID,
+		QuizID:       session.QuizID,
+		AttemptID:    session.AttemptID,
+		CurrentIndex: session.CurrentIndex,
+		Answers:      session.Answers,
+		CreatedAt:    session.CreatedAt,
+	})
+	return err
 }
 
-func (r *Repository) GetSession(sessionID uuid.UUID) (*models.QuizSession, error) {
-	var session models.QuizSession
-	err := r.db.First(&session, "id = ?", sessionID).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrNotFound
-	}
+func (r *Repository) GetSession(ctx context.Context, sessionID uuid.UUID) (*db.QuizSession, error) {
+	session, err := r.pool.GetSession(ctx, sessionID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return &session, nil
 }
 
-func (r *Repository) GetSessionByAttemptID(attemptID uuid.UUID) (*models.QuizSession, error) {
-	var session models.QuizSession
-	err := r.db.First(&session, "attempt_id = ?", attemptID).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrNotFound
-	}
+func (r *Repository) GetSessionByAttemptID(ctx context.Context, attemptID uuid.UUID) (*db.QuizSession, error) {
+	session, err := r.pool.GetSessionByAttemptID(ctx, attemptID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 	return &session, nil
 }
 
-func (r *Repository) UpdateSession(session *models.QuizSession) error {
-	return r.db.Save(session).Error
+func (r *Repository) UpdateSession(ctx context.Context, session *db.QuizSession) error {
+	_, err := r.pool.UpdateSession(ctx, db.UpdateSessionParams{
+		ID:           session.ID,
+		CurrentIndex: session.CurrentIndex,
+		Answers:      session.Answers,
+	})
+	return err
 }
 
-func (r *Repository) DeleteSession(sessionID uuid.UUID) error {
-	return r.db.Delete(&models.QuizSession{}, "id = ?", sessionID).Error
+func (r *Repository) DeleteSession(ctx context.Context, sessionID uuid.UUID) error {
+	return r.pool.DeleteSession(ctx, sessionID)
 }
 
-func (r *Repository) SaveUserAnswer(answer *models.UserAnswer) error {
-	return r.db.Create(answer).Error
+func (r *Repository) SaveUserAnswer(ctx context.Context, answer *db.UserAnswer) error {
+	_, err := r.pool.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
+		ID:         answer.ID,
+		AttemptID:  answer.AttemptID,
+		QuestionID: answer.QuestionID,
+		UserAnswer: answer.UserAnswer,
+		IsCorrect:  answer.IsCorrect,
+	})
+	return err
 }
 
-func (r *Repository) GetAnswersByAttempt(attemptID uuid.UUID) ([]*models.UserAnswer, error) {
-	var answers []*models.UserAnswer
-	err := r.db.Where("attempt_id = ?", attemptID).Find(&answers).Error
-	return answers, err
-}
-
-func (r *Repository) GetQuizWithQuestions(quizID uuid.UUID) (*models.Quiz, error) {
-	var quiz models.Quiz
-	err := r.db.Preload("Questions", func(db *gorm.DB) *gorm.DB {
-		return db.Order("order_index ASC")
-	}).First(&quiz, "id = ?", quizID).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrQuizNotFound
-	}
+func (r *Repository) GetAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) ([]*db.UserAnswer, error) {
+	answers, err := r.pool.GetAnswersByAttempt(ctx, attemptID)
 	if err != nil {
 		return nil, err
 	}
-	return &quiz, nil
+	result := make([]*db.UserAnswer, len(answers))
+	for i := range answers {
+		result[i] = &answers[i]
+	}
+	return result, nil
 }
 
-func (r *Repository) GetCompletedAttemptBySessionID(sessionID uuid.UUID) (*models.QuizAttempt, error) {
-	var session models.QuizSession
-	err := r.db.First(&session, "id = ?", sessionID).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrNotFound
-	}
+func (r *Repository) GetUserAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) ([]*db.UserAnswer, error) {
+	return r.GetAnswersByAttempt(ctx, attemptID)
+}
+
+func (r *Repository) GetQuizWithQuestions(ctx context.Context, quizID uuid.UUID) (*QuizWithQuestions, error) {
+	return r.GetQuizByID(ctx, quizID)
+}
+
+func (r *Repository) GetCompletedAttemptBySessionID(ctx context.Context, sessionID uuid.UUID) (*db.QuizAttempt, error) {
+	attempt, err := r.pool.GetCompletedAttemptBySessionID(ctx, sessionID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
-
-	var attempt models.QuizAttempt
-	err = r.db.Preload("Answers").First(&attempt, "id = ?", session.AttemptID).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrNotFound
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	if attempt.CompletedAt == nil {
-		return nil, ErrNotFound
-	}
-
 	return &attempt, nil
 }
 
-func (r *Repository) GetQuizErrors(userID uuid.UUID) ([]*models.QuizAttempt, error) {
-	var attempts []*models.QuizAttempt
-	err := r.db.Where("user_id = ? AND completed_at IS NOT NULL", userID).
-		Preload("Answers", func(db *gorm.DB) *gorm.DB {
-			return db.Where("is_correct = false")
-		}).
-		Find(&attempts).Error
-	return attempts, err
-}
-
-type User struct {
-	ID       uuid.UUID
-	Email    string
-	Name     string
-	Password string
-}
-
-func (r *Repository) Close() error {
-	sqlDB, err := r.db.DB()
-	if err != nil {
-		return err
-	}
-	return sqlDB.Close()
-}
-
-func (r *Repository) GetQuestionByID(id uuid.UUID) (*models.Question, error) {
-	var question models.Question
-	err := r.db.First(&question, "id = ?", id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrNotFound
-	}
+func (r *Repository) GetQuizErrors(ctx context.Context, userID uuid.UUID) ([]*db.QuizAttempt, error) {
+	attempts, err := r.pool.GetQuizErrors(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return &question, nil
+	result := make([]*db.QuizAttempt, len(attempts))
+	for i := range attempts {
+		result[i] = &attempts[i]
+	}
+	return result, nil
 }
 
-func (r *Repository) CreateQuiz(quiz *models.Quiz) error {
-	return r.db.Create(quiz).Error
-}
-
-func (r *Repository) UpdateQuiz(quiz *models.Quiz) error {
-	return r.db.Save(quiz).Error
-}
-
-func (r *Repository) UpdateQuizStatus(id uuid.UUID, status models.QuizStatus) error {
-	return r.db.Model(&models.Quiz{}).Where("id = ?", id).Update("status", status).Error
-}
-
-func (r *Repository) DeleteQuiz(id uuid.UUID) error {
-	return r.db.Model(&models.Quiz{}).Where("id = ?", id).Update("status", models.QuizStatusArchived).Error
-}
-
-func (r *Repository) GetNonArchivedQuizzes() ([]*models.Quiz, error) {
-	var quizzes []*models.Quiz
-	err := r.db.Where("status != ?", models.QuizStatusArchived).
-		Preload("Questions", func(db *gorm.DB) *gorm.DB {
-			return db.Order("order_index ASC")
-		}).Find(&quizzes).Error
-	return quizzes, err
-}
-
-func (r *Repository) CreateQuestion(q *models.Question) error {
-	return r.db.Create(q).Error
-}
-
-func (r *Repository) UpdateQuestion(q *models.Question) error {
-	return r.db.Save(q).Error
-}
-
-func (r *Repository) DeleteQuestion(id uuid.UUID) error {
-	return r.db.Delete(&models.Question{}, "id = ?", id).Error
-}
-
-func (r *Repository) GetAllQuizzesWithStats() ([]*types.QuizWithStats, error) {
-	var quizzes []*models.Quiz
-	err := r.db.Preload("Questions").Find(&quizzes).Error
+func (r *Repository) GetWrongAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) ([]*db.UserAnswer, error) {
+	answers, err := r.pool.GetWrongAnswersByAttempt(ctx, attemptID)
 	if err != nil {
 		return nil, err
 	}
-
-	results := make([]*types.QuizWithStats, len(quizzes))
-	for i, quiz := range quizzes {
-		var attemptCount int64
-		var avgScore float64
-
-		r.db.Model(&models.QuizAttempt{}).Where("quiz_id = ? AND completed_at IS NOT NULL", quiz.ID).Count(&attemptCount)
-
-		var scoreData struct {
-			AvgScore   float64
-			TotalScore int
-			Count      int64
-		}
-		r.db.Model(&models.QuizAttempt{}).
-			Select("COALESCE(AVG(score * 100.0 / NULLIF(max_score, 0)), 0) as avg_score, SUM(score) as total_score, COUNT(*) as count").
-			Where("quiz_id = ? AND completed_at IS NOT NULL AND max_score > 0", quiz.ID).
-			Scan(&scoreData)
-
-		if scoreData.Count > 0 {
-			avgScore = scoreData.AvgScore
-		}
-
-		results[i] = &types.QuizWithStats{
-			Quiz:         quiz,
-			AttemptCount: int(attemptCount),
-			AvgScore:     avgScore,
-		}
+	result := make([]*db.UserAnswer, len(answers))
+	for i := range answers {
+		result[i] = &answers[i]
 	}
-
-	return results, nil
+	return result, nil
 }
 
-func (r *Repository) GetAllAttempts() ([]*types.AttemptWithUser, error) {
-	var attempts []*types.AttemptWithUser
-	err := r.db.Model(&models.QuizAttempt{}).
-		Select("quiz_attempts.*, users.name as user_name, quizzes.title as quiz_title").
-		Joins("JOIN users ON users.id = quiz_attempts.user_id").
-		Joins("JOIN quizzes ON quizzes.id = quiz_attempts.quiz_id").
-		Where("quiz_attempts.completed_at IS NOT NULL").
-		Order("quiz_attempts.completed_at DESC").
-		Scan(&attempts).Error
-	return attempts, err
-}
-
-func (r *Repository) GetAttemptsByQuiz(quizID uuid.UUID) ([]*types.AttemptWithUser, error) {
-	var attempts []*types.AttemptWithUser
-	err := r.db.Model(&models.QuizAttempt{}).
-		Select("quiz_attempts.*, users.name as user_name, quizzes.title as quiz_title").
-		Joins("JOIN users ON users.id = quiz_attempts.user_id").
-		Joins("JOIN quizzes ON quizzes.id = quiz_attempts.quiz_id").
-		Where("quiz_attempts.quiz_id = ? AND quiz_attempts.completed_at IS NOT NULL", quizID).
-		Order("quiz_attempts.completed_at DESC").
-		Scan(&attempts).Error
-	return attempts, err
-}
-
-func (r *Repository) GetStudentCount() (int64, error) {
-	var count int64
-	err := r.db.Model(&models.User{}).Where("role = ?", models.RoleStudent).Count(&count).Error
-	return count, err
-}
-
-func (r *Repository) GetAdminStatistics() (*types.AdminStatisticsData, error) {
-	var totalQuizzes int64
-	r.db.Model(&models.Quiz{}).Where("status != ?", models.QuizStatusArchived).Count(&totalQuizzes)
-
-	var totalStudents int64
-	r.db.Model(&models.User{}).Where("role = ?", models.RoleStudent).Count(&totalStudents)
-
-	var totalAttempts int64
-	r.db.Model(&models.QuizAttempt{}).Where("completed_at IS NOT NULL").Count(&totalAttempts)
-
-	var avgScore float64
-	r.db.Model(&models.QuizAttempt{}).
-		Select("COALESCE(AVG(score * 100.0 / NULLIF(max_score, 0)), 0)").
-		Where("completed_at IS NOT NULL AND max_score > 0").
-		Scan(&avgScore)
-
-	quizStats, err := r.getQuizStatistics()
-	if err != nil {
-		return nil, err
+func GetOptions(q db.Question) []string {
+	if q.Options == nil {
+		return []string{}
 	}
-
-	gradeDist := make(map[int]int)
-	r.db.Model(&models.User{}).
-		Select("grade, COUNT(*) as count").
-		Where("role = ?", models.RoleStudent).
-		Group("grade").
-		Scan(&gradeDist)
-
-	subjDist := make(map[string]int)
-	r.db.Model(&models.Quiz{}).
-		Select("subject, COUNT(*) as count").
-		Where("status != ?", models.QuizStatusArchived).
-		Group("subject").
-		Scan(&subjDist)
-
-	return &types.AdminStatisticsData{
-		TotalQuizzes:        int(totalQuizzes),
-		TotalStudents:       int(totalStudents),
-		TotalAttempts:       int(totalAttempts),
-		AvgScore:            avgScore,
-		QuizStats:           quizStats,
-		GradeDistribution:   gradeDist,
-		SubjectDistribution: subjDist,
-	}, nil
-}
-
-func (r *Repository) getQuizStatistics() ([]*types.QuizStatistics, error) {
-	var quizzes []*models.Quiz
-	err := r.db.Where("status != ?", models.QuizStatusArchived).Find(&quizzes).Error
-	if err != nil {
-		return nil, err
+	var opts []string
+	if err := json.Unmarshal(q.Options, &opts); err != nil {
+		return []string{}
 	}
-
-	stats := make([]*types.QuizStatistics, len(quizzes))
-	for i, quiz := range quizzes {
-		var attemptCount int64
-		r.db.Model(&models.QuizAttempt{}).Where("quiz_id = ? AND completed_at IS NOT NULL", quiz.ID).Count(&attemptCount)
-
-		var avgScore float64
-		r.db.Model(&models.QuizAttempt{}).
-			Select("COALESCE(AVG(score * 100.0 / NULLIF(max_score, 0)), 0)").
-			Where("quiz_id = ? AND completed_at IS NOT NULL AND max_score > 0", quiz.ID).
-			Scan(&avgScore)
-
-		var passRate float64
-		if attemptCount > 0 {
-			var passCount int64
-			r.db.Model(&models.QuizAttempt{}).
-				Where("quiz_id = ? AND completed_at IS NOT NULL AND max_score > 0 AND score * 100.0 / max_score >= 60", quiz.ID).
-				Count(&passCount)
-			passRate = float64(passCount) / float64(attemptCount) * 100
-		}
-
-		stats[i] = &types.QuizStatistics{
-			Quiz:         quiz,
-			AttemptCount: int(attemptCount),
-			AvgScore:     avgScore,
-			PassRate:     passRate,
-		}
-	}
-
-	return stats, nil
-}
-
-func (r *Repository) GetRecentAttempts(limit int) ([]*types.RecentAttempt, error) {
-	var attempts []struct {
-		AttemptID   uuid.UUID
-		UserName    string
-		QuizTitle   string
-		Score       int
-		MaxScore    int
-		CompletedAt time.Time
-	}
-
-	err := r.db.Model(&models.QuizAttempt{}).
-		Select("quiz_attempts.id as attempt_id, users.name as user_name, quizzes.title as quiz_title, quiz_attempts.score, quiz_attempts.max_score, quiz_attempts.completed_at").
-		Joins("JOIN users ON users.id = quiz_attempts.user_id").
-		Joins("JOIN quizzes ON quizzes.id = quiz_attempts.quiz_id").
-		Where("quiz_attempts.completed_at IS NOT NULL").
-		Order("quiz_attempts.completed_at DESC").
-		Limit(limit).
-		Scan(&attempts).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]*types.RecentAttempt, len(attempts))
-	for i, a := range attempts {
-		results[i] = &types.RecentAttempt{
-			AttemptID:   a.AttemptID.String(),
-			UserName:    a.UserName,
-			QuizTitle:   a.QuizTitle,
-			Score:       a.Score,
-			MaxScore:    a.MaxScore,
-			CompletedAt: a.CompletedAt.Format("2006-01-02 15:04"),
-		}
-	}
-
-	return results, nil
+	return opts
 }

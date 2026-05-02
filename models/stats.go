@@ -9,11 +9,11 @@ type LeaderboardEntry struct {
 }
 
 type UserStats struct {
-	UserID          string   `json:"user_id"`
-	XP              int      `json:"xp"`
-	Streak          int      `json:"streak"`
-	LastActiveDate  string   `json:"last_active_date"`
+	UserID           string   `json:"user_id"`
+	XP               int      `json:"xp"`
+	Streak           int      `json:"streak"`
+	LastActiveDate   string   `json:"last_active_date"`
 	CompletedQuizzes []string `json:"completed_quizzes"`
-	CorrectCount    int      `json:"correct_count"`
-	WrongCount      int      `json:"wrong_count"`
+	CorrectCount     int      `json:"correct_count"`
+	WrongCount       int      `json:"wrong_count"`
 }

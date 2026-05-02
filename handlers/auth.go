@@ -33,7 +33,7 @@ func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
-	user, err := h.authService.Login(email, password)
+	user, err := h.authService.Login(r.Context(), email, password)
 	if err != nil {
 		pages.LoginPage(&types.LoginError{Message: "Неверный email или пароль"}).Render(r.Context(), w)
 		return
@@ -70,7 +70,7 @@ func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.authService.Register(name, email, password, models.RoleStudent)
+	user, err := h.authService.Register(r.Context(), name, email, password, models.RoleStudent)
 	if err != nil {
 		pages.RegisterPage(&types.RegisterError{Message: "Email уже зарегистрирован"}).Render(r.Context(), w)
 		return

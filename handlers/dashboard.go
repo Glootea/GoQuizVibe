@@ -10,6 +10,7 @@ import (
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/store"
 	"github.com/goquizvibe/types"
+	"github.com/google/uuid"
 )
 
 type DashboardHandler struct {
@@ -34,13 +35,13 @@ func (h *DashboardHandler) DashboardPage(w http.ResponseWriter, r *http.Request)
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	user, err := h.repo.GetUserByID(userID)
+	user, err := h.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
-	quizzes, _ := h.quizService.GetQuizzesForUser(userID)
-	stats, _ := h.gamification.GetUserStats(userID)
-	leaderboard := h.gamification.GetLeaderboard()
+	quizzes, _ := h.quizService.GetQuizzesForUser(ctx, userID)
+	stats, _ := h.gamification.GetUserStats(ctx, userID)
+	leaderboard := h.gamification.GetLeaderboard(ctx)
 
 	data := types.DashboardData{
 		User:        user,

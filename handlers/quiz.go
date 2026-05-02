@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	ce "github.com/goquizvibe/custom_errors"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
@@ -45,20 +47,21 @@ func (h *QuizHandler) QuizPage(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quiz, err := h.quizService.GetQuizByID(quizID)
+	ctx := r.Context()
+	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	user, err := h.repo.GetUserByID(userID)
+	user, err := h.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
-	stats, _ := h.gamification.GetUserStats(userID)
+	stats, _ := h.gamification.GetUserStats(ctx, userID)
 
 	sessionID := r.URL.Query().Get("session")
 	if sessionID == "" {
-		session := h.createSession(userID, quizID)
+		session := h.createSession(ctx, userID, quizID)
 		sessionID = session.ID.String()
 	}
 
@@ -72,22 +75,25 @@ func (h *QuizHandler) QuizPage(w http.ResponseWriter, r *http.Request) error {
 	return pages.QuizPage(data).Render(r.Context(), w)
 }
 
-func (h *QuizHandler) createSession(userID, quizID uuid.UUID) *models.QuizSession {
-	attempt := &models.QuizAttempt{
+func (h *QuizHandler) createSession(ctx context.Context, userID, quizID uuid.UUID) *db.QuizSession {
+	attempt := &db.QuizAttempt{
 		ID:        uuid.New(),
 		UserID:    userID,
 		QuizID:    quizID,
 		StartedAt: time.Now(),
 	}
-	h.repo.SaveAttempt(attempt)
+	h.repo.SaveAttempt(ctx, attempt)
 
-	session := &models.QuizSession{
-		ID:        uuid.New(),
-		UserID:    userID,
-		QuizID:    quizID,
-		AttemptID: attempt.ID,
+	session := &db.QuizSession{
+		ID:           uuid.New(),
+		UserID:       userID,
+		QuizID:       quizID,
+		AttemptID:    attempt.ID,
+		CurrentIndex: 0,
+		Answers:      nil,
+		CreatedAt:    time.Now(),
 	}
-	h.repo.CreateSession(session)
+	h.repo.CreateSession(ctx, session)
 	return session
 }
 
@@ -111,12 +117,13 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 	questionIndexStr := r.FormValue("question_index")
 	questionIndex, _ := strconv.Atoi(questionIndexStr)
 
+	ctx := r.Context()
 	userID, err := h.getUserIDFromRequest(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quiz, err := h.quizService.GetQuizByID(quizID)
+	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
@@ -125,7 +132,7 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("question index %d out of range", questionIndex)), http.StatusNotFound)
 	}
 
-	session, err := h.repo.GetSession(sessionID)
+	session, err := h.repo.GetSession(ctx, sessionID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
@@ -144,25 +151,25 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 	answersJSON, _ := json.Marshal(answers)
 	session.Answers = answersJSON
 	session.CurrentIndex = questionIndex + 1
-	h.repo.UpdateSession(session)
+	h.repo.UpdateSession(ctx, session)
 
-	userAnswer := &models.UserAnswer{
+	userAnswer := &db.UserAnswer{
 		ID:         uuid.New(),
 		AttemptID:  session.AttemptID,
 		QuestionID: question.ID,
 		UserAnswer: answer,
 		IsCorrect:  isCorrect,
 	}
-	h.repo.SaveUserAnswer(userAnswer)
+	h.repo.SaveUserAnswer(ctx, userAnswer)
 
 	if isCorrect {
-		h.gamification.AwardXP(userID, 10)
+		h.gamification.AwardXP(ctx, userID, 10)
 	}
 
 	feedback := &pages.QuestionFeedbackData{
 		IsCorrect:     isCorrect,
 		CorrectAnswer: question.CorrectAnswer,
-		Explanation:   question.Explanation,
+		Explanation:   getExplanation(question),
 		IsLast:        questionIndex >= len(quiz.Questions)-1,
 	}
 
@@ -198,7 +205,8 @@ func (h *QuizHandler) QuizNextHTMX(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quiz, err := h.quizService.GetQuizByID(quizID)
+	ctx := r.Context()
+	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
@@ -223,33 +231,35 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 	}
 	sessionID, _ := uuid.Parse(sessionIDStr)
 
+	ctx := r.Context()
 	userID, err := h.getUserIDFromRequest(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quiz, err := h.quizService.GetQuizByID(quizID)
+	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	user, err := h.repo.GetUserByID(userID)
+	user, err := h.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	stats, _ := h.gamification.GetUserStats(userID)
+	stats, _ := h.gamification.GetUserStats(ctx, userID)
 
-	attempt, err := h.completeSession(sessionID)
+	attempt, err := h.completeSession(ctx, sessionID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, fmt.Errorf("complete session: %w", err)), http.StatusInternalServerError)
 	}
 
 	var correctCount, wrongCount int
-	var answers []types.AnswerDetail
+	var answerDetails []types.AnswerDetail
 
+	answers, _ := h.repo.GetAnswersByAttempt(ctx, attempt.ID)
 	answersMap := make(map[uuid.UUID]string)
-	for _, a := range attempt.Answers {
+	for _, a := range answers {
 		answersMap[a.QuestionID] = a.UserAnswer
 		if a.IsCorrect {
 			correctCount++
@@ -263,9 +273,9 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 		if userAnswer == "" {
 			userAnswer = "Нет ответа"
 		}
-		isCorrect := answersMap[q.ID] != "" && NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
+		isCorrect := userAnswer != "" && NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
 
-		answers = append(answers, types.AnswerDetail{
+		answerDetails = append(answerDetails, types.AnswerDetail{
 			Question:      q.Text,
 			UserAnswer:    userAnswer,
 			CorrectAnswer: q.CorrectAnswer,
@@ -277,40 +287,40 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 		User:         user,
 		Quiz:         quiz,
 		Stats:        stats,
-		Score:        attempt.Score,
-		MaxScore:     attempt.MaxScore,
+		Score:        int(attempt.Score),
+		MaxScore:     int(attempt.MaxScore),
 		CorrectCount: correctCount,
 		WrongCount:   wrongCount,
-		Answers:      answers,
+		Answers:      answerDetails,
 	}
 
 	return pages.QuizResultPage(data).Render(r.Context(), w)
 }
 
-func (h *QuizHandler) completeSession(sessionID uuid.UUID) (*models.QuizAttempt, error) {
-	session, err := h.repo.GetSession(sessionID)
+func (h *QuizHandler) completeSession(ctx context.Context, sessionID uuid.UUID) (*db.QuizAttempt, error) {
+	session, err := h.repo.GetSession(ctx, sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	attempt, err := h.repo.GetAttemptByID(session.AttemptID)
+	attempt, err := h.repo.GetAttemptByID(ctx, session.AttemptID)
 	if err != nil {
 		return nil, err
 	}
 
-	quiz, err := h.quizService.GetQuizByID(session.QuizID)
+	quiz, err := h.quizService.GetQuizByID(ctx, session.QuizID)
 	if err != nil {
 		return nil, err
 	}
 
-	answers, _ := h.repo.GetAnswersByAttempt(attempt.ID)
+	answers, _ := h.repo.GetAnswersByAttempt(ctx, attempt.ID)
 
 	var score, maxScore int
 	for _, q := range quiz.Questions {
-		maxScore += q.Points
+		maxScore += int(q.Points)
 		for _, a := range answers {
 			if a.QuestionID == q.ID && a.IsCorrect {
-				score += q.Points
+				score += int(q.Points)
 				break
 			}
 		}
@@ -319,10 +329,10 @@ func (h *QuizHandler) completeSession(sessionID uuid.UUID) (*models.QuizAttempt,
 	now := time.Now()
 	attempt.Score = score
 	attempt.MaxScore = maxScore
-	attempt.CompletedAt = &now
-	h.repo.UpdateAttempt(attempt)
+	attempt.CompletedAt = now
+	h.repo.UpdateAttempt(ctx, attempt)
 
-	h.repo.DeleteSession(sessionID)
+	h.repo.DeleteSession(ctx, sessionID)
 
 	return attempt, nil
 }
@@ -333,27 +343,28 @@ func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	user, err := h.repo.GetUserByID(userID)
+	user, err := h.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
-	stats, _ := h.gamification.GetUserStats(userID)
+	stats, _ := h.gamification.GetUserStats(ctx, userID)
 
-	attempts, _ := h.repo.GetQuizErrors(userID)
+	attempts, _ := h.repo.GetQuizErrors(ctx, userID)
 
 	var quizErrors []types.QuizErrors
 	for _, attempt := range attempts {
-		quiz, err := h.quizService.GetQuizByID(attempt.QuizID)
+		quiz, err := h.quizService.GetQuizByID(ctx, attempt.QuizID)
 		if err == nil {
-			var wrongAnswers []models.WrongAnswer
-			for _, a := range attempt.Answers {
-				wrongAnswers = append(wrongAnswers, models.WrongAnswer{
+			wrongAnswers, _ := h.repo.GetWrongAnswersByAttempt(ctx, attempt.ID)
+			var wrong []models.WrongAnswer
+			for _, a := range wrongAnswers {
+				wrong = append(wrong, models.WrongAnswer{
 					ID:            a.ID,
 					QuestionID:    a.QuestionID,
 					QuizID:        attempt.QuizID,
 					UserAnswer:    a.UserAnswer,
 					CorrectAnswer: "",
-					Timestamp:     time.Time{},
+					Timestamp:     attempt.StartedAt,
 				})
 			}
 			quizErrors = append(quizErrors, types.QuizErrors{
@@ -378,9 +389,10 @@ func (h *QuizHandler) LeaderboardPage(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
+	ctx := r.Context()
 	userID, _ := h.getUserIDFromRequest(r)
-	user, _ := h.repo.GetUserByID(userID)
-	entries := h.gamification.GetLeaderboard()
+	user, _ := h.repo.GetUserByID(ctx, userID)
+	entries := h.gamification.GetLeaderboard(ctx)
 
 	data := types.LeaderboardPageData{
 		User:    user,

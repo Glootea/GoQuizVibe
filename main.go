@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/goquizvibe/config"
 	ce "github.com/goquizvibe/custom_errors"
 	"github.com/goquizvibe/database"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/handlers"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
@@ -18,17 +20,21 @@ import (
 
 func main() {
 	cfg := config.Load()
+	ctx := context.Background()
 
-	db, err := database.Connect(*cfg)
+	pool, err := database.Connect(ctx, *cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	defer pool.Close()
 
-	if err := database.SeedData(db); err != nil {
+	queries := db.New(pool)
+
+	if err := database.SeedData(ctx, pool); err != nil {
 		log.Fatalf("Failed to seed data: %v", err)
 	}
 
-	repo := store.NewRepository(db)
+	repo := store.NewRepository(queries)
 
 	authService := services.NewAuthService(repo, cfg.JWTSecret)
 	quizService := services.NewQuizService(repo)
