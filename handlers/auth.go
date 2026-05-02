@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"slices"
 
@@ -87,7 +88,7 @@ func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/dashboard", http.StatusFound)
 }
 
-func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) error {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "token",
 		Value:  "",
@@ -95,6 +96,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge: -1,
 	})
 	http.Redirect(w, r, "/", http.StatusFound)
+	return nil
 }
 
 func (h *AuthHandler) RequireAuth(next http.Handler) http.Handler {
@@ -138,11 +140,11 @@ func (h *AuthHandler) RequireRole(roles ...models.Role) func(http.Handler) http.
 func (h *AuthHandler) GetUserFromRequest(r *http.Request) (*models.User, error) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(errors.New("get cookie"), err)
 	}
 	claims, err := h.authService.ValidateToken(cookie.Value)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(errors.New("validate token"), err)
 	}
 	return h.repo.GetUserByID(claims.UserID)
 }

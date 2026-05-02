@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/goquizvibe/config"
+	ce "github.com/goquizvibe/custom_errors"
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/handlers"
 	"github.com/goquizvibe/models"
@@ -47,30 +48,30 @@ func main() {
 			pages.LandingPage().Render(r.Context(), w)
 			return
 		}
-		http.NotFound(w, r)
+		pages.NotFoundPage().Render(r.Context(), w)
 	})
 
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
+		switch r.Method {
+		case "GET":
 			authHandler.LoginPage(w, r)
-		} else if r.Method == "POST" {
+		case "POST":
 			authHandler.LoginSubmit(w, r)
 		}
 	})
 
 	mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
+		switch r.Method {
+		case "GET":
 			authHandler.RegisterPage(w, r)
-		} else if r.Method == "POST" {
+		case "POST":
 			authHandler.RegisterSubmit(w, r)
 		}
 	})
 
-	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-		authHandler.Logout(w, r)
-	})
+	mux.HandleFunc("/logout", handlers.ErrorHandler(authHandler.Logout))
 
-	mux.HandleFunc("/dashboard", dashboardHandler.DashboardPage)
+	mux.HandleFunc("/dashboard", handlers.ErrorHandler(dashboardHandler.DashboardPage))
 
 	mux.HandleFunc("/quiz", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
@@ -78,41 +79,40 @@ func main() {
 		}
 	})
 
-	mux.HandleFunc("/quiz/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/quiz/", handlers.ErrorHandler(func(w http.ResponseWriter, r *http.Request) error {
 		path := r.URL.Path
 		if r.Method == "POST" && strings.HasSuffix(path, "/submit") {
-			quizHandler.QuizSubmitHTMX(w, r)
-			return
+			return quizHandler.QuizSubmitHTMX(w, r)
 		}
 		if r.Method == "GET" && strings.Contains(path, "/next") {
-			quizHandler.QuizNextHTMX(w, r)
-			return
+			return quizHandler.QuizNextHTMX(w, r)
 		}
 		if r.Method == "GET" && strings.HasSuffix(path, "/result") {
-			quizHandler.QuizResult(w, r)
-			return
+			return quizHandler.QuizResult(w, r)
 		}
 		if r.Method == "GET" {
-			quizHandler.QuizPage(w, r)
-			return
+			return quizHandler.QuizPage(w, r)
 		}
-		http.NotFound(w, r)
-	})
+		return ce.ErrNotFound
+	}))
 
-	mux.HandleFunc("/errors", func(w http.ResponseWriter, r *http.Request) {
-		quizHandler.ErrorsPage(w, r)
-	})
+	mux.HandleFunc("/errors", handlers.ErrorHandler(quizHandler.ErrorsPage))
 
-	mux.HandleFunc("/leaderboard", func(w http.ResponseWriter, r *http.Request) {
-		quizHandler.LeaderboardPage(w, r)
-	})
+	mux.HandleFunc("/leaderboard", handlers.ErrorHandler(quizHandler.LeaderboardPage))
 
-	mux.Handle("/admin/", adminMiddleware(http.HandlerFunc(adminHandler.Dashboard)))
-	mux.Handle("/admin/quizzes", adminMiddleware(http.HandlerFunc(adminHandler.QuizzesCreate)))
-	mux.Handle("/admin/quizzes/", adminMiddleware(http.HandlerFunc(adminHandler.QuizOp)))
-	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(http.HandlerFunc(adminHandler.RestoreQuiz)))
-	mux.Handle("/admin/results", adminMiddleware(http.HandlerFunc(adminHandler.Results)))
-	mux.Handle("/admin/statistics", adminMiddleware(http.HandlerFunc(adminHandler.Statistics)))
+	adminRoutes := map[string]func(w http.ResponseWriter, r *http.Request) error{
+		"":                  adminHandler.Dashboard,
+		"quizzes":           adminHandler.QuizzesCreate,
+		"quizzes/":          adminHandler.QuizOp,
+		"quizzes/*/restore": adminHandler.RestoreQuiz,
+		"results":           adminHandler.Results,
+		"statistics":        adminHandler.Statistics,
+	}
+
+	for path, handler := range adminRoutes {
+		errorHandler := handlers.ErrorHandlerFunc(handler)
+		mux.Handle("/admin/"+path, adminMiddleware(errorHandler))
+	}
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))

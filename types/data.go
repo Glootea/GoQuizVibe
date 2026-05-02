@@ -3,8 +3,8 @@ package types
 import (
 	"time"
 
-	"github.com/goquizvibe/models"
 	"github.com/google/uuid"
+	"github.com/goquizvibe/models"
 )
 
 type DashboardData struct {
@@ -33,10 +33,10 @@ type QuizResultData struct {
 }
 
 type AnswerDetail struct {
-	Question     string
-	UserAnswer   string
+	Question      string
+	UserAnswer    string
 	CorrectAnswer string
-	IsCorrect    bool
+	IsCorrect     bool
 }
 
 type ErrorsPageData struct {
@@ -46,13 +46,18 @@ type ErrorsPageData struct {
 }
 
 type QuizErrors struct {
-	Quiz        *models.Quiz
+	Quiz         *models.Quiz
 	WrongAnswers []models.WrongAnswer
 }
 
 type LeaderboardPageData struct {
 	User    *models.User
 	Entries []*models.LeaderboardEntry
+}
+
+type ErrorData struct {
+	Message    string
+	RedirectTo string
 }
 
 type LoginError struct {
@@ -93,21 +98,21 @@ type QuizWithStats struct {
 }
 
 type AdminResultsData struct {
-	User    *models.User
+	User     *models.User
 	Attempts []*AttemptWithUser
 	Quizzes  []*models.Quiz
 }
 
 type AttemptWithUser struct {
-	ID          uuid.UUID     `gorm:"column:id;type:uuid;primaryKey" json:"id"`
-	UserID      uuid.UUID     `gorm:"column:user_id;type:uuid;not null;index" json:"user_id"`
-	QuizID      uuid.UUID     `gorm:"column:quiz_id;type:uuid;not null;index" json:"quiz_id"`
-	Score       int           `gorm:"column:score;default:0" json:"score"`
-	MaxScore    int           `gorm:"column:max_score;default:0" json:"max_score"`
-	StartedAt   time.Time     `gorm:"column:started_at;autoCreateTime" json:"started_at"`
-	CompletedAt *time.Time    `gorm:"column:completed_at" json:"completed_at,omitempty"`
-	UserName    string        `gorm:"column:user_name" json:"user_name"`
-	QuizTitle   string        `gorm:"column:quiz_title" json:"quiz_title"`
+	ID          uuid.UUID  `gorm:"column:id;type:uuid;primaryKey" json:"id"`
+	UserID      uuid.UUID  `gorm:"column:user_id;type:uuid;not null;index" json:"user_id"`
+	QuizID      uuid.UUID  `gorm:"column:quiz_id;type:uuid;not null;index" json:"quiz_id"`
+	Score       int        `gorm:"column:score;default:0" json:"score"`
+	MaxScore    int        `gorm:"column:max_score;default:0" json:"max_score"`
+	StartedAt   time.Time  `gorm:"column:started_at;autoCreateTime" json:"started_at"`
+	CompletedAt *time.Time `gorm:"column:completed_at" json:"completed_at,omitempty"`
+	UserName    string     `gorm:"column:user_name" json:"user_name"`
+	QuizTitle   string     `gorm:"column:quiz_title" json:"quiz_title"`
 }
 
 func (AttemptWithUser) TableName() string {
@@ -133,7 +138,7 @@ type QuizStatistics struct {
 }
 
 type AdminQuizEditData struct {
-	User    *models.User
-	Quiz    *models.Quiz
+	User      *models.User
+	Quiz      *models.Quiz
 	Questions []models.Question
 }

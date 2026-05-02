@@ -146,13 +146,13 @@ func (r *Repository) GetUserStats(userID uuid.UUID) (*models.UserStats, error) {
 	streak := r.calculateStreak(userID)
 
 	return &models.UserStats{
-		UserID:          userID.String(),
-		XP:              result.TotalXP,
-		Streak:          streak,
-		LastActiveDate:  lastActive.Format("2006-01-02"),
+		UserID:           userID.String(),
+		XP:               result.TotalXP,
+		Streak:           streak,
+		LastActiveDate:   lastActive.Format("2006-01-02"),
 		CompletedQuizzes: nil,
-		CorrectCount:    int(result.CorrectCnt),
-		WrongCount:      int(result.WrongCnt),
+		CorrectCount:     int(result.CorrectCnt),
+		WrongCount:       int(result.WrongCnt),
 	}, nil
 }
 
@@ -330,10 +330,10 @@ func (r *Repository) GetQuizErrors(userID uuid.UUID) ([]*models.QuizAttempt, err
 }
 
 type User struct {
-	ID        uuid.UUID
-	Email     string
-	Name      string
-	Password  string
+	ID       uuid.UUID
+	Email    string
+	Name     string
+	Password string
 }
 
 func (r *Repository) Close() error {
