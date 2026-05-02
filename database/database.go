@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -224,5 +226,117 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 	}
 
 	log.Println("Seeding completed")
+	return nil
+}
+
+type jsonQuizInput struct {
+	Title          string             `json:"title"`
+	Description    string             `json:"description"`
+	Subject        string             `json:"subject"`
+	Grade          int                `json:"grade"`
+	TimeLimit      int                `json:"time_limit"`
+	CreatedByEmail string             `json:"created_by_email"`
+	Questions      []jsonQuestionInput `json:"questions"`
+}
+
+type jsonQuestionInput struct {
+	Text          string   `json:"text"`
+	Type          string   `json:"type"`
+	Options       []string `json:"options"`
+	CorrectAnswer string   `json:"correct_answer"`
+	Explanation   string   `json:"explanation"`
+	Points        int      `json:"points"`
+	OrderIndex    int      `json:"order_index"`
+}
+
+func LoadInitialDataFromFolder(ctx context.Context, pool *pgxpool.Pool, folder string) error {
+	queries := db.New(pool)
+
+	entries, err := os.ReadDir(folder)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("failed to read initial data folder: %w", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+			continue
+		}
+
+		data, err := os.ReadFile(filepath.Join(folder, entry.Name()))
+		if err != nil {
+			log.Printf("Warning: failed to read %s: %v", entry.Name(), err)
+			continue
+		}
+
+		var quizzes []jsonQuizInput
+		if err := json.Unmarshal(data, &quizzes); err != nil {
+			log.Printf("Warning: failed to parse %s: %v", entry.Name(), err)
+			continue
+		}
+
+		for _, q := range quizzes {
+			existingQuizzes, err := queries.GetQuizzes(ctx)
+			if err != nil {
+				log.Printf("Warning: failed to get quizzes: %v", err)
+				continue
+			}
+			quizExists := false
+			for _, existing := range existingQuizzes {
+				if existing.Title == q.Title {
+					quizExists = true
+					break
+				}
+			}
+			if quizExists {
+				log.Printf("Quiz '%s' already exists, skipping", q.Title)
+				continue
+			}
+
+			teacher, err := queries.GetUserByEmail(ctx, q.CreatedByEmail)
+			if err != nil {
+				log.Printf("Warning: teacher with email %s not found, skipping quiz '%s'", q.CreatedByEmail, q.Title)
+				continue
+			}
+
+			quiz := db.CreateQuizParams{
+				ID:          uuid.New(),
+				Title:       q.Title,
+				Description: q.Description,
+				Subject:     q.Subject,
+				Grade:       q.Grade,
+				Status:      db.QuizStatusAvailable,
+				TimeLimit:   q.TimeLimit,
+				CreatedBy:   teacher.ID,
+				CreatedAt:   time.Now(),
+			}
+			if _, err := queries.CreateQuiz(ctx, quiz); err != nil {
+				log.Printf("Warning: failed to create quiz '%s': %v", q.Title, err)
+				continue
+			}
+
+			for _, qq := range q.Questions {
+				optionsJSON, _ := json.Marshal(qq.Options)
+				question := db.CreateQuestionParams{
+					ID:            uuid.New(),
+					QuizID:        quiz.ID,
+					Text:          qq.Text,
+					Type:          db.QuestionType(qq.Type),
+					Options:       optionsJSON,
+					CorrectAnswer: qq.CorrectAnswer,
+					Explanation:   qq.Explanation,
+					Points:        qq.Points,
+					OrderIndex:    qq.OrderIndex,
+				}
+				if _, err := queries.CreateQuestion(ctx, question); err != nil {
+					log.Printf("Warning: failed to create question in quiz '%s': %v", q.Title, err)
+				}
+			}
+			log.Printf("Loaded quiz '%s' from %s", q.Title, entry.Name())
+		}
+	}
+
 	return nil
 }

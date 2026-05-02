@@ -34,6 +34,10 @@ func main() {
 		log.Fatalf("Failed to seed data: %v", err)
 	}
 
+	if err := database.LoadInitialDataFromFolder(ctx, pool, "initial_data"); err != nil {
+		log.Fatalf("Failed to load initial data: %v", err)
+	}
+
 	jwtExp := 24 * time.Hour * 7
 	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
 	quizService := services.NewQuizService(queries)

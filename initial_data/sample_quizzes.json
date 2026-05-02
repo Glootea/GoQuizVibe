@@ -1,0 +1,58 @@
+[
+  {
+    "title": "json Математика 5 класс: Дроби и десятичные дроби",
+    "description": "Тест на знание обыкновенных и десятичных дробей",
+    "subject": "Математика",
+    "grade": 5,
+    "time_limit": 30,
+    "created_by_email": "teacher@example.com",
+    "questions": [
+      {
+        "text": "Чему равна сумма 1/4 + 1/4?",
+        "type": "choice",
+        "options": [ "1/2", "2/4", "1/8", "1" ],
+        "correct_answer": "1/2",
+        "explanation": "При сложении дробей с одинаковым знаменателем складываем числители: 1+1=2, получаем 2/4 = 1/2",
+        "points": 10,
+        "order_index": 0
+      },
+      {
+        "text": "Переведите десятичную дробь 0.75 в обыкновенную дробь.",
+        "type": "open",
+        "options": [ ],
+        "correct_answer": "3/4",
+        "explanation": "0.75 = 75/100 = 3/4 (сокращаем на 25)",
+        "points": 10,
+        "order_index": 1
+      }
+    ]
+  },
+  {
+    "title": "json Математика 6 класс: Пропорции и отрицательные числа",
+    "description": "Тест на знание пропорций, координат и действий с отрицательными числами",
+    "subject": "Математика",
+    "grade": 6,
+    "time_limit": 30,
+    "created_by_email": "teacher@example.com",
+    "questions": [
+      {
+        "text": "Решите уравнение: x + 5 = 2",
+        "type": "open",
+        "options": [ ],
+        "correct_answer": "-3",
+        "explanation": "x = 2 - 5 = -3",
+        "points": 10,
+        "order_index": 0
+      },
+      {
+        "text": "Чему равно произведение (-3) × (-4)?",
+        "type": "choice",
+        "options": [ "12", "-12", "7", "-7" ],
+        "correct_answer": "12",
+        "explanation": "При умножении двух отрицательных чисел результат положительный: (-3)×(-4)=12",
+        "points": 10,
+        "order_index": 1
+      }
+    ]
+  }
+]

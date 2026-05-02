@@ -27,3 +27,6 @@ UPDATE quizzes SET status = 'archived' WHERE id = $1;
 
 -- name: UpdateQuizStatus :exec
 UPDATE quizzes SET status = $2 WHERE id = $1;
+
+-- name: QuizTitleExists :one
+SELECT EXISTS(SELECT 1 FROM quizzes WHERE title = $1);
