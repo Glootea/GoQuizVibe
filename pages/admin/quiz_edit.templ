@@ -16,39 +16,194 @@ templ QuizEditPage(data types.AdminQuizEditData) {
 			<i class="fas fa-times mr-2"></i>Ошибка сохранения
 		</div>
 
-		<form id="quizEditForm" method="POST" action={ templ.URL("/admin/quizzes/" + data.Quiz.ID.String()) } data-quiz-form="true">
-			<input type="hidden" name="intent" value="save_all"/>
-
-			<div class="flex justify-between items-center mb-8">
-				<div>
-					<a href="/admin/quizzes/list" class="text-indigo-600 hover:text-indigo-800 text-sm mb-2 inline-block">
-						<i class="fas fa-arrow-left mr-1"></i>К списку тестов
-					</a>
-					<h1 class="text-3xl font-bold">{ data.Quiz.Title }</h1>
-				</div>
-				<div class="flex gap-3">
-					<button type="button" onclick="location.reload()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-						Отмена
-					</button>
-					<button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
-						<i class="fas fa-save mr-2"></i>Сохранить всё
-					</button>
-				</div>
+		<div class="flex justify-between items-center mb-8">
+			<div>
+				<a href="/admin/quizzes" class="text-indigo-600 hover:text-indigo-800 text-sm mb-2 inline-block">
+					<i class="fas fa-arrow-left mr-1"></i>К списку тестов
+				</a>
+				<h1 class="text-3xl font-bold">{ data.Quiz.Title }</h1>
 			</div>
-
-			<div class="grid md:grid-cols-3 gap-8">
-				<div class="md:col-span-2 space-y-6">
-					@QuizInfoSection(data.Quiz)
-					@QuestionsSection(data.Quiz, data.Questions)
-				</div>
-				<div class="space-y-6">
-					@QuizStats(data.Questions, data.Quiz.TimeLimit)
-					@QuizDangerZone(data.Quiz.ID.String())
-				</div>
+			<div class="flex gap-3">
+				<button type="button" onclick="location.reload()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+					Отмена
+				</button>
+				<button type="button" onclick="submitQuizForm()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+					<i class="fas fa-save mr-2"></i>Сохранить всё
+				</button>
 			</div>
-		</form>
+		</div>
+
+		<div class="grid md:grid-cols-3 gap-8">
+			<div class="md:col-span-2 space-y-6">
+				<div class="bg-white rounded-xl shadow-sm p-6">
+					<h2 class="text-xl font-bold mb-4">Информация о тесте</h2>
+					<form id="quizEditForm" hx-put={ "/admin/quizzes/" + data.Quiz.ID.String() } hx-trigger="submit" hx-swap="none">
+						<input type="hidden" name="intent" value="save_all"/>
+						<div class="grid md:grid-cols-2 gap-4">
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
+								<input type="text" name="title" value={ data.Quiz.Title } required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Предмет</label>
+								<input type="text" name="subject" value={ data.Quiz.Subject } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Класс</label>
+								<input type="number" name="grade" min="1" max="11" value={ fmt.Sprintf("%d", data.Quiz.Grade) } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Время (мин)</label>
+								<input type="number" name="time_limit" min="0" value={ fmt.Sprintf("%d", data.Quiz.TimeLimit) } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
+							</div>
+							<div class="md:col-span-2">
+								<label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+								<textarea name="description" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">{ data.Quiz.Description }</textarea>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+								<select name="status" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+									<option value="available" selected?={ data.Quiz.Status == "available" }>Доступен</option>
+									<option value="assigned" selected?={ data.Quiz.Status == "assigned" }>Назначен</option>
+									<option value="completed" selected?={ data.Quiz.Status == "completed" }>Завершён</option>
+									<option value="archived" selected?={ data.Quiz.Status == "archived" }>Архив</option>
+								</select>
+							</div>
+						</div>
+					</form>
+				</div>
+				@QuestionsSection(data.Quiz, data.Questions)
+			</div>
+			<div class="space-y-6">
+				@QuizStats(data.Questions, data.Quiz.TimeLimit)
+				@QuizDangerZone(data.Quiz.ID.String())
+			</div>
+		</div>
 
 		<script>
+			function submitQuizForm() {
+				var form = document.getElementById('quizEditForm');
+				if (!form) return;
+				
+				var formData = new FormData(form);
+				fetch(form.action || form.getAttribute('hx-put'), {
+					method: 'PUT',
+					body: formData,
+					headers: {
+						'HX-Request': 'true'
+					}
+				}).then(function(response) {
+					if (response.ok || response.status === 200) {
+						showSaveAlert();
+						setTimeout(function() {
+							location.reload();
+						}, 1000);
+					} else {
+						showErrorAlert();
+					}
+				}).catch(function() {
+					showErrorAlert();
+				});
+			}
+
+			function handleQuestionEditSubmit(event) {
+				event.preventDefault();
+				var button = event.target;
+				var quizID = button.getAttribute('data-quiz-id');
+				var questionID = button.getAttribute('data-question-id');
+				var container = button.closest('div[id^="editForm_"]');
+				
+				console.log('Submit clicked', { quizID, questionID, container });
+				
+				if (!container || !quizID || !questionID) {
+					console.error('Missing data', { container: !!container, quizID: !!quizID, questionID: !!questionID });
+					return;
+				}
+
+				var url = '/admin/quizzes/' + quizID + '/question/' + questionID;
+				var formData = new FormData();
+				
+				var inputs = container.querySelectorAll('input, select, textarea');
+				inputs.forEach(function(input) {
+					if (input.name) {
+						formData.append(input.name, input.value);
+					}
+				});
+				
+				console.log('Submitting to', url, 'with', Array.from(formData.entries()));
+				
+				fetch(url, {
+					method: 'PUT',
+					body: formData,
+					headers: {
+						'HX-Request': 'true'
+					}
+				}).then(function(response) {
+					console.log('Response status', response.status);
+					if (response.ok || response.status === 200) {
+						showSaveAlert();
+						container.classList.add('hidden');
+					} else {
+						showErrorAlert();
+					}
+				}).catch(function(error) {
+					console.error('Error:', error);
+					showErrorAlert();
+				});
+			}
+
+			function uploadQuestionImage(input) {
+				var url = input.getAttribute('data-upload-url');
+				var file = input.files[0];
+				if (!file || !url) return;
+
+				var formData = new FormData();
+				formData.append('image', file);
+
+				fetch(url, {
+					method: 'POST',
+					body: formData,
+					headers: {
+						'HX-Request': 'true'
+					}
+				}).then(function(response) {
+					if (response.ok || response.status === 200) {
+						showSaveAlert();
+						setTimeout(function() {
+							location.reload();
+						}, 1000);
+					} else {
+						showErrorAlert();
+					}
+				}).catch(function() {
+					showErrorAlert();
+				});
+			}
+
+			function deleteQuestionImage(button) {
+				var url = button.getAttribute('data-delete-url');
+				if (!url) return;
+				if (!confirm('Удалить изображение?')) return;
+
+				fetch(url, {
+					method: 'DELETE',
+					headers: {
+						'HX-Request': 'true'
+					}
+				}).then(function(response) {
+					if (response.ok || response.status === 200) {
+						var container = button.closest('.relative.group');
+						if (container) {
+							container.remove();
+						}
+					} else {
+						showErrorAlert();
+					}
+				}).catch(function() {
+					showErrorAlert();
+				});
+			}
+
 			var isDirty = false;
 			var initialData = {};
 
@@ -111,14 +266,14 @@ templ QuizEditPage(data types.AdminQuizEditData) {
 				}
 			}
 
-			function updateAnswerOptions(type) {
-				var container = document.getElementById('answerTypeContainer');
+			function updateAnswerOptions(select) {
+				var container = select.closest('.space-y-3').querySelector('.answer-options-container');
 				if (!container) return;
 
-				if (type === 'choice') {
+				if (select.value === 'choice') {
 					container.innerHTML = `
 						<label class="block text-sm font-medium text-gray-700 mb-1">Варианты ответов</label>
-						<div id="optionsList" class="space-y-2">
+						<div class="options-list space-y-2">
 							<div class="flex items-center gap-2 option-row">
 								<input type="radio" name="correct_answer" value="option_0" class="w-4 h-4 text-indigo-600"/>
 								<input type="text" name="option_0" placeholder="Вариант 1" class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
@@ -130,7 +285,7 @@ templ QuizEditPage(data types.AdminQuizEditData) {
 								<button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>
 							</div>
 						</div>
-						<button type="button" onclick="addOption()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
+						<button type="button" onclick="addOption(this)" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
 							<i class="fas fa-plus mr-1"></i>Добавить вариант
 						</button>
 					`;
@@ -142,11 +297,11 @@ templ QuizEditPage(data types.AdminQuizEditData) {
 				}
 			}
 
-			function updateAddFormAnswerOptions(type) {
-				var container = document.getElementById('addFormAnswerOptions');
+			function updateAddFormAnswerOptions(select) {
+				var container = select.closest('div[hx-post]').querySelector('#addFormAnswerOptions');
 				if (!container) return;
 
-				if (type === 'choice') {
+				if (select.value === 'choice') {
 					container.innerHTML = `
 						<label class="block text-sm font-medium text-gray-700 mb-1">Варианты ответов</label>
 						<div id="addFormOptionsList" class="space-y-2">
@@ -173,8 +328,9 @@ templ QuizEditPage(data types.AdminQuizEditData) {
 				}
 			}
 
-			function addOption() {
-				var optionsList = document.getElementById('optionsList');
+			function addOption(button) {
+				var container = button.closest('.answer-options-container');
+				var optionsList = container.querySelector('.options-list');
 				if (!optionsList) return;
 				var count = optionsList.querySelectorAll('.option-row').length;
 				var newRow = document.createElement('div');
@@ -210,80 +366,9 @@ templ QuizEditPage(data types.AdminQuizEditData) {
 
 			document.addEventListener('DOMContentLoaded', function() {
 				setupDirtyTracking();
-
-				var form = document.getElementById('quizEditForm');
-				if (form) {
-					form.addEventListener('submit', function(e) {
-						e.preventDefault();
-						var formData = new FormData(form);
-						fetch(form.action, {
-							method: 'POST',
-							body: formData
-						}).then(function(response) {
-							if (response.ok) {
-								isDirty = false;
-								showSaveAlert();
-								setTimeout(function() {
-									location.reload();
-								}, 1500);
-							} else {
-								showErrorAlert();
-							}
-						}).catch(function() {
-							showErrorAlert();
-						});
-					});
-				}
-
-				var addForm = document.getElementById('addQuestionForm');
-				if (addForm) {
-					addForm.addEventListener('submit', function(e) {
-						var wrapper = document.getElementById('addQuestionFormWrapper');
-						if (wrapper) {
-							wrapper.classList.add('hidden');
-						}
-					});
-				}
 			});
 		</script>
 	}
-}
-
-templ QuizInfoSection(quiz *models.Quiz) {
-	<div class="bg-white rounded-xl shadow-sm p-6">
-		<h2 class="text-xl font-bold mb-4">Информация о тесте</h2>
-		<div class="grid md:grid-cols-2 gap-4">
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
-				<input type="text" name="title" value={ quiz.Title } required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-			</div>
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Предмет</label>
-				<input type="text" name="subject" value={ quiz.Subject } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-			</div>
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Класс</label>
-				<input type="number" name="grade" min="1" max="11" value={ fmt.Sprintf("%d", quiz.Grade) } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-			</div>
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Время (мин)</label>
-				<input type="number" name="time_limit" min="0" value={ fmt.Sprintf("%d", quiz.TimeLimit) } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-			</div>
-			<div class="md:col-span-2">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
-				<textarea name="description" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">{ quiz.Description }</textarea>
-			</div>
-			<div>
-				<label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
-				<select name="status" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
-					<option value="available" selected?={ quiz.Status == "available" }>Доступен</option>
-					<option value="assigned" selected?={ quiz.Status == "assigned" }>Назначен</option>
-					<option value="completed" selected?={ quiz.Status == "completed" }>Завершён</option>
-					<option value="archived" selected?={ quiz.Status == "archived" }>Архив</option>
-				</select>
-			</div>
-		</div>
-	</div>
 }
 
 templ QuestionsSection(quiz *models.Quiz, questions []models.Question) {
@@ -316,17 +401,17 @@ templ QuestionCard(q models.Question, index int, quizID string) {
 				<span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-sm">{ q.Type }</span>
 				<span class="text-gray-500 text-sm">{ q.Points } баллов</span>
 			</div>
-			<form method="POST" action={ templ.URL("/admin/quizzes/" + quizID + "/question/delete") }
-				hx-post={ "/admin/quizzes/" + quizID + "/question/delete" }
+			<div hx-delete={ "/admin/quizzes/" + quizID + "/question/" + q.ID.String() }
 				hx-target={ "#question-card-" + q.ID.String() }
 				hx-swap="delete"
 				hx-confirm="Удалить вопрос?"
+				class="inline"
 			>
 				<input type="hidden" name="question_id" value={ q.ID.String() }/>
-				<button type="submit" class="text-red-600 hover:text-red-800 text-sm ml-2">
+				<button type="button" class="text-red-600 hover:text-red-800 text-sm ml-2">
 					<i class="fas fa-trash"></i>
 				</button>
-			</form>
+			</div>
 		</div>
 		<p class="text-gray-800 mb-2">{ q.Text }</p>
 		@QuestionImagesSection(q, quizID)
@@ -346,14 +431,19 @@ templ QuestionCard(q models.Question, index int, quizID string) {
 		</div>
 
 		<div id={ "editForm_" + quizID + "_" + fmt.Sprintf("%d", index) } class="hidden mt-4 pt-4 border-t">
-			<form method="POST" action={ templ.URL("/admin/quizzes/" + quizID + "/question") }
-				hx-post={ "/admin/quizzes/" + quizID + "/question" }
-				hx-target={ "#question-card-" + q.ID.String() }
-				hx-swap="outerHTML"
-			>
+			<div>
 				<input type="hidden" name="question_id" value={ q.ID.String() }/>
 				@QuestionEditFields(q)
-			</form>
+			</div>
+			<div class="flex justify-end gap-2 mt-4">
+				<button
+					type="button"
+					data-quiz-id={ quizID }
+					data-question-id={ q.ID.String() }
+					onclick="handleQuestionEditSubmit(event)"
+					class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition"
+				>Сохранить</button>
+			</div>
 		</div>
 		<div class="mt-3 pt-3 border-t flex gap-2">
 			<button
@@ -382,7 +472,7 @@ templ QuestionEditFields(q models.Question) {
 				<select
 					name="type"
 					class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-					onchange="updateAnswerOptions(this.value)"
+					onchange="updateAnswerOptions(this)"
 					id="typeSelect"
 				>
 					<option value="choice" selected?={ q.Type == "choice" }>Выбор</option>
@@ -395,7 +485,7 @@ templ QuestionEditFields(q models.Question) {
 				<input type="number" name="points" min="1" value={ fmt.Sprintf("%d", q.Points) } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
 			</div>
 		</div>
-		<div id="answerOptions">
+		<div class="answer-options-container">
 			@AnswerOptionsByType(q)
 		</div>
 		<div>
@@ -403,41 +493,32 @@ templ QuestionEditFields(q models.Question) {
 			<input type="text" name="explanation" value={ q.Explanation } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
 		</div>
 	</div>
-	<div class="flex justify-end gap-2 mt-4">
-		<button type="submit" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition">Сохранить</button>
-	</div>
 }
 
 templ AnswerOptionsByType(q models.Question) {
 	switch q.Type {
 		case models.QuestionTypeOpen:
-			<div id="answerTypeContainer">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Правильный ответ</label>
-				<input type="text" name="correct_answer" value={ q.CorrectAnswer } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-			</div>
+			<label class="block text-sm font-medium text-gray-700 mb-1">Правильный ответ</label>
+			<input type="text" name="correct_answer" value={ q.CorrectAnswer } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
 		case models.QuestionTypeFill:
-			<div id="answerTypeContainer">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Правильный ответ</label>
-				<input type="text" name="correct_answer" value={ q.CorrectAnswer } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-			</div>
+			<label class="block text-sm font-medium text-gray-700 mb-1">Правильный ответ</label>
+			<input type="text" name="correct_answer" value={ q.CorrectAnswer } class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
 		case models.QuestionTypeChoice:
-			<div id="answerTypeContainer">
-				<label class="block text-sm font-medium text-gray-700 mb-1">Варианты ответов</label>
-				<div id="optionsList" class="space-y-2">
-					for i, opt := range models.GetQuestionOptions(q) {
-						<div class="flex items-center gap-2 option-row">
-							<input type="radio" name="correct_answer" value={ fmt.Sprintf("option_%d", i) } checked?={ opt == q.CorrectAnswer } class="w-4 h-4 text-indigo-600"/>
-							<input type="text" name={ "option_" + fmt.Sprintf("%d", i) } value={ opt } class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-							<button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700">
-								<i class="fas fa-times"></i>
-							</button>
-						</div>
-					}
-				</div>
-				<button type="button" onclick="addOption()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
-					<i class="fas fa-plus mr-1"></i>Добавить вариант
-				</button>
+			<label class="block text-sm font-medium text-gray-700 mb-1">Варианты ответов</label>
+			<div class="options-list space-y-2">
+				for i, opt := range models.GetQuestionOptions(q) {
+					<div class="flex items-center gap-2 option-row">
+						<input type="radio" name="correct_answer" value={ fmt.Sprintf("option_%d", i) } checked?={ opt == q.CorrectAnswer } class="w-4 h-4 text-indigo-600"/>
+						<input type="text" name={ "option_" + fmt.Sprintf("%d", i) } value={ opt } class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
+						<button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700">
+							<i class="fas fa-times"></i>
+						</button>
+					</div>
+				}
 			</div>
+			<button type="button" onclick="addOption(this)" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
+				<i class="fas fa-plus mr-1"></i>Добавить вариант
+			</button>
 	}
 }
 
@@ -456,11 +537,10 @@ templ AddQuestionButton() {
 
 templ AddQuestionForm(quizID string, questionCount int) {
 	<div id="addQuestionFormWrapper" class="hidden mt-4 pt-4 border-t">
-		<form id="addQuestionForm" method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/quizzes/%s/question", quizID)) }
-			enctype="multipart/form-data"
-			hx-post={ templ.SafeURL(fmt.Sprintf("/admin/quizzes/%s/question", quizID)) }
+		<div hx-post={ "/admin/quizzes/" + quizID + "/question" }
 			hx-target="#questions-section"
 			hx-swap="innerHTML"
+			enctype="multipart/form-data"
 		>
 			<h3 class="font-semibold mb-3">Новый вопрос</h3>
 			<div class="space-y-3">
@@ -471,7 +551,7 @@ templ AddQuestionForm(quizID string, questionCount int) {
 				<div class="grid grid-cols-3 gap-3">
 					<div>
 						<label class="block text-sm font-medium text-gray-700 mb-1">Тип</label>
-						<select name="type" id="addFormTypeSelect" onchange="updateAddFormAnswerOptions(this.value)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+						<select name="type" id="addFormTypeSelect" onchange="updateAddFormAnswerOptions(this)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
 							<option value="choice">Выбор</option>
 							<option value="open">Открытый</option>
 							<option value="fill">Заполнить</option>
@@ -487,22 +567,8 @@ templ AddQuestionForm(quizID string, questionCount int) {
 					</div>
 				</div>
 				<div id="addFormAnswerOptions">
-					<label class="block text-sm font-medium text-gray-700 mb-1">Варианты ответов</label>
-					<div id="addFormOptionsList" class="space-y-2">
-						<div class="flex items-center gap-2 option-row">
-							<input type="radio" name="correct_answer" value="option_0" class="w-4 h-4 text-indigo-600"/>
-							<input type="text" name="option_0" placeholder="Вариант 1" class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-							<button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>
-						</div>
-						<div class="flex items-center gap-2 option-row">
-							<input type="radio" name="correct_answer" value="option_1" class="w-4 h-4 text-indigo-600"/>
-							<input type="text" name="option_1" placeholder="Вариант 2" class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
-							<button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>
-						</div>
-					</div>
-					<button type="button" onclick="addOptionToForm()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
-						<i class="fas fa-plus mr-1"></i>Добавить вариант
-					</button>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Правильный ответ</label>
+					<input type="text" name="correct_answer" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>
 				</div>
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-1">Пояснение</label>
@@ -522,7 +588,7 @@ templ AddQuestionForm(quizID string, questionCount int) {
 					<i class="fas fa-plus mr-2"></i>Добавить
 				</button>
 			</div>
-		</form>
+		</div>
 	</div>
 }
 
@@ -549,11 +615,14 @@ templ QuizStats(questions []models.Question, timeLimit int) {
 templ QuizDangerZone(quizID string) {
 	<div class="bg-white rounded-xl shadow-sm p-6">
 		<h3 class="font-bold mb-4">Опасная зона</h3>
-		<form method="POST" action={ templ.URL("/admin/quizzes/" + quizID + "/delete") }>
-			<button type="submit" onclick="return confirm('Вы уверены? Это действие обратимо.')" class="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition">
+		<div hx-delete={ "/admin/quizzes/" + quizID }
+			hx-confirm="Вы уверены? Это действие обратимо."
+			class="inline"
+		>
+			<button type="button" class="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition">
 				<i class="fas fa-archive mr-2"></i>Перенести в архив
 			</button>
-		</form>
+		</div>
 	</div>
 }
 
@@ -575,35 +644,33 @@ templ QuestionImagesSection(q models.Question, quizID string) {
 				for _, img := range q.Images {
 					<div class="relative group">
 						<img src={ img.URL } class="w-24 h-24 object-cover rounded-lg border"/>
-						<form method="POST" action={ templ.URL("/admin/quizzes/" + quizID + "/question/image/delete") }
-							hx-post={ "/admin/quizzes/" + quizID + "/question/image/delete" }
-							hx-target={ "closest div" }
-							hx-swap="delete"
-							class="absolute -top-2 -right-2"
+						<button
+							type="button"
+							class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition"
+							data-delete-url={ "/admin/quizzes/" + quizID + "/question/" + q.ID.String() + "/image/" + img.ID.String() }
+							onclick="deleteQuestionImage(this)"
 						>
-							<input type="hidden" name="image_id" value={ img.ID.String() }/>
-							<button type="submit" class="w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition">
-								<i class="fas fa-times"></i>
-							</button>
-						</form>
+							<i class="fas fa-times"></i>
+						</button>
 					</div>
 				}
 			</div>
 		}
 		if len(q.Images) < 3 {
-			<form method="POST" action={ templ.URL("/admin/quizzes/" + quizID + "/question/image") }
-				enctype="multipart/form-data"
-				hx-post={ "/admin/quizzes/" + quizID + "/question/image" }
-				hx-target={ "#question-card-" + q.ID.String() }
-				hx-swap="outerHTML"
-				class="flex items-center gap-2"
-			>
+			<div class="flex items-center gap-2">
 				<input type="hidden" name="question_id" value={ q.ID.String() }/>
-				<input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="text-sm text-gray-500"/>
-				<button type="submit" class="px-3 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded text-sm transition">
+				<input
+					type="file"
+					name="image"
+					accept=".jpg,.jpeg,.png,.webp"
+					class="text-sm text-gray-500"
+					data-upload-url={ "/admin/quizzes/" + quizID + "/question/" + q.ID.String() + "/image" }
+					onchange="uploadQuestionImage(this)"
+				/>
+				<button type="button" class="px-3 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded text-sm transition">
 					<i class="fas fa-upload mr-1"></i>Загрузить
 				</button>
-			</form>
+			</div>
 		}
 	</div>
 }

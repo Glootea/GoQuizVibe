@@ -298,20 +298,20 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 							return templ_7745c5c3_Err
 						}
 					} else {
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<form method=\"POST\" action=\"")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<div hx-delete=\"")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						var templ_7745c5c3_Var21 templ.SafeURL
-						templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/admin/quizzes/" + quiz.ID.String() + "/delete"))
+						var templ_7745c5c3_Var21 string
+						templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quiz.ID.String())
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 78, Col: 98}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 78, Col: 63}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" class=\"inline\"><button type=\"submit\" onclick=\"return confirm('Удалить тест?')\" class=\"text-red-600 hover:text-red-800\"><i class=\"fas fa-trash\"></i></button></form>")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" hx-confirm=\"Удалить тест?\" class=\"inline\"><button type=\"button\" class=\"text-red-600 hover:text-red-800\"><i class=\"fas fa-trash\"></i></button></div>")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
@@ -326,7 +326,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, " <div id=\"createModal\" class=\"hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50\"><div class=\"bg-white rounded-xl p-6 w-full max-w-md\"><h3 class=\"text-xl font-bold mb-4\">Создать тест</h3><form method=\"POST\" action=\"/admin/quizzes/list\"><div class=\"space-y-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Название</label> <input type=\"text\" name=\"title\" required class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Описание</label> <textarea name=\"description\" rows=\"2\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></textarea></div><div class=\"grid grid-cols-2 gap-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Предмет</label> <input type=\"text\" name=\"subject\" placeholder=\"Математика\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Класс</label> <input type=\"number\" name=\"grade\" min=\"1\" max=\"11\" value=\"5\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Время (мин)</label> <input type=\"number\" name=\"time_limit\" min=\"0\" value=\"30\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><div class=\"flex justify-end gap-3 mt-6\"><button type=\"button\" onclick=\"document.getElementById('createModal').classList.add('hidden')\" class=\"px-4 py-2 text-gray-600 hover:text-gray-800\">Отмена</button> <button type=\"submit\" class=\"px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition\">Создать</button></div></form></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, " <div id=\"createModal\" class=\"hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50\"><div class=\"bg-white rounded-xl p-6 w-full max-w-md\"><h3 class=\"text-xl font-bold mb-4\">Создать тест</h3><form hx-post=\"/admin/quizzes/new\" hx-target=\"body\" hx-swap=\"none\"><div class=\"space-y-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Название</label> <input type=\"text\" name=\"title\" required class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Описание</label> <textarea name=\"description\" rows=\"2\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></textarea></div><div class=\"grid grid-cols-2 gap-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Предмет</label> <input type=\"text\" name=\"subject\" placeholder=\"Математика\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Класс</label> <input type=\"number\" name=\"grade\" min=\"1\" max=\"11\" value=\"5\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Время (мин)</label> <input type=\"number\" name=\"time_limit\" min=\"0\" value=\"30\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><div class=\"flex justify-end gap-3 mt-6\"><button type=\"button\" onclick=\"document.getElementById('createModal').classList.add('hidden')\" class=\"px-4 py-2 text-gray-600 hover:text-gray-800\">Отмена</button> <button type=\"submit\" class=\"px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition\">Создать</button></div></form></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

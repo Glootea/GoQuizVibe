@@ -66,7 +66,11 @@ func (s *StorageService) DeleteImage(ctx context.Context, objectName string) err
 }
 
 func (s *StorageService) presignedURL(objectName string) string {
-	return fmt.Sprintf("http://%s/%s/%s", s.client.EndpointURL().Host, s.bucket, objectName)
+	presignedURL, err := s.client.PresignedGetObject(context.Background(), s.bucket, objectName, 24*time.Hour, nil)
+	if err != nil {
+		return fmt.Sprintf("http://%s/%s/%s", s.client.EndpointURL().Host, s.bucket, objectName)
+	}
+	return presignedURL.String()
 }
 
 func (s *StorageService) EnsureBucket(ctx context.Context) error {
@@ -80,6 +84,13 @@ func (s *StorageService) EnsureBucket(ctx context.Context) error {
 			return fmt.Errorf("failed to create bucket: %w", err)
 		}
 	}
+
+	policy := fmt.Sprintf(`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::%s/*"]}]}`, s.bucket)
+	err = s.client.SetBucketPolicy(ctx, s.bucket, policy)
+	if err != nil {
+		return fmt.Errorf("failed to set bucket policy: %w", err)
+	}
+
 	return nil
 }
 

@@ -112,26 +112,19 @@ func main() {
 
 	mux.HandleFunc("/leaderboard", handlers.ErrorHandler(quizHandler.LeaderboardPage))
 
-	adminRoutes := map[string]func(w http.ResponseWriter, r *http.Request) error{
-		"":                 adminHandler.Dashboard,
-		"quizzes/":         adminHandler.QuizOp,
-		"quizzes/list":     adminHandler.QuizzesCreate,
-		"results":          adminHandler.Results,
-		"statistics":       adminHandler.Statistics,
-		"api/quiz-stats":   adminHandler.QuizStatsData,
-		"api/grade-dist":   adminHandler.GradeDistData,
-		"api/subject-dist": adminHandler.SubjectDistData,
-	}
+	mux.Handle("/admin", adminMiddleware(handlers.ErrorHandler(adminHandler.Dashboard)))
+	mux.Handle("/admin/quizzes", adminMiddleware(handlers.ErrorHandler(adminHandler.Quizzes)))
+	mux.Handle("/admin/quizzes/new", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizzesNew)))
 
-	for path, handler := range adminRoutes {
-		fullPath := "/admin/" + path
-		if path == "" {
-			fullPath = "/admin"
-		}
-		mux.Handle(fullPath, adminMiddleware(handlers.ErrorHandlerFunc(handler)))
-	}
+	mux.Handle("/admin/quizzes/", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizEditOp)))
 
-	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(handlers.ErrorHandlerFunc(adminHandler.RestoreQuiz)))
+	mux.Handle("/admin/results", adminMiddleware(handlers.ErrorHandler(adminHandler.Results)))
+	mux.Handle("/admin/statistics", adminMiddleware(handlers.ErrorHandler(adminHandler.Statistics)))
+	mux.Handle("/admin/api/quiz-stats", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizStatsData)))
+	mux.Handle("/admin/api/grade-dist", adminMiddleware(handlers.ErrorHandler(adminHandler.GradeDistData)))
+	mux.Handle("/admin/api/subject-dist", adminMiddleware(handlers.ErrorHandler(adminHandler.SubjectDistData)))
+
+	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(handlers.ErrorHandler(adminHandler.RestoreQuiz)))
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))

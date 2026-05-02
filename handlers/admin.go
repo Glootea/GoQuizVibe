@@ -55,6 +55,13 @@ func (h *AdminHandler) getUser(r *http.Request) (*db.User, error) {
 	return &user, nil
 }
 
+func (h *AdminHandler) actualMethod(r *http.Request) string {
+	if m := r.Header.Get("Hx-Http-Method"); m != "" {
+		return m
+	}
+	return r.Method
+}
+
 func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) error {
 	user, err := h.getUser(r)
 	if err != nil {
@@ -161,99 +168,121 @@ func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
 	return admin.QuizzesPage(data).Render(r.Context(), w)
 }
 
-func (h *AdminHandler) QuizzesCreate(w http.ResponseWriter, r *http.Request) error {
-	println("QuizzesCreate called with method:", r.URL.Path)
-	if r.Method == "POST" {
-		return h.createQuiz(w, r)
-	}
-	return h.Quizzes(w, r)
-}
-
-func (h *AdminHandler) QuizOp(w http.ResponseWriter, r *http.Request) error {
-	println("QuizOp called with path:", r.URL.Path)
-	path := r.URL.Path
-
-	if strings.HasSuffix(path, "/question/delete") && r.Method == "POST" {
-		return h.deleteQuestion(w, r)
-	}
-
-	if strings.HasSuffix(path, "/question/image/delete") && r.Method == "POST" {
-		return h.deleteQuestionImage(w, r)
-	}
-
-	if strings.HasSuffix(path, "/question/image") && r.Method == "POST" {
-		return h.uploadQuestionImage(w, r)
-	}
-
-	if strings.HasSuffix(path, "/question") && r.Method == "POST" {
-		if r.FormValue("question_id") != "" {
-			return h.updateQuestion(w, r)
-		}
-		return h.addQuestion(w, r)
-	}
-
-	idStr := strings.TrimPrefix(path, "/admin/quizzes/")
-	quizID, err := uuid.Parse(idStr)
-	if err != nil {
-		if strings.HasSuffix(path, "/restore") && r.Method == "POST" {
-			idStr2 := strings.TrimSuffix(strings.TrimPrefix(path, "/admin/quizzes/"), "/restore")
-			quizID, err = uuid.Parse(idStr2)
-			if err == nil {
-				return h.RestoreQuiz(w, r)
-			}
-		}
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idStr)), http.StatusNotFound)
-	}
-
-	if strings.HasSuffix(path, "/restore") && r.Method == "POST" {
-		return h.RestoreQuiz(w, r)
-	}
-
-	if strings.HasSuffix(path, "/delete") && r.Method == "POST" {
-		return h.deleteQuiz(w, r, quizID)
-	}
-
-	if r.Method == "POST" {
-		return h.updateQuiz(w, r, quizID)
-	}
-
-	return h.editQuiz(w, r, quizID)
-}
-
-func (h *AdminHandler) createQuiz(w http.ResponseWriter, r *http.Request) error {
+func (h *AdminHandler) QuizzesNew(w http.ResponseWriter, r *http.Request) error {
 	user, err := h.getUser(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	title := r.FormValue("title")
-	description := r.FormValue("description")
-	subject := r.FormValue("subject")
-	grade, _ := strconv.Atoi(r.FormValue("grade"))
-	timeLimit, _ := strconv.Atoi(r.FormValue("time_limit"))
+	if h.actualMethod(r) == "POST" {
+		title := r.FormValue("title")
+		description := r.FormValue("description")
+		subject := r.FormValue("subject")
+		grade, _ := strconv.Atoi(r.FormValue("grade"))
+		timeLimit, _ := strconv.Atoi(r.FormValue("time_limit"))
 
-	newQuizID := uuid.New()
-	_, err = h.pool.CreateQuiz(context.Background(), db.CreateQuizParams{
-		ID:          newQuizID,
-		Title:       title,
-		Description: description,
-		Subject:     subject,
-		Grade:       grade,
-		Status:      db.QuizStatusAvailable,
-		TimeLimit:   timeLimit,
-		CreatedBy:   user.ID,
-		CreatedAt:   time.Now(),
-	})
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+		newQuizID := uuid.New()
+		_, err = h.pool.CreateQuiz(context.Background(), db.CreateQuizParams{
+			ID:          newQuizID,
+			Title:       title,
+			Description: description,
+			Subject:     subject,
+			Grade:       grade,
+			Status:      db.QuizStatusAvailable,
+			TimeLimit:   timeLimit,
+			CreatedBy:   user.ID,
+			CreatedAt:   time.Now(),
+		})
+		if err != nil {
+			return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+		}
+
+		if r.Header.Get("hx-request") == "true" {
+			w.Header().Set("HX-Redirect", "/admin/quizzes/"+newQuizID.String())
+			w.WriteHeader(http.StatusOK)
+			return nil
+		}
+
+		http.Redirect(w, r, "/admin/quizzes/"+newQuizID.String(), http.StatusFound)
+		return nil
 	}
 
-	http.Redirect(w, r, "/admin/quizzes/"+newQuizID.String(), http.StatusFound)
-	return nil
+	return h.Quizzes(w, r)
+}
+
+func (h *AdminHandler) QuizEditOp(w http.ResponseWriter, r *http.Request) error {
+	path := r.URL.Path
+	method := h.actualMethod(r)
+
+	if strings.HasPrefix(path, "/admin/quizzes/") && len(path) > len("/admin/quizzes/") {
+		idPart := strings.TrimPrefix(path, "/admin/quizzes/")
+
+		if strings.Contains(idPart, "/question") {
+			parts := strings.Split(idPart, "/")
+
+			if len(parts) >= 2 && parts[1] == "question" {
+				quizIDStr := parts[0]
+				quizID, err := uuid.Parse(quizIDStr)
+				if err != nil {
+					return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID")), http.StatusNotFound)
+				}
+
+				if len(parts) == 2 {
+					if method == "POST" {
+						return h.addQuestion(w, r, quizID)
+					}
+				} else if len(parts) >= 3 {
+					questionIDStr := parts[2]
+					questionID, err := uuid.Parse(questionIDStr)
+					if err != nil {
+						return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid question ID")), http.StatusNotFound)
+					}
+
+					if len(parts) == 3 {
+						if method == "PUT" {
+							return h.updateQuestion(w, r, quizID, questionID)
+						}
+						if method == "DELETE" {
+							return h.deleteQuestion(w, r, quizID, questionID)
+						}
+					} else if len(parts) == 4 && parts[3] == "image" {
+						if method == "POST" {
+							return h.uploadQuestionImage(w, r, quizID, questionID)
+						}
+					} else if len(parts) == 5 && parts[3] == "image" && parts[4] != "" {
+						imageIDStr := parts[4]
+						imageID, err := uuid.Parse(imageIDStr)
+						if err != nil {
+							return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid image ID")), http.StatusNotFound)
+						}
+						if method == "DELETE" {
+							return h.deleteQuestionImage(w, r, quizID, questionID, imageID)
+						}
+					}
+				}
+				return ce.ErrNotFound
+			}
+		}
+
+		quizID, err := uuid.Parse(idPart)
+		if err != nil {
+			return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idPart)), http.StatusNotFound)
+		}
+
+		switch method {
+		case "GET":
+			return h.editQuiz(w, r, quizID)
+		case "PUT":
+			return h.updateQuiz(w, r, quizID)
+		case "DELETE":
+			return h.deleteQuiz(w, r, quizID)
+		}
+	}
+
+	return ce.ErrNotFound
 }
 
 func (h *AdminHandler) editQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
-	println("Editing quiz with ID:", quizID.String())
 	user, err := h.getUser(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
@@ -306,7 +335,7 @@ func (h *AdminHandler) updateQuiz(w http.ResponseWriter, r *http.Request, quizID
 	grade, _ := strconv.Atoi(r.FormValue("grade"))
 	timeLimit, _ := strconv.Atoi(r.FormValue("time_limit"))
 
-	_, err = h.pool.UpdateQuiz(context.Background(), db.UpdateQuizParams{
+	inserted, err := h.pool.UpdateQuiz(context.Background(), db.UpdateQuizParams{
 		ID:          quizID,
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
@@ -315,8 +344,15 @@ func (h *AdminHandler) updateQuiz(w http.ResponseWriter, r *http.Request, quizID
 		Status:      db.QuizStatus(r.FormValue("status")),
 		TimeLimit:   timeLimit,
 	})
+	insertedJson, _ := json.Marshal(inserted)
+	fmt.Printf("Inserted: %s", string(insertedJson))
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return nil
 	}
 
 	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
@@ -332,43 +368,21 @@ func (h *AdminHandler) deleteQuiz(w http.ResponseWriter, r *http.Request, quizID
 	return nil
 }
 
-func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error {
-	path := r.URL.Path
-	idStr := strings.TrimPrefix(path, "/admin/quizzes/")
-	idStr = strings.TrimSuffix(idStr, "/restore")
-	quizID, err := uuid.Parse(idStr)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idStr)), http.StatusNotFound)
-	}
-
-	err = h.pool.UpdateQuizStatus(context.Background(), db.UpdateQuizStatusParams{
-		ID:     quizID,
-		Status: db.QuizStatusAvailable,
-	})
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
-	}
-	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
-	return nil
-}
-
-func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error {
+func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err := r.ParseForm(); err != nil {
 			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 		}
 	}
 
-	idStr := strings.TrimPrefix(r.URL.Path, "/admin/quizzes/")
-	idStr = strings.TrimSuffix(idStr, "/question")
-	quizID, err := uuid.Parse(idStr)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, fmt.Errorf("invalid quiz ID in path: %s", r.URL.Path)), http.StatusBadRequest)
-	}
-
 	text := r.FormValue("text")
-	questionType := db.QuestionType(r.FormValue("type"))
+	questionTypeStr := r.FormValue("type")
+	if questionTypeStr == "" {
+		questionTypeStr = "choice"
+	}
+	questionType := db.QuestionType(questionTypeStr)
 	explanation := r.FormValue("explanation")
+	correctAnswer := r.FormValue("correct_answer")
 	points, _ := strconv.Atoi(r.FormValue("points"))
 	orderIndex, _ := strconv.Atoi(r.FormValue("order_index"))
 
@@ -377,29 +391,24 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 	}
 
 	var options []string
-	var correctAnswer string
 
 	if questionType == db.QuestionTypeChoice {
-		for key, values := range r.Form {
-			if strings.HasPrefix(key, "option_") {
-				val := values[0]
-				if val != "" {
-					options = append(options, val)
-				}
+		for i := 0; i < 20; i++ {
+			key := fmt.Sprintf("option_%d", i)
+			if val, ok := r.Form[key]; ok && val[0] != "" {
+				options = append(options, val[0])
 			}
 		}
 		correctAnswerRaw := r.FormValue("correct_answer")
-		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx < len(options) {
+		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx >= 0 && idx < len(options) {
 			correctAnswer = options[idx]
 		}
-	} else {
-		correctAnswer = r.FormValue("correct_answer")
 	}
 
 	optionsJSON, _ := json.Marshal(options)
 
 	newQuestionID := uuid.New()
-	_, err = h.pool.CreateQuestion(context.Background(), db.CreateQuestionParams{
+	_, err := h.pool.CreateQuestion(context.Background(), db.CreateQuestionParams{
 		ID:            newQuestionID,
 		QuizID:        quizID,
 		Text:          text,
@@ -458,24 +467,82 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request) error {
-	questionIDStr := r.FormValue("question_id")
-	questionID, err := uuid.Parse(questionIDStr)
-	if err != nil {
-		if r.Header.Get("hx-request") == "true" {
-			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid question ID")), http.StatusBadRequest)
+func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request, quizID, questionID uuid.UUID) error {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		if err := r.ParseForm(); err != nil {
+			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 		}
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, errors.New("question not found")), http.StatusNotFound)
 	}
 
 	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
 	if err != nil {
-		if r.Header.Get("hx-request") == "true" {
-			return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
-		}
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
-	quizID := question.QuizID
+
+	if question.QuizID != quizID {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, errors.New("question does not belong to this quiz")), http.StatusNotFound)
+	}
+
+	points, _ := strconv.Atoi(r.FormValue("points"))
+	orderIndex, _ := strconv.Atoi(r.FormValue("order_index"))
+	correctAnswer := r.FormValue("correct_answer")
+	explanation := r.FormValue("explanation")
+	text := r.FormValue("text")
+
+	var options []byte
+	questionTypeStr := r.FormValue("type")
+	if questionTypeStr == "" {
+		questionTypeStr = string(question.Type)
+	}
+	questionType := db.QuestionType(questionTypeStr)
+
+	if questionType == db.QuestionTypeChoice {
+		var opts []string
+		for i := 0; i < 20; i++ {
+			key := fmt.Sprintf("option_%d", i)
+			if val, ok := r.Form[key]; ok && val[0] != "" {
+				opts = append(opts, val[0])
+			}
+		}
+		options, _ = json.Marshal(opts)
+		correctAnswerRaw := r.FormValue("correct_answer")
+		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx >= 0 && idx < len(opts) {
+			correctAnswer = opts[idx]
+		}
+	}
+
+	_, err = h.pool.UpdateQuestion(context.Background(), db.UpdateQuestionParams{
+		ID:            questionID,
+		Text:          text,
+		Type:          questionType,
+		Options:       options,
+		CorrectAnswer: correctAnswer,
+		Explanation:   explanation,
+		Points:        points,
+		OrderIndex:    orderIndex,
+	})
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+
+	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
+	return nil
+}
+
+func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request, quizID, questionID uuid.UUID) error {
+	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
+	}
+
+	if question.QuizID != quizID {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, errors.New("question does not belong to this quiz")), http.StatusNotFound)
+	}
 
 	err = h.pool.DeleteQuestion(context.Background(), questionID)
 	if err != nil {
@@ -491,15 +558,9 @@ func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseForm(); err != nil {
+func (h *AdminHandler) uploadQuestionImage(w http.ResponseWriter, r *http.Request, quizID, questionID uuid.UUID) error {
+	if err := r.ParseMultipartForm(MaxImageSize); err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
-	}
-
-	questionIDStr := r.FormValue("question_id")
-	questionID, err := uuid.Parse(questionIDStr)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid question ID")), http.StatusBadRequest)
 	}
 
 	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
@@ -507,41 +568,52 @@ func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	points, _ := strconv.Atoi(r.FormValue("points"))
-	orderIndex, _ := strconv.Atoi(r.FormValue("order_index"))
-
-	var options []byte
-	var correctAnswer string
-	questionType := db.QuestionType(r.FormValue("type"))
-
-	if questionType == db.QuestionTypeChoice {
-		var opts []string
-		for i := 0; i < 20; i++ {
-			key := fmt.Sprintf("option_%d", i)
-			if val, ok := r.Form[key]; ok && val[0] != "" {
-				opts = append(opts, val[0])
-			}
-		}
-		options, _ = json.Marshal(opts)
-		correctAnswerRaw := r.FormValue("correct_answer")
-		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx < len(opts) {
-			correctAnswer = opts[idx]
-		}
-	} else {
-		correctAnswer = r.FormValue("correct_answer")
+	if question.QuizID != quizID {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, errors.New("question does not belong to this quiz")), http.StatusNotFound)
 	}
 
-	_, err = h.pool.UpdateQuestion(context.Background(), db.UpdateQuestionParams{
-		ID:            questionID,
-		Text:          r.FormValue("text"),
-		Type:          questionType,
-		Options:       options,
-		CorrectAnswer: correctAnswer,
-		Explanation:   r.FormValue("explanation"),
-		Points:        points,
-		OrderIndex:    orderIndex,
+	count, err := h.pool.GetImageCountByQuestionID(context.Background(), questionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+	if count >= MaxImagesPerQuestion {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("maximum images reached")), http.StatusBadRequest)
+	}
+
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+	defer file.Close()
+
+	contentType := header.Header.Get("Content-Type")
+	if !strings.Contains(AllowedImageTypes, contentType) {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid image type")), http.StatusBadRequest)
+	}
+
+	if header.Size > MaxImageSize {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("image too large")), http.StatusBadRequest)
+	}
+
+	ext := filepath.Ext(header.Filename)
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid file extension")), http.StatusBadRequest)
+	}
+
+	url, err := h.storageService.UploadImage(context.Background(), header)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	_, err = h.pool.CreateQuestionImage(context.Background(), db.CreateQuestionImageParams{
+		ID:         uuid.New(),
+		QuestionID: questionID,
+		URL:        url,
+		OrderIndex: int(count),
+		CreatedAt:  time.Now(),
 	})
 	if err != nil {
+		_ = h.storageService.DeleteImage(context.Background(), url)
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
@@ -550,7 +622,35 @@ func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request) er
 		return nil
 	}
 
-	http.Redirect(w, r, "/admin/quizzes/"+question.QuizID.String(), http.StatusFound)
+	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
+	return nil
+}
+
+func (h *AdminHandler) deleteQuestionImage(w http.ResponseWriter, r *http.Request, quizID, questionID, imageID uuid.UUID) error {
+	ctx := context.Background()
+
+	image, err := h.pool.GetQuestionImageByID(ctx, imageID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
+	}
+
+	if image.QuestionID != questionID {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, errors.New("image does not belong to this question")), http.StatusNotFound)
+	}
+
+	err = h.pool.DeleteQuestionImage(ctx, imageID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	objectName := filepath.Base(image.URL)
+	_ = h.storageService.DeleteImage(ctx, objectName)
+
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+
 	return nil
 }
 
@@ -700,113 +800,22 @@ func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) e
 	return admin.SubjectDistPartial(dist).Render(r.Context(), w)
 }
 
-func (h *AdminHandler) uploadQuestionImage(w http.ResponseWriter, r *http.Request) error {
-	if err := r.ParseMultipartForm(MaxImageSize); err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
-	}
-
+func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error {
 	path := r.URL.Path
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) < 4 {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid path")), http.StatusBadRequest)
-	}
-	questionIDStr := parts[len(parts)-2]
-	questionID, err := uuid.Parse(questionIDStr)
+	idStr := strings.TrimPrefix(path, "/admin/quizzes/")
+	idStr = strings.TrimSuffix(idStr, "/restore")
+	quizID, err := uuid.Parse(idStr)
 	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid question ID")), http.StatusBadRequest)
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idStr)), http.StatusNotFound)
 	}
 
-	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
-	}
-
-	count, err := h.pool.GetImageCountByQuestionID(context.Background(), questionID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
-	}
-	if count >= MaxImagesPerQuestion {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("maximum images reached")), http.StatusBadRequest)
-	}
-
-	file, header, err := r.FormFile("image")
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
-	}
-	defer file.Close()
-
-	contentType := header.Header.Get("Content-Type")
-	if !strings.Contains(AllowedImageTypes, contentType) {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid image type")), http.StatusBadRequest)
-	}
-
-	if header.Size > MaxImageSize {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("image too large")), http.StatusBadRequest)
-	}
-
-	ext := filepath.Ext(header.Filename)
-	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid file extension")), http.StatusBadRequest)
-	}
-
-	url, err := h.storageService.UploadImage(context.Background(), header)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
-	}
-
-	createdAt := time.Now()
-	_, err = h.pool.CreateQuestionImage(context.Background(), db.CreateQuestionImageParams{
-		ID:         uuid.New(),
-		QuestionID: questionID,
-		URL:        url,
-		OrderIndex: int(count),
-		CreatedAt:  createdAt,
+	err = h.pool.UpdateQuizStatus(context.Background(), db.UpdateQuizStatusParams{
+		ID:     quizID,
+		Status: db.QuizStatusAvailable,
 	})
 	if err != nil {
-		_ = h.storageService.DeleteImage(context.Background(), url)
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
-
-	if r.Header.Get("hx-request") == "true" {
-		w.WriteHeader(http.StatusOK)
-		return nil
-	}
-
-	http.Redirect(w, r, "/admin/quizzes/"+question.QuizID.String(), http.StatusFound)
+	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
 	return nil
-}
-
-func (h *AdminHandler) deleteQuestionImage(w http.ResponseWriter, r *http.Request) error {
-	imageIDStr := r.FormValue("image_id")
-	imageID, err := uuid.Parse(imageIDStr)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid image ID")), http.StatusBadRequest)
-	}
-
-	ctx := context.Background()
-
-	var imageToDelete db.QuestionImage
-	imageToDelete, err = h.pool.GetQuestionImageByID(ctx, imageID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
-	}
-
-	err = h.pool.DeleteQuestionImage(ctx, imageID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
-	}
-
-	objectName := filepath.Base(imageToDelete.URL)
-	_ = h.storageService.DeleteImage(ctx, objectName)
-
-	if r.Header.Get("hx-request") == "true" {
-		w.WriteHeader(http.StatusOK)
-		return nil
-	}
-
-	return nil
-}
-
-func (h *AdminHandler) getImageURL(objectName string) string {
-	return h.storageService.GetImageURL(objectName)
 }
