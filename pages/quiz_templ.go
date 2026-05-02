@@ -132,7 +132,7 @@ func QuizPage(data types.QuizPageData) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				for _, option := range data.Quiz.Questions[0].GetOptions() {
+				for _, option := range data.Quiz.GetOptions(0) {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<label class=\"block p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition\"><input type=\"radio\" name=\"answer\" value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err

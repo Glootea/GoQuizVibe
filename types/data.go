@@ -30,10 +30,10 @@ type QuizResultData struct {
 }
 
 type AnswerDetail struct {
-	Question     string
-	UserAnswer   string
+	Question      string
+	UserAnswer    string
 	CorrectAnswer string
-	IsCorrect    bool
+	IsCorrect     bool
 }
 
 type ErrorsPageData struct {
@@ -43,7 +43,7 @@ type ErrorsPageData struct {
 }
 
 type QuizErrors struct {
-	Quiz        *models.Quiz
+	Quiz         *models.Quiz
 	WrongAnswers []models.WrongAnswer
 }
 

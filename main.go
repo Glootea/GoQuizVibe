@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/goquizvibe/config"
 	"github.com/goquizvibe/database"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/handlers"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
@@ -16,17 +18,21 @@ import (
 
 func main() {
 	cfg := config.Load()
+	ctx := context.Background()
 
-	db, err := database.Connect(*cfg)
+	pool, err := database.Connect(ctx, *cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	defer pool.Close()
 
-	if err := database.SeedData(db); err != nil {
+	queries := db.New(pool)
+
+	if err := database.SeedData(ctx, pool); err != nil {
 		log.Fatalf("Failed to seed data: %v", err)
 	}
 
-	repo := store.NewRepository(db)
+	repo := store.NewRepository(queries)
 
 	authService := services.NewAuthService(repo, cfg.JWTSecret)
 	quizService := services.NewQuizService(repo)
@@ -47,17 +53,19 @@ func main() {
 	})
 
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
+		switch r.Method {
+		case "GET":
 			authHandler.LoginPage(w, r)
-		} else if r.Method == "POST" {
+		case "POST":
 			authHandler.LoginSubmit(w, r)
 		}
 	})
 
 	mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
+		switch r.Method {
+		case "GET":
 			authHandler.RegisterPage(w, r)
-		} else if r.Method == "POST" {
+		case "POST":
 			authHandler.RegisterSubmit(w, r)
 		}
 	})

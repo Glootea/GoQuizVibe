@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/store"
 	"github.com/goquizvibe/types"
+	"github.com/google/uuid"
 )
 
 type DashboardHandler struct {
@@ -27,20 +27,21 @@ func NewDashboard(r *store.Repository, qs *services.QuizService, gs *services.Ga
 }
 
 func (h *DashboardHandler) DashboardPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	userID, err := h.getUserIDFromRequest(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	user, err := h.repo.GetUserByID(userID)
+	user, err := h.repo.GetUserByID(ctx, userID)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	quizzes, _ := h.quizService.GetQuizzesForUser(userID)
-	stats, _ := h.gamification.GetUserStats(userID)
-	leaderboard := h.gamification.GetLeaderboard()
+	quizzes, _ := h.quizService.GetQuizzesForUser(ctx, userID)
+	stats, _ := h.gamification.GetUserStats(ctx, userID)
+	leaderboard := h.gamification.GetLeaderboard(ctx)
 
 	data := types.DashboardData{
 		User:        user,

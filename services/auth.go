@@ -1,9 +1,11 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"time"
 
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/store"
 	"github.com/golang-jwt/jwt/v5"
@@ -25,13 +27,13 @@ func NewAuthService(r *store.Repository, secret string) *AuthService {
 	}
 }
 
-func (s *AuthService) Register(name, email, password string, role models.Role) (*models.User, error) {
+func (s *AuthService) Register(ctx context.Context, name, email, password string, role db.Role) (*db.User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	user := &models.User{
+	user := &db.User{
 		ID:           uuid.New(),
 		Name:         name,
 		Email:        email,
@@ -40,15 +42,15 @@ func (s *AuthService) Register(name, email, password string, role models.Role) (
 		CreatedAt:    time.Now(),
 	}
 
-	if err := s.repo.CreateUser(user); err != nil {
+	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) Login(email, password string) (*models.User, error) {
-	user, err := s.repo.GetUserByEmail(email)
+func (s *AuthService) Login(ctx context.Context, email, password string) (*db.User, error) {
+	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
@@ -60,7 +62,7 @@ func (s *AuthService) Login(email, password string) (*models.User, error) {
 	return user, nil
 }
 
-func (s *AuthService) GenerateToken(user *models.User) (string, error) {
+func (s *AuthService) GenerateToken(user *db.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
 		"email":   user.Email,
@@ -90,7 +92,8 @@ func (s *AuthService) ValidateToken(tokenString string) (*models.AuthClaims, err
 		return nil, errors.New("invalid token claims")
 	}
 
-	userID, err := uuid.Parse(claims["user_id"].(string))
+	userIDStr := claims["user_id"].(string)
+	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, errors.New("invalid user_id in token")
 	}
@@ -98,6 +101,6 @@ func (s *AuthService) ValidateToken(tokenString string) (*models.AuthClaims, err
 	return &models.AuthClaims{
 		UserID: userID,
 		Email:  claims["email"].(string),
-		Role:   models.Role(claims["role"].(string)),
+		Role:   db.Role(claims["role"].(string)),
 	}, nil
 }
