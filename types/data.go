@@ -1,6 +1,9 @@
 package types
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/goquizvibe/models"
 )
 
@@ -50,6 +53,11 @@ type QuizErrors struct {
 type LeaderboardPageData struct {
 	User    *models.User
 	Entries []*models.LeaderboardEntry
+}
+
+type ErrorData struct {
+	Message    string
+	RedirectTo string
 }
 
 type LoginError struct {

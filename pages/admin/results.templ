@@ -1,0 +1,118 @@
+package admin
+
+import (
+	"fmt"
+
+	"github.com/goquizvibe/types"
+)
+
+templ ResultsPage(data types.AdminResultsData) {
+	@BaseAdmin("Результаты", data.User) {
+		<h1 class="text-3xl font-bold mb-8">Результаты прохождения тестов</h1>
+
+		<div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+			<div class="flex items-center gap-4">
+				<div class="flex-1">
+					<h2 class="font-semibold mb-2">Фильтр по тесту</h2>
+					<select id="quizFilter" onchange="filterResults()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+						<option value="">Все тесты</option>
+						for _, quiz := range data.Quizzes {
+							<option value={ quiz.ID.String() }>{ quiz.Title }</option>
+						}
+					</select>
+				</div>
+				<div class="text-right">
+					<p class="text-sm text-gray-500">Всего прохождений</p>
+					<p class="text-2xl font-bold text-indigo-600">{ len(data.Attempts) }</p>
+				</div>
+			</div>
+		</div>
+
+		if len(data.Attempts) == 0 {
+			<div class="bg-white rounded-xl shadow-sm p-12 text-center">
+				<i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+				<p class="text-gray-500 text-lg">Пока нет результатов</p>
+				<p class="text-gray-400 text-sm mt-2">Результаты появятся после прохождения тестов учениками</p>
+			</div>
+		} else {
+			<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+				<table class="w-full">
+					<thead class="bg-gray-50 border-b">
+						<tr>
+							<th class="text-left px-6 py-4 font-semibold text-gray-600">Ученик</th>
+							<th class="text-left px-6 py-4 font-semibold text-gray-600">Тест</th>
+							<th class="text-left px-6 py-4 font-semibold text-gray-600">Дата</th>
+							<th class="text-left px-6 py-4 font-semibold text-gray-600">Баллы</th>
+							<th class="text-left px-6 py-4 font-semibold text-gray-600">%</th>
+							<th class="text-left px-6 py-4 font-semibold text-gray-600">Статус</th>
+						</tr>
+					</thead>
+					<tbody id="resultsTableBody" class="divide-y">
+						for _, attempt := range data.Attempts {
+							<tr class="hover:bg-gray-50 result-row" data-quiz-id={ attempt.QuizID.String() }>
+								<td class="px-6 py-4">
+									<div class="flex items-center gap-3">
+										<i class="fas fa-user-graduate text-gray-400"></i>
+										<span class="font-medium">{ attempt.UserName }</span>
+									</div>
+								</td>
+								<td class="px-6 py-4 text-gray-600">{ attempt.QuizTitle }</td>
+								<td class="px-6 py-4 text-gray-500 text-sm">
+									if attempt.CompletedAt != nil {
+										{ attempt.CompletedAt.Format("2006-01-02 15:04") }
+									}
+								</td>
+								<td class="px-6 py-4 font-semibold">
+									{ attempt.Score }/{ attempt.MaxScore }
+								</td>
+								<td class="px-6 py-4">
+									{ getPercentage(attempt.Score, attempt.MaxScore) }
+								</td>
+								<td class="px-6 py-4">
+									<span class={ "px-2 py-1 rounded text-sm " + getResultStatusClass(attempt.Score, attempt.MaxScore) }>
+										{ getResultStatus(attempt.Score, attempt.MaxScore) }
+									</span>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	}
+}
+
+func getPercentage(score, maxScore int) string {
+	if maxScore == 0 {
+		return "0%"
+	}
+	return fmt.Sprintf("%.0f%%", float64(score)/float64(maxScore)*100)
+}
+
+func getResultStatusClass(score, maxScore int) string {
+	if maxScore == 0 {
+		return "bg-gray-100 text-gray-700"
+	}
+	percentage := float64(score) / float64(maxScore) * 100
+	if percentage >= 80 {
+		return "bg-green-100 text-green-700"
+	} else if percentage >= 60 {
+		return "bg-yellow-100 text-yellow-700"
+	}
+	return "bg-red-100 text-red-700"
+}
+
+func getResultStatus(score, maxScore int) string {
+	if maxScore == 0 {
+		return "Ошибка"
+	}
+	percentage := float64(score) / float64(maxScore) * 100
+	if percentage >= 80 {
+		return "Отлично"
+	} else if percentage >= 60 {
+		return "Хорошо"
+	} else if percentage >= 40 {
+		return "Удовл."
+	}
+	return "Неудовл."
+}

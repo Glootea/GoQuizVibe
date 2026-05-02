@@ -10,19 +10,21 @@ import (
 	"github.com/goquizvibe/store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/goquizvibe/models"
+	"github.com/goquizvibe/store"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	repo        *store.Repository
-	jwtSecret   []byte
+	repo          *store.Repository
+	jwtSecret     []byte
 	jwtExpiration time.Duration
 }
 
 func NewAuthService(r *store.Repository, secret string) *AuthService {
 	return &AuthService{
-		repo:        r,
-		jwtSecret:   []byte(secret),
+		repo:          r,
+		jwtSecret:     []byte(secret),
 		jwtExpiration: 24 * time.Hour * 7,
 	}
 }
