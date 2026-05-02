@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,13 +21,20 @@ import (
 	ce "github.com/goquizvibe/custom_errors"
 )
 
+const (
+	MaxImagesPerQuestion = 3
+	MaxImageSize         = 5 << 20
+	AllowedImageTypes    = "image/jpeg,image/png,image/webp"
+)
+
 type AdminHandler struct {
-	pool        *db.Queries
-	authService *services.AuthService
+	pool           *db.Queries
+	authService    *services.AuthService
+	storageService *services.StorageService
 }
 
-func NewAdmin(pool *db.Queries, a *services.AuthService) *AdminHandler {
-	return &AdminHandler{pool: pool, authService: a}
+func NewAdmin(pool *db.Queries, a *services.AuthService, storage *services.StorageService) *AdminHandler {
+	return &AdminHandler{pool: pool, authService: a, storageService: storage}
 }
 
 func (h *AdminHandler) getUser(r *http.Request) (*db.User, error) {
@@ -143,7 +151,7 @@ func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
 	for i, q := range quizzes {
 		stats := statsMap[q.ID.String()]
 		quizWithStats[i] = &types.QuizWithStats{
-			Quiz: &models.Quiz{Quiz: q, Questions: nil},
+			Quiz:         &models.Quiz{Quiz: q, Questions: nil},
 			AttemptCount: stats.AttemptCount,
 			AvgScore:     stats.AvgScore,
 		}
@@ -154,6 +162,7 @@ func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *AdminHandler) QuizzesCreate(w http.ResponseWriter, r *http.Request) error {
+	println("QuizzesCreate called with method:", r.URL.Path)
 	if r.Method == "POST" {
 		return h.createQuiz(w, r)
 	}
@@ -161,10 +170,19 @@ func (h *AdminHandler) QuizzesCreate(w http.ResponseWriter, r *http.Request) err
 }
 
 func (h *AdminHandler) QuizOp(w http.ResponseWriter, r *http.Request) error {
+	println("QuizOp called with path:", r.URL.Path)
 	path := r.URL.Path
 
 	if strings.HasSuffix(path, "/question/delete") && r.Method == "POST" {
 		return h.deleteQuestion(w, r)
+	}
+
+	if strings.HasSuffix(path, "/question/image/delete") && r.Method == "POST" {
+		return h.deleteQuestionImage(w, r)
+	}
+
+	if strings.HasSuffix(path, "/question/image") && r.Method == "POST" {
+		return h.uploadQuestionImage(w, r)
 	}
 
 	if strings.HasSuffix(path, "/question") && r.Method == "POST" {
@@ -235,6 +253,7 @@ func (h *AdminHandler) createQuiz(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (h *AdminHandler) editQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
+	println("Editing quiz with ID:", quizID.String())
 	user, err := h.getUser(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
@@ -250,13 +269,32 @@ func (h *AdminHandler) editQuiz(w http.ResponseWriter, r *http.Request, quizID u
 		questions = nil
 	}
 
+	questionsWithImages := h.attachImagesToQuestions(context.Background(), questions)
+
+	quizWithQuestions := models.QuizWithQuestionsAndImages{
+		Quiz:      quiz,
+		Questions: questionsWithImages,
+	}
+
 	data := types.AdminQuizEditData{
 		User:      user,
-		Quiz:      &models.Quiz{Quiz: quiz, Questions: questions},
-		Questions: questions,
+		Quiz:      &quizWithQuestions,
+		Questions: questionsWithImages,
 	}
 
 	return admin.QuizEditPage(data).Render(r.Context(), w)
+}
+
+func (h *AdminHandler) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.Question {
+	result := make([]models.Question, len(questions))
+	for i, q := range questions {
+		images, _ := h.pool.GetImagesByQuestionID(ctx, q.ID)
+		result[i] = models.Question{
+			Question: q,
+			Images:   images,
+		}
+	}
+	return result
 }
 
 func (h *AdminHandler) updateQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
@@ -315,6 +353,12 @@ func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error
 }
 
 func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		if err := r.ParseForm(); err != nil {
+			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+		}
+	}
+
 	idStr := strings.TrimPrefix(r.URL.Path, "/admin/quizzes/")
 	idStr = strings.TrimSuffix(idStr, "/question")
 	quizID, err := uuid.Parse(idStr)
@@ -336,7 +380,6 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 	var correctAnswer string
 
 	if questionType == db.QuestionTypeChoice {
-		r.ParseForm()
 		for key, values := range r.Form {
 			if strings.HasPrefix(key, "option_") {
 				val := values[0]
@@ -355,8 +398,9 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 
 	optionsJSON, _ := json.Marshal(options)
 
+	newQuestionID := uuid.New()
 	_, err = h.pool.CreateQuestion(context.Background(), db.CreateQuestionParams{
-		ID:            uuid.New(),
+		ID:            newQuestionID,
 		QuizID:        quizID,
 		Text:          text,
 		Type:          questionType,
@@ -368,6 +412,46 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 	})
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if mpForm := r.MultipartForm; mpForm != nil {
+		files := mpForm.File["images"]
+		for i, fileHeader := range files {
+			if i >= MaxImagesPerQuestion {
+				break
+			}
+			count, _ := h.pool.GetImageCountByQuestionID(context.Background(), newQuestionID)
+			if count >= MaxImagesPerQuestion {
+				continue
+			}
+
+			url, err := h.storageService.UploadImage(context.Background(), fileHeader)
+			if err != nil {
+				continue
+			}
+
+			h.pool.CreateQuestionImage(context.Background(), db.CreateQuestionImageParams{
+				ID:         uuid.New(),
+				QuestionID: newQuestionID,
+				URL:        url,
+				OrderIndex: int(count),
+				CreatedAt:  time.Now(),
+			})
+		}
+	}
+
+	if r.Header.Get("hx-request") == "true" {
+		questions, _ := h.pool.GetQuestionsByQuizID(context.Background(), quizID)
+		questionsWithImages := h.attachImagesToQuestions(context.Background(), questions)
+
+		quiz, _ := h.pool.GetQuizByID(context.Background(), quizID)
+
+		quizWithQuestions := models.QuizWithQuestionsAndImages{
+			Quiz:      quiz,
+			Questions: questionsWithImages,
+		}
+
+		return admin.QuestionsSection(&quizWithQuestions, questionsWithImages).Render(r.Context(), w)
 	}
 
 	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
@@ -614,4 +698,115 @@ func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) e
 	}
 
 	return admin.SubjectDistPartial(dist).Render(r.Context(), w)
+}
+
+func (h *AdminHandler) uploadQuestionImage(w http.ResponseWriter, r *http.Request) error {
+	if err := r.ParseMultipartForm(MaxImageSize); err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	path := r.URL.Path
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if len(parts) < 4 {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid path")), http.StatusBadRequest)
+	}
+	questionIDStr := parts[len(parts)-2]
+	questionID, err := uuid.Parse(questionIDStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid question ID")), http.StatusBadRequest)
+	}
+
+	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
+	}
+
+	count, err := h.pool.GetImageCountByQuestionID(context.Background(), questionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+	if count >= MaxImagesPerQuestion {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("maximum images reached")), http.StatusBadRequest)
+	}
+
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+	defer file.Close()
+
+	contentType := header.Header.Get("Content-Type")
+	if !strings.Contains(AllowedImageTypes, contentType) {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid image type")), http.StatusBadRequest)
+	}
+
+	if header.Size > MaxImageSize {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("image too large")), http.StatusBadRequest)
+	}
+
+	ext := filepath.Ext(header.Filename)
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp" {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid file extension")), http.StatusBadRequest)
+	}
+
+	url, err := h.storageService.UploadImage(context.Background(), header)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	createdAt := time.Now()
+	_, err = h.pool.CreateQuestionImage(context.Background(), db.CreateQuestionImageParams{
+		ID:         uuid.New(),
+		QuestionID: questionID,
+		URL:        url,
+		OrderIndex: int(count),
+		CreatedAt:  createdAt,
+	})
+	if err != nil {
+		_ = h.storageService.DeleteImage(context.Background(), url)
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+
+	http.Redirect(w, r, "/admin/quizzes/"+question.QuizID.String(), http.StatusFound)
+	return nil
+}
+
+func (h *AdminHandler) deleteQuestionImage(w http.ResponseWriter, r *http.Request) error {
+	imageIDStr := r.FormValue("image_id")
+	imageID, err := uuid.Parse(imageIDStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid image ID")), http.StatusBadRequest)
+	}
+
+	ctx := context.Background()
+
+	var imageToDelete db.QuestionImage
+	imageToDelete, err = h.pool.GetQuestionImageByID(ctx, imageID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
+	}
+
+	err = h.pool.DeleteQuestionImage(ctx, imageID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	objectName := filepath.Base(imageToDelete.URL)
+	_ = h.storageService.DeleteImage(ctx, objectName)
+
+	if r.Header.Get("hx-request") == "true" {
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+
+	return nil
+}
+
+func (h *AdminHandler) getImageURL(objectName string) string {
+	return h.storageService.GetImageURL(objectName)
 }

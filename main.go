@@ -38,11 +38,18 @@ func main() {
 	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
 	quizService := services.NewQuizService(queries)
 	gamification := services.NewGamificationService(queries)
+	storageService, err := services.NewStorageService(cfg.Minio)
+	if err != nil {
+		log.Fatalf("Failed to initialize storage service: %v", err)
+	}
+	if err := storageService.EnsureBucket(ctx); err != nil {
+		log.Printf("Warning: Failed to ensure bucket exists: %v", err)
+	}
 
 	authHandler := handlers.NewAuth(queries, authService)
 	dashboardHandler := handlers.NewDashboard(queries, quizService, gamification, authService)
 	quizHandler := handlers.NewQuiz(queries, quizService, gamification, authService)
-	adminHandler := handlers.NewAdmin(queries, authService)
+	adminHandler := handlers.NewAdmin(queries, authService, storageService)
 
 	adminMiddleware := authHandler.RequireRole(models.RoleTeacher)
 
@@ -107,8 +114,8 @@ func main() {
 
 	adminRoutes := map[string]func(w http.ResponseWriter, r *http.Request) error{
 		"":                 adminHandler.Dashboard,
-		"quizzes":          adminHandler.QuizzesCreate,
 		"quizzes/":         adminHandler.QuizOp,
+		"quizzes/list":     adminHandler.QuizzesCreate,
 		"results":          adminHandler.Results,
 		"statistics":       adminHandler.Statistics,
 		"api/quiz-stats":   adminHandler.QuizStatsData,

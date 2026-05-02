@@ -367,7 +367,7 @@ func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
 		quiz, err := h.quizService.GetQuizByID(ctx, attempt.QuizID)
 		if err == nil {
 			answers, _ := h.pool.GetAnswersByAttempt(ctx, attempt.ID)
-			questionMap := make(map[uuid.UUID]db.Question)
+			questionMap := make(map[uuid.UUID]models.Question)
 			for _, q := range quiz.Questions {
 				questionMap[q.ID] = q
 			}

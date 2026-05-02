@@ -25,23 +25,24 @@ func NewQuizService(pool *db.Queries) *QuizService {
 	return &QuizService{pool: pool}
 }
 
-func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.Quiz, error) {
+func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
 	quizzes, err := s.pool.GetQuizzesForUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*models.Quiz, len(quizzes))
+	result := make([]*models.QuizWithQuestionsAndImages, len(quizzes))
 	for i, q := range quizzes {
 		questions, _ := s.pool.GetQuestionsByQuizID(ctx, q.ID)
-		result[i] = &models.Quiz{
-			Quiz:      q,
-			Questions: questions,
+		questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+		result[i] = &models.QuizWithQuestionsAndImages{
+			Quiz:       q,
+			Questions:   questionsWithImages,
 		}
 	}
 	return result, err
 }
 
-func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.Quiz, error) {
+func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.QuizWithQuestionsAndImages, error) {
 	quiz, err := s.pool.GetQuizByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -50,10 +51,23 @@ func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.Qu
 	if err != nil {
 		return nil, err
 	}
-	return &models.Quiz{
-		Quiz:      quiz,
-		Questions: questions,
+	questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+	return &models.QuizWithQuestionsAndImages{
+		Quiz:       quiz,
+		Questions:   questionsWithImages,
 	}, nil
+}
+
+func (s *QuizService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.QuestionWithImages {
+	result := make([]models.QuestionWithImages, len(questions))
+	for i, q := range questions {
+		images, _ := s.pool.GetImagesByQuestionID(ctx, q.ID)
+		result[i] = models.QuestionWithImages{
+			Question: q,
+			Images:   images,
+		}
+	}
+	return result
 }
 
 func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid.UUID, answers map[uuid.UUID]string) (*db.QuizAttempt, error) {
