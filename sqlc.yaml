@@ -24,7 +24,9 @@ sql:
               type: "UUID"
           - db_type: "timestamptz"
             nullable: true
-            go_type: "time.Time"
+            go_type:
+              type: "time.Time"
+              import: "time"
           - db_type: "timestamptz"
             nullable: false
             go_type: "time.Time"

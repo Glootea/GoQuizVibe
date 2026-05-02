@@ -106,21 +106,25 @@ func main() {
 	mux.HandleFunc("/leaderboard", handlers.ErrorHandler(quizHandler.LeaderboardPage))
 
 	adminRoutes := map[string]func(w http.ResponseWriter, r *http.Request) error{
-		"":                  adminHandler.Dashboard,
-		"quizzes":           adminHandler.QuizzesCreate,
-		"quizzes/":          adminHandler.QuizOp,
-		"quizzes/*/restore": adminHandler.RestoreQuiz,
-		"results":           adminHandler.Results,
-		"statistics":        adminHandler.Statistics,
-		"/api/quiz-stats":   adminHandler.QuizStatsData,
-		"/api/grade-dist":   adminHandler.GradeDistData,
-		"/api/subject-dist": adminHandler.SubjectDistData,
+		"":                 adminHandler.Dashboard,
+		"quizzes":          adminHandler.QuizzesCreate,
+		"quizzes/":         adminHandler.QuizOp,
+		"results":          adminHandler.Results,
+		"statistics":       adminHandler.Statistics,
+		"api/quiz-stats":   adminHandler.QuizStatsData,
+		"api/grade-dist":   adminHandler.GradeDistData,
+		"api/subject-dist": adminHandler.SubjectDistData,
 	}
 
 	for path, handler := range adminRoutes {
-		errorHandler := handlers.ErrorHandlerFunc(handler)
-		mux.Handle("/admin/"+path, adminMiddleware(errorHandler))
+		fullPath := "/admin/" + path
+		if path == "" {
+			fullPath = "/admin"
+		}
+		mux.Handle(fullPath, adminMiddleware(handlers.ErrorHandlerFunc(handler)))
 	}
+
+	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(handlers.ErrorHandlerFunc(adminHandler.RestoreQuiz)))
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))

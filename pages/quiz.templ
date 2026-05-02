@@ -235,17 +235,25 @@ templ ErrorsPage(data types.ErrorsPageData) {
 						<div class="errors-content hidden px-5 pb-5 border-t" id={ fmt.Sprintf("errors-%s", qe.Quiz.ID.String()) }>
 							for _, wa := range qe.WrongAnswers {
 								<div class="py-4 border-b last:border-b-0">
-									<div class="flex justify-between items-start mb-2">
-										<span class="text-sm text-gray-500">{ wa.Timestamp.Format("02.01.2006 15:04") }</span>
-									</div>
+									if !wa.Timestamp.IsZero() {
+										<div class="flex justify-between items-start mb-2">
+											<span class="text-sm text-gray-500">{ wa.Timestamp.Format("02.01.2006 15:04") }</span>
+										</div>
+									}
 									<div class="mb-2">
 										<p class="text-sm text-gray-500">Ваш ответ:</p>
 										<p class="text-red-600 font-medium">{ wa.UserAnswer }</p>
 									</div>
-									<div>
+									<div class="mb-2">
 										<p class="text-sm text-gray-500">Правильный ответ:</p>
 										<p class="text-green-600 font-medium">{ wa.CorrectAnswer }</p>
 									</div>
+									if wa.Explanation != "" {
+										<div>
+											<p class="text-sm text-gray-500">Пояснение:</p>
+											<p class="text-blue-600 text-sm">{ wa.Explanation }</p>
+										</div>
+									}
 								</div>
 							}
 						</div>

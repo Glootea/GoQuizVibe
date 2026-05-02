@@ -32,9 +32,10 @@ func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) (
 	}
 	result := make([]*models.Quiz, len(quizzes))
 	for i, q := range quizzes {
+		questions, _ := s.pool.GetQuestionsByQuizID(ctx, q.ID)
 		result[i] = &models.Quiz{
 			Quiz:      q,
-			Questions: nil,
+			Questions: questions,
 		}
 	}
 	return result, err

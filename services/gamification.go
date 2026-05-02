@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
@@ -16,6 +17,37 @@ func NewGamificationService(pool *db.Queries) *GamificationService {
 	return &GamificationService{pool: pool}
 }
 
+func (s *GamificationService) calculateStreak(ctx context.Context, userID uuid.UUID) (int, error) {
+	attempts, err := s.pool.GetAttemptsByUser(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(attempts) == 0 {
+		return 0, nil
+	}
+
+	dailyAttempts := make(map[string]int)
+	for _, a := range attempts {
+		day := a.CompletedAt.Format("2006-01-02")
+		dailyAttempts[day]++
+	}
+
+	streak := 0
+	currentDate := time.Now().Format("2006-01-02")
+	for {
+		if count, ok := dailyAttempts[currentDate]; ok && count > 0 {
+			streak++
+			t, _ := time.Parse("2006-01-02", currentDate)
+			currentDate = t.AddDate(0, 0, -1).Format("2006-01-02")
+		} else {
+			break
+		}
+	}
+
+	return streak, nil
+}
+
 func (s *GamificationService) GetLeaderboard(ctx context.Context, limit int) ([]*models.LeaderboardEntry, error) {
 	attempts, err := s.pool.GetRecentAttempts(ctx, int32(limit))
 	if err != nil {
@@ -26,12 +58,12 @@ func (s *GamificationService) GetLeaderboard(ctx context.Context, limit int) ([]
 	for _, attempt := range attempts {
 		key := attempt.UserID.String()
 		if entry, ok := leaderboardMap[key]; ok {
-			entry.XP += attempt.Score
+			entry.XP += int(attempt.Score)
 		} else {
 			leaderboardMap[key] = &models.LeaderboardEntry{
 				UserID:   attempt.UserID.String(),
 				UserName: attempt.UserName,
-				XP:       attempt.Score,
+				XP:       int(attempt.Score),
 			}
 		}
 	}
@@ -41,11 +73,23 @@ func (s *GamificationService) GetLeaderboard(ctx context.Context, limit int) ([]
 		entries = append(entries, entry)
 	}
 
+	sortByXP(entries)
+
 	for i := range entries {
 		entries[i].Rank = i + 1
 	}
 
 	return entries, nil
+}
+
+func sortByXP(entries []*models.LeaderboardEntry) {
+	for i := 0; i < len(entries); i++ {
+		for j := i + 1; j < len(entries); j++ {
+			if entries[j].XP > entries[i].XP {
+				entries[i], entries[j] = entries[j], entries[i]
+			}
+		}
+	}
 }
 
 func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID) (*models.UserStats, error) {
@@ -66,7 +110,12 @@ func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID
 
 	var lastActiveStr string
 	if lastActive != nil {
-		lastActiveStr = lastActive.(string)
+		switch v := lastActive.(type) {
+		case time.Time:
+			lastActiveStr = v.Format("2006-01-02 15:04")
+		case string:
+			lastActiveStr = v
+		}
 	}
 
 	attempts, err := s.pool.GetAttemptsByUser(ctx, userID)
@@ -76,14 +125,15 @@ func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID
 
 	completedQuizzes := make([]string, 0)
 	for _, a := range attempts {
-		if !a.CompletedAt.IsZero() {
-			completedQuizzes = append(completedQuizzes, a.QuizID.String())
-		}
+		completedQuizzes = append(completedQuizzes, a.QuizID.String())
 	}
+
+	streak, _ := s.calculateStreak(ctx, userID)
 
 	return &models.UserStats{
 		UserID:           userID.String(),
 		XP:               int(xp),
+		Streak:           streak,
 		LastActiveDate:   lastActiveStr,
 		CompletedQuizzes: completedQuizzes,
 		CorrectCount:     int(stats.CorrectCnt),

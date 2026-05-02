@@ -71,10 +71,18 @@ func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	var avgScore float64
+	avgScore := 0.0
 	if stats.AvgScore != nil {
-		if f, ok := stats.AvgScore.(float64); ok {
-			avgScore = f
+		switch v := stats.AvgScore.(type) {
+		case float64:
+			avgScore = v
+		case int64:
+			avgScore = float64(v)
+		default:
+			if num, ok := v.(interface{ Float64() (float64, error) }); ok {
+				f, _ := num.Float64()
+				avgScore = f
+			}
 		}
 	}
 
@@ -104,10 +112,40 @@ func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
 		Quizzes: nil,
 	}
 
+	quizStats, _ := h.pool.GetQuizStats(ctx)
+	statsMap := make(map[string]types.QuizStatsResponse)
+	for _, qs := range quizStats {
+		avgScore := 0.0
+		if qs.AvgScore != nil {
+			switch v := qs.AvgScore.(type) {
+			case float64:
+				avgScore = v
+			case int64:
+				avgScore = float64(v)
+			default:
+				if num, ok := v.(interface{ Float64() (float64, error) }); ok {
+					f, _ := num.Float64()
+					avgScore = f
+				}
+			}
+		}
+		statsMap[qs.QuizID.String()] = types.QuizStatsResponse{
+			QuizID:       qs.QuizID,
+			Title:        qs.Title,
+			Subject:      qs.Subject,
+			AttemptCount: int(qs.AttemptCount),
+			AvgScore:     avgScore,
+			PassRate:     float64(qs.PassRate),
+		}
+	}
+
 	quizWithStats := make([]*types.QuizWithStats, len(quizzes))
 	for i, q := range quizzes {
+		stats := statsMap[q.ID.String()]
 		quizWithStats[i] = &types.QuizWithStats{
 			Quiz: &models.Quiz{Quiz: q, Questions: nil},
+			AttemptCount: stats.AttemptCount,
+			AvgScore:     stats.AvgScore,
 		}
 	}
 	data.Quizzes = quizWithStats
@@ -176,8 +214,9 @@ func (h *AdminHandler) createQuiz(w http.ResponseWriter, r *http.Request) error 
 	grade, _ := strconv.Atoi(r.FormValue("grade"))
 	timeLimit, _ := strconv.Atoi(r.FormValue("time_limit"))
 
+	newQuizID := uuid.New()
 	_, err = h.pool.CreateQuiz(context.Background(), db.CreateQuizParams{
-		ID:          uuid.New(),
+		ID:          newQuizID,
 		Title:       title,
 		Description: description,
 		Subject:     subject,
@@ -191,7 +230,7 @@ func (h *AdminHandler) createQuiz(w http.ResponseWriter, r *http.Request) error 
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+	http.Redirect(w, r, "/admin/quizzes/"+newQuizID.String(), http.StatusFound)
 	return nil
 }
 
@@ -479,10 +518,18 @@ func (h *AdminHandler) Statistics(w http.ResponseWriter, r *http.Request) error 
 
 	stats, _ := h.pool.GetAdminStatsData(context.Background())
 
-	var avgScore float64
+	avgScore := 0.0
 	if stats.AvgScore != nil {
-		if f, ok := stats.AvgScore.(float64); ok {
-			avgScore = f
+		switch v := stats.AvgScore.(type) {
+		case float64:
+			avgScore = v
+		case int64:
+			avgScore = float64(v)
+		default:
+			if num, ok := v.(interface{ Float64() (float64, error) }); ok {
+				f, _ := num.Float64()
+				avgScore = f
+			}
 		}
 	}
 
@@ -503,16 +550,23 @@ func (h *AdminHandler) Statistics(w http.ResponseWriter, r *http.Request) error 
 func (h *AdminHandler) QuizStatsData(w http.ResponseWriter, r *http.Request) error {
 	quizStats, err := h.pool.GetQuizStats(context.Background())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
 	stats := make([]types.QuizStatsResponse, 0, len(quizStats))
 	for _, qs := range quizStats {
-		var avgScore float64
+		avgScore := 0.0
 		if qs.AvgScore != nil {
-			if f, ok := qs.AvgScore.(float64); ok {
-				avgScore = f
+			switch v := qs.AvgScore.(type) {
+			case float64:
+				avgScore = v
+			case int64:
+				avgScore = float64(v)
+			default:
+				if num, ok := v.(interface{ Float64() (float64, error) }); ok {
+					f, _ := num.Float64()
+					avgScore = f
+				}
 			}
 		}
 		stats = append(stats, types.QuizStatsResponse{
@@ -531,8 +585,7 @@ func (h *AdminHandler) QuizStatsData(w http.ResponseWriter, r *http.Request) err
 func (h *AdminHandler) GradeDistData(w http.ResponseWriter, r *http.Request) error {
 	data, err := h.pool.GetGradeDistribution(context.Background())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
 	var dist map[string]int
@@ -549,8 +602,7 @@ func (h *AdminHandler) GradeDistData(w http.ResponseWriter, r *http.Request) err
 func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) error {
 	data, err := h.pool.GetSubjectDistribution(context.Background())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
 	var dist map[string]int

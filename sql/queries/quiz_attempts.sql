@@ -12,7 +12,7 @@ WHERE id = $1
 RETURNING *;
 
 -- name: GetAttemptsByUser :many
-SELECT * FROM quiz_attempts WHERE user_id = $1 ORDER BY started_at DESC;
+SELECT * FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL ORDER BY started_at DESC;
 
 -- name: CreateUserAnswer :one
 INSERT INTO user_answers (id, attempt_id, question_id, user_answer, is_correct)
@@ -24,13 +24,9 @@ SELECT * FROM user_answers WHERE attempt_id = $1;
 
 -- name: GetUserStats :one
 SELECT
-    COALESCE(SUM(q.points), 0) as total_xp,
-    COUNT(CASE WHEN ua.is_correct = true THEN 1 END) as correct_cnt,
-    COUNT(CASE WHEN ua.is_correct = false THEN 1 END) as wrong_cnt
-FROM user_answers ua
-JOIN questions q ON q.id = ua.question_id
-JOIN quiz_attempts a ON a.id = ua.attempt_id
-WHERE a.user_id = $1;
+    COALESCE((SELECT SUM(score) FROM (SELECT DISTINCT id, score FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL) as attempts), 0) as total_xp,
+    (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = true) as correct_cnt,
+    (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = false) as wrong_cnt;
 
 -- name: GetCompletedAttemptBySessionID :one
 SELECT a.* FROM quiz_attempts a

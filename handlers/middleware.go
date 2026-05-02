@@ -22,11 +22,11 @@ func ErrorHandler(f HandlerFunc) http.HandlerFunc {
 			status := ce.HTTPStatus(err)
 			redirectTo := redirectPathForStatus(status)
 
-			w.WriteHeader(status)
-
 			if isHTMX {
+				w.WriteHeader(status)
 				pages.ErrorAlert(ce.UserMessage(err), redirectTo).Render(r.Context(), w)
 			} else {
+				w.WriteHeader(status)
 				pages.ErrorPage(types.ErrorData{
 					Message:    ce.UserMessage(err),
 					RedirectTo: redirectTo,

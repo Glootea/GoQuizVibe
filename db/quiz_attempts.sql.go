@@ -229,7 +229,7 @@ func (q *Queries) GetAttemptsByQuiz(ctx context.Context, quizID uuid.UUID) ([]Ge
 }
 
 const getAttemptsByUser = `-- name: GetAttemptsByUser :many
-SELECT id, user_id, quiz_id, score, max_score, started_at, completed_at FROM quiz_attempts WHERE user_id = $1 ORDER BY started_at DESC
+SELECT id, user_id, quiz_id, score, max_score, started_at, completed_at FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL ORDER BY started_at DESC
 `
 
 func (q *Queries) GetAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]QuizAttempt, error) {
@@ -472,13 +472,9 @@ func (q *Queries) GetSubjectDistribution(ctx context.Context) ([]byte, error) {
 
 const getUserStats = `-- name: GetUserStats :one
 SELECT
-    COALESCE(SUM(q.points), 0) as total_xp,
-    COUNT(CASE WHEN ua.is_correct = true THEN 1 END) as correct_cnt,
-    COUNT(CASE WHEN ua.is_correct = false THEN 1 END) as wrong_cnt
-FROM user_answers ua
-JOIN questions q ON q.id = ua.question_id
-JOIN quiz_attempts a ON a.id = ua.attempt_id
-WHERE a.user_id = $1
+    COALESCE((SELECT SUM(score) FROM (SELECT DISTINCT id, score FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL) as attempts), 0) as total_xp,
+    (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = true) as correct_cnt,
+    (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = false) as wrong_cnt
 `
 
 type GetUserStatsRow struct {

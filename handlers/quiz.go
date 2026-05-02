@@ -313,17 +313,12 @@ func (h *QuizHandler) completeSession(ctx context.Context, sessionID uuid.UUID) 
 		return nil, err
 	}
 
-	attempt, err := h.pool.GetAttemptByID(ctx, session.AttemptID)
-	if err != nil {
-		return nil, err
-	}
-
 	quiz, err := h.quizService.GetQuizByID(ctx, session.QuizID)
 	if err != nil {
 		return nil, err
 	}
 
-	answers, _ := h.pool.GetAnswersByAttempt(ctx, attempt.ID)
+	answers, _ := h.pool.GetAnswersByAttempt(ctx, session.AttemptID)
 
 	var score, maxScore int
 	for _, q := range quiz.Questions {
@@ -337,8 +332,8 @@ func (h *QuizHandler) completeSession(ctx context.Context, sessionID uuid.UUID) 
 	}
 
 	now := time.Now()
-	attempt, err = h.pool.UpdateAttempt(ctx, db.UpdateAttemptParams{
-		ID:          attempt.ID,
+	updatedAttempt, err := h.pool.UpdateAttempt(ctx, db.UpdateAttemptParams{
+		ID:          session.AttemptID,
 		Score:       score,
 		MaxScore:    maxScore,
 		CompletedAt: now,
@@ -349,7 +344,7 @@ func (h *QuizHandler) completeSession(ctx context.Context, sessionID uuid.UUID) 
 
 	h.pool.DeleteSession(ctx, sessionID)
 
-	return &attempt, nil
+	return &updatedAttempt, nil
 }
 
 func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
@@ -372,17 +367,29 @@ func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
 		quiz, err := h.quizService.GetQuizByID(ctx, attempt.QuizID)
 		if err == nil {
 			answers, _ := h.pool.GetAnswersByAttempt(ctx, attempt.ID)
-			var wrongAnswers []db.UserAnswer
+			questionMap := make(map[uuid.UUID]db.Question)
+			for _, q := range quiz.Questions {
+				questionMap[q.ID] = q
+			}
+			var wrongAnswers []models.WrongAnswer
 			for _, a := range answers {
 				if !a.IsCorrect {
-					wrongAnswers = append(wrongAnswers, a)
+					q := questionMap[a.QuestionID]
+					wrongAnswers = append(wrongAnswers, models.WrongAnswer{
+						ID:            a.ID,
+						QuestionID:    a.QuestionID,
+						QuizID:        attempt.QuizID,
+						UserAnswer:    a.UserAnswer,
+						CorrectAnswer: q.CorrectAnswer,
+						Explanation:   q.Explanation,
+						Timestamp:     attempt.StartedAt,
+					})
 				}
 			}
 			quizErrors = append(quizErrors, types.QuizErrors{
 				Quiz:         quiz,
-				WrongAnswers: nil,
+				WrongAnswers: wrongAnswers,
 			})
-			_ = wrongAnswers
 		}
 	}
 
