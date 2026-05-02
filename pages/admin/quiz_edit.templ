@@ -326,10 +326,10 @@ templ QuestionCard(q models.Question, index int, quizID string) {
 			</form>
 		</div>
 		<p class="text-gray-800 mb-2">{ q.Text }</p>
-		if q.Type == models.QuestionTypeChoice && len(q.GetOptions()) > 0 {
+		if q.Type == models.QuestionTypeChoice && len(models.GetQuestionOptions(q)) > 0 {
 			<div class="text-sm text-gray-600">
 				<p class="font-medium">Варианты:</p>
-				for _, opt := range q.GetOptions() {
+				for _, opt := range models.GetQuestionOptions(q) {
 					<span class="inline-block bg-gray-100 px-2 py-1 rounded mr-1 mt-1">{ opt }</span>
 				}
 			</div>
@@ -420,7 +420,7 @@ templ AnswerOptionsByType(q models.Question) {
 			<div id="answerTypeContainer">
 				<label class="block text-sm font-medium text-gray-700 mb-1">Варианты ответов</label>
 				<div id="optionsList" class="space-y-2">
-					for i, opt := range q.GetOptions() {
+					for i, opt := range models.GetQuestionOptions(q) {
 						<div class="flex items-center gap-2 option-row">
 							<input type="radio" name="correct_answer" value={ fmt.Sprintf("option_%d", i) } checked?={ opt == q.CorrectAnswer } class="w-4 h-4 text-indigo-600"/>
 							<input type="text" name={ "option_" + fmt.Sprintf("%d", i) } value={ opt } class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"/>

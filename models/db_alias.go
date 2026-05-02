@@ -40,3 +40,21 @@ const (
 
 type QuizStatus = db.QuizStatus
 type QuestionType = db.QuestionType
+
+const (
+	QuizStatusAvailable  QuizStatus = db.QuizStatusAvailable
+	QuizStatusAssigned   QuizStatus = db.QuizStatusAssigned
+	QuizStatusCompleted  QuizStatus = db.QuizStatusCompleted
+	QuizStatusArchived   QuizStatus = db.QuizStatusArchived
+)
+
+func GetQuestionOptions(q Question) []string {
+	if q.Options == nil {
+		return nil
+	}
+	var opts []string
+	if err := json.Unmarshal(q.Options, &opts); err != nil {
+		return nil
+	}
+	return opts
+}

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/goquizvibe/config"
 	ce "github.com/goquizvibe/custom_errors"
@@ -15,7 +16,6 @@ import (
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
-	"github.com/goquizvibe/store"
 )
 
 func main() {
@@ -34,16 +34,15 @@ func main() {
 		log.Fatalf("Failed to seed data: %v", err)
 	}
 
-	repo := store.NewRepository(queries)
+	jwtExp := 24 * time.Hour * 7
+	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
+	quizService := services.NewQuizService(queries)
+	gamification := services.NewGamificationService(queries)
 
-	authService := services.NewAuthService(repo, cfg.JWTSecret)
-	quizService := services.NewQuizService(repo)
-	gamification := services.NewGamificationService(repo)
-
-	authHandler := handlers.NewAuth(repo, authService)
-	dashboardHandler := handlers.NewDashboard(repo, quizService, gamification, authService)
-	quizHandler := handlers.NewQuiz(repo, quizService, gamification, authService)
-	adminHandler := handlers.NewAdmin(repo, authService)
+	authHandler := handlers.NewAuth(queries, authService)
+	dashboardHandler := handlers.NewDashboard(queries, quizService, gamification, authService)
+	quizHandler := handlers.NewQuiz(queries, quizService, gamification, authService)
+	adminHandler := handlers.NewAdmin(queries, authService)
 
 	adminMiddleware := authHandler.RequireRole(models.RoleTeacher)
 
@@ -113,6 +112,9 @@ func main() {
 		"quizzes/*/restore": adminHandler.RestoreQuiz,
 		"results":           adminHandler.Results,
 		"statistics":        adminHandler.Statistics,
+		"/api/quiz-stats":   adminHandler.QuizStatsData,
+		"/api/grade-dist":   adminHandler.GradeDistData,
+		"/api/subject-dist": adminHandler.SubjectDistData,
 	}
 
 	for path, handler := range adminRoutes {

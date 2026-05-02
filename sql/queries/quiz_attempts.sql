@@ -52,3 +52,56 @@ WHERE a.user_id = $1 AND a.completed_at IS NOT NULL;
 -- name: GetWrongAnswersByAttempt :many
 SELECT ua.* FROM user_answers ua
 WHERE ua.attempt_id = $1 AND ua.is_correct = false;
+
+-- name: GetRecentAttempts :many
+SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
+       u.name as user_name, q.title as quiz_title
+FROM quiz_attempts a
+JOIN users u ON u.id = a.user_id
+JOIN quizzes q ON q.id = a.quiz_id
+WHERE a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC LIMIT $1;
+
+-- name: GetAllAttempts :many
+SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
+       u.name as user_name, q.title as quiz_title
+FROM quiz_attempts a
+JOIN users u ON u.id = a.user_id
+JOIN quizzes q ON q.id = a.quiz_id
+WHERE a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC;
+
+-- name: GetAttemptsByQuiz :many
+SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
+       u.name as user_name
+FROM quiz_attempts a
+JOIN users u ON u.id = a.user_id
+WHERE a.quiz_id = $1 AND a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC;
+
+-- name: GetQuizStats :many
+SELECT
+    q.id as quiz_id, q.title, q.subject,
+    COUNT(a.id) as attempt_count,
+    COALESCE(AVG(a.score * 100.0 / NULLIF(a.max_score, 0)), 0) as avg_score,
+    CASE WHEN COUNT(a.id) > 0
+         THEN (COUNT(*) FILTER (WHERE a.score * 100.0 / NULLIF(a.max_score, 0) >= 60))::float / COUNT(*) * 100
+         ELSE 0
+    END as pass_rate
+FROM quizzes q
+LEFT JOIN quiz_attempts a ON a.quiz_id = q.id AND a.completed_at IS NOT NULL AND a.max_score > 0
+WHERE q.status != 'archived'
+GROUP BY q.id, q.title, q.subject
+ORDER BY q.created_at DESC;
+
+-- name: GetGradeDistribution :one
+SELECT json_object_agg(grade_level, count) as grade_dist FROM (
+    SELECT COALESCE(grade::text, 'unknown') as grade_level, COUNT(*) as count 
+    FROM quizzes WHERE status != 'archived' AND grade IS NOT NULL 
+    GROUP BY grade
+) sub;
+
+-- name: GetSubjectDistribution :one
+SELECT json_object_agg(subject_name, count) as subject_dist FROM (
+    SELECT subject as subject_name, COUNT(*) as count FROM quizzes WHERE status != 'archived' AND subject IS NOT NULL GROUP BY subject
+) sub;

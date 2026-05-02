@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
-	"github.com/goquizvibe/store"
 )
 
 func NormalizeAnswer(answer string) string {
@@ -19,63 +18,77 @@ func NormalizeAnswer(answer string) string {
 }
 
 type QuizService struct {
-	repo store.RepositoryInterface
+	pool *db.Queries
 }
 
-func NewQuizService(r store.RepositoryInterface) *QuizService {
-	return &QuizService{repo: r}
+func NewQuizService(pool *db.Queries) *QuizService {
+	return &QuizService{pool: pool}
 }
 
 func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.Quiz, error) {
-	quizzes, err := s.repo.GetQuizzesForUser(ctx, userID)
+	quizzes, err := s.pool.GetQuizzesForUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	result := make([]*models.Quiz, len(quizzes))
 	for i, q := range quizzes {
 		result[i] = &models.Quiz{
-			Quiz:      *q.Quiz,
-			Questions: q.Questions,
+			Quiz:      q,
+			Questions: nil,
 		}
 	}
 	return result, err
 }
 
 func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.Quiz, error) {
-	quiz, err := s.repo.GetQuizByID(ctx, id)
+	quiz, err := s.pool.GetQuizByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	questions, err := s.pool.GetQuestionsByQuizID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return &models.Quiz{
-		Quiz:      *quiz.Quiz,
-		Questions: quiz.Questions,
+		Quiz:      quiz,
+		Questions: questions,
 	}, nil
 }
 
 func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid.UUID, answers map[uuid.UUID]string) (*db.QuizAttempt, error) {
-	quiz, err := s.repo.GetQuizWithQuestions(ctx, quizID)
+	_, err := s.pool.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return nil, err
 	}
 
-	attempt := &db.QuizAttempt{
-		ID:        uuid.New(),
+	questions, err := s.pool.GetQuestionsByQuizID(ctx, quizID)
+	if err != nil {
+		return nil, err
+	}
+
+	attemptID := uuid.New()
+	now := time.Now()
+
+	if _, err := s.pool.CreateAttempt(ctx, db.CreateAttemptParams{
+		ID:        attemptID,
 		UserID:    userID,
 		QuizID:    quizID,
-		StartedAt: time.Now(),
+		StartedAt: now,
+	}); err != nil {
+		return nil, err
 	}
 
 	var score, maxScore int
 	var userAnswers []db.UserAnswer
 
-	for _, q := range quiz.Questions {
+	for _, q := range questions {
 		maxScore += int(q.Points)
 		userAnswer := answers[q.ID]
 		isCorrect := NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
 
 		userAnswers = append(userAnswers, db.UserAnswer{
 			ID:         uuid.New(),
-			AttemptID:  attempt.ID,
+			AttemptID:  attemptID,
 			QuestionID: q.ID,
 			UserAnswer: userAnswer,
 			IsCorrect:  isCorrect,
@@ -86,44 +99,28 @@ func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid
 		}
 	}
 
-	attempt.Score = score
-	attempt.MaxScore = maxScore
-	attempt.CompletedAt = time.Now()
-
-	if err := s.repo.SaveAttempt(ctx, attempt); err != nil {
+	completedAt := time.Now()
+	attempt, err := s.pool.UpdateAttempt(ctx, db.UpdateAttemptParams{
+		ID:          attemptID,
+		Score:       score,
+		MaxScore:    maxScore,
+		CompletedAt: completedAt,
+	})
+	if err != nil {
 		return nil, err
 	}
 
 	for _, a := range userAnswers {
-		if err := s.repo.SaveUserAnswer(ctx, &a); err != nil {
+		if _, err := s.pool.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
+			ID:         a.ID,
+			AttemptID:  a.AttemptID,
+			QuestionID: a.QuestionID,
+			UserAnswer: a.UserAnswer,
+			IsCorrect:  a.IsCorrect,
+		}); err != nil {
 			return nil, err
 		}
 	}
 
-	return attempt, nil
-}
-
-type GamificationService struct {
-	repo store.RepositoryInterface
-}
-
-func NewGamificationService(r store.RepositoryInterface) *GamificationService {
-	return &GamificationService{repo: r}
-}
-
-func (s *GamificationService) UpdateStreak(ctx context.Context, userID uuid.UUID) error {
-	return nil
-}
-
-func (s *GamificationService) AwardXP(ctx context.Context, userID uuid.UUID, amount int) error {
-	return nil
-}
-
-func (s *GamificationService) GetLeaderboard(ctx context.Context) []*models.LeaderboardEntry {
-	entries, _ := s.repo.GetLeaderboard(ctx, 100)
-	return entries
-}
-
-func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID) (*models.UserStats, error) {
-	return s.repo.GetUserStats(ctx, userID)
+	return &attempt, nil
 }

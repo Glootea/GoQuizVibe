@@ -1,28 +1,28 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 	ce "github.com/goquizvibe/custom_errors"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
-	"github.com/goquizvibe/store"
 	"github.com/goquizvibe/types"
-	"github.com/google/uuid"
 )
 
 type DashboardHandler struct {
-	repo         *store.Repository
+	pool         *db.Queries
 	quizService  *services.QuizService
 	gamification *services.GamificationService
 	authService  *services.AuthService
 }
 
-func NewDashboard(r *store.Repository, qs *services.QuizService, gs *services.GamificationService, as *services.AuthService) *DashboardHandler {
+func NewDashboard(pool *db.Queries, qs *services.QuizService, gs *services.GamificationService, as *services.AuthService) *DashboardHandler {
 	return &DashboardHandler{
-		repo:         r,
+		pool:         pool,
 		quizService:  qs,
 		gamification: gs,
 		authService:  as,
@@ -30,21 +30,22 @@ func NewDashboard(r *store.Repository, qs *services.QuizService, gs *services.Ga
 }
 
 func (h *DashboardHandler) DashboardPage(w http.ResponseWriter, r *http.Request) error {
+	ctx := context.Background()
 	userID, err := h.getUserIDFromRequest(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	user, err := h.repo.GetUserByID(ctx, userID)
+	user, err := h.pool.GetUserByID(ctx, userID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 	quizzes, _ := h.quizService.GetQuizzesForUser(ctx, userID)
 	stats, _ := h.gamification.GetUserStats(ctx, userID)
-	leaderboard := h.gamification.GetLeaderboard(ctx)
+	leaderboard, _ := h.gamification.GetLeaderboard(ctx, 100)
 
 	data := types.DashboardData{
-		User:        user,
+		User:        &user,
 		Quizzes:     quizzes,
 		Stats:       stats,
 		Leaderboard: leaderboard,

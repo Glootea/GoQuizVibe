@@ -56,6 +56,36 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 	return i, err
 }
 
+const deleteQuestion = `-- name: DeleteQuestion :exec
+DELETE FROM questions WHERE id = $1
+`
+
+func (q *Queries) DeleteQuestion(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteQuestion, id)
+	return err
+}
+
+const getQuestionByID = `-- name: GetQuestionByID :one
+SELECT id, quiz_id, text, type, options, correct_answer, explanation, points, order_index FROM questions WHERE id = $1
+`
+
+func (q *Queries) GetQuestionByID(ctx context.Context, id uuid.UUID) (Question, error) {
+	row := q.db.QueryRow(ctx, getQuestionByID, id)
+	var i Question
+	err := row.Scan(
+		&i.ID,
+		&i.QuizID,
+		&i.Text,
+		&i.Type,
+		&i.Options,
+		&i.CorrectAnswer,
+		&i.Explanation,
+		&i.Points,
+		&i.OrderIndex,
+	)
+	return i, err
+}
+
 const getQuestionsByQuizID = `-- name: GetQuestionsByQuizID :many
 SELECT id, quiz_id, text, type, options, correct_answer, explanation, points, order_index FROM questions WHERE quiz_id = $1 ORDER BY order_index ASC
 `
@@ -88,4 +118,46 @@ func (q *Queries) GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUID) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateQuestion = `-- name: UpdateQuestion :one
+UPDATE questions SET text = $2, type = $3, options = $4, correct_answer = $5, explanation = $6, points = $7, order_index = $8
+WHERE id = $1 RETURNING id, quiz_id, text, type, options, correct_answer, explanation, points, order_index
+`
+
+type UpdateQuestionParams struct {
+	ID            uuid.UUID    `json:"id"`
+	Text          string       `json:"text"`
+	Type          QuestionType `json:"type"`
+	Options       []byte       `json:"options"`
+	CorrectAnswer string       `json:"correct_answer"`
+	Explanation   string       `json:"explanation"`
+	Points        int          `json:"points"`
+	OrderIndex    int          `json:"order_index"`
+}
+
+func (q *Queries) UpdateQuestion(ctx context.Context, arg UpdateQuestionParams) (Question, error) {
+	row := q.db.QueryRow(ctx, updateQuestion,
+		arg.ID,
+		arg.Text,
+		arg.Type,
+		arg.Options,
+		arg.CorrectAnswer,
+		arg.Explanation,
+		arg.Points,
+		arg.OrderIndex,
+	)
+	var i Question
+	err := row.Scan(
+		&i.ID,
+		&i.QuizID,
+		&i.Text,
+		&i.Type,
+		&i.Options,
+		&i.CorrectAnswer,
+		&i.Explanation,
+		&i.Points,
+		&i.OrderIndex,
+	)
+	return i, err
 }

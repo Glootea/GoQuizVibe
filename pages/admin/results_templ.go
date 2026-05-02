@@ -154,7 +154,7 @@ func ResultsPage(data types.AdminResultsData) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					if attempt.CompletedAt != nil {
+					if !attempt.CompletedAt.IsZero() {
 						var templ_7745c5c3_Var9 string
 						templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.CompletedAt.Format("2006-01-02 15:04"))
 						if templ_7745c5c3_Err != nil {

@@ -1,6 +1,6 @@
 -- ENUMs
 CREATE TYPE role AS ENUM ('teacher', 'student');
-CREATE TYPE quiz_status AS ENUM ('available', 'assigned', 'completed');
+CREATE TYPE quiz_status AS ENUM ('available', 'assigned', 'completed', 'archived');
 CREATE TYPE question_type AS ENUM ('choice', 'open', 'fill');
 
 -- Tables

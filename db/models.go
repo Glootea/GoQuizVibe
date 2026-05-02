@@ -61,6 +61,7 @@ const (
 	QuizStatusAvailable QuizStatus = "available"
 	QuizStatusAssigned  QuizStatus = "assigned"
 	QuizStatusCompleted QuizStatus = "completed"
+	QuizStatusArchived  QuizStatus = "archived"
 )
 
 func (e *QuizStatus) Scan(src interface{}) error {

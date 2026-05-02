@@ -5,20 +5,20 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
-	"github.com/goquizvibe/store"
 	"github.com/goquizvibe/types"
 )
 
 type AuthHandler struct {
-	repo        *store.Repository
+	pool        *db.Queries
 	authService *services.AuthService
 }
 
-func NewAuth(r *store.Repository, a *services.AuthService) *AuthHandler {
-	return &AuthHandler{repo: r, authService: a}
+func NewAuth(pool *db.Queries, a *services.AuthService) *AuthHandler {
+	return &AuthHandler{pool: pool, authService: a}
 }
 
 func (h *AuthHandler) LandingPage(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +137,7 @@ func (h *AuthHandler) RequireRole(roles ...models.Role) func(http.Handler) http.
 	}
 }
 
-func (h *AuthHandler) GetUserFromRequest(r *http.Request) (*models.User, error) {
+func (h *AuthHandler) GetUserFromRequest(r *http.Request) (*db.User, error) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
 		return nil, errors.Join(errors.New("get cookie"), err)
@@ -146,5 +146,9 @@ func (h *AuthHandler) GetUserFromRequest(r *http.Request) (*models.User, error) 
 	if err != nil {
 		return nil, errors.Join(errors.New("validate token"), err)
 	}
-	return h.repo.GetUserByID(claims.UserID)
+	user, err := h.pool.GetUserByID(r.Context(), claims.UserID)
+	if err != nil {
+		return nil, errors.Join(errors.New("get user"), err)
+	}
+	return &user, nil
 }

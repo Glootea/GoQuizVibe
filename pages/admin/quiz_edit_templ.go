@@ -463,12 +463,12 @@ func QuestionCard(q models.Question, index int, quizID string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if q.Type == models.QuestionTypeChoice && len(q.GetOptions()) > 0 {
+		if q.Type == models.QuestionTypeChoice && len(models.GetQuestionOptions(q)) > 0 {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<div class=\"text-sm text-gray-600\"><p class=\"font-medium\">Варианты:</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, opt := range q.GetOptions() {
+			for _, opt := range models.GetQuestionOptions(q) {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<span class=\"inline-block bg-gray-100 px-2 py-1 rounded mr-1 mt-1\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -817,7 +817,7 @@ func AnswerOptionsByType(q models.Question) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for i, opt := range q.GetOptions() {
+			for i, opt := range models.GetQuestionOptions(q) {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<div class=\"flex items-center gap-2 option-row\"><input type=\"radio\" name=\"correct_answer\" value=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err

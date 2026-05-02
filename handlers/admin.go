@@ -1,32 +1,36 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
-	ce "github.com/goquizvibe/custom_errors"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages/admin"
 	"github.com/goquizvibe/services"
-	"github.com/goquizvibe/store"
 	"github.com/goquizvibe/types"
+
+	ce "github.com/goquizvibe/custom_errors"
 )
 
 type AdminHandler struct {
-	repo        *store.Repository
+	pool        *db.Queries
 	authService *services.AuthService
 }
 
-func NewAdmin(r *store.Repository, a *services.AuthService) *AdminHandler {
-	return &AdminHandler{repo: r, authService: a}
+func NewAdmin(pool *db.Queries, a *services.AuthService) *AdminHandler {
+	return &AdminHandler{pool: pool, authService: a}
 }
 
-func (h *AdminHandler) getUser(r *http.Request) (*models.User, error) {
+func (h *AdminHandler) getUser(r *http.Request) (*db.User, error) {
+	ctx := context.Background()
 	cookie, err := r.Cookie("token")
 	if err != nil {
 		return nil, errors.Join(errors.New("get cookie"), err)
@@ -35,7 +39,12 @@ func (h *AdminHandler) getUser(r *http.Request) (*models.User, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("validate token"), err)
 	}
-	return h.repo.GetUserByID(claims.UserID)
+	user, err := h.pool.GetUserByID(ctx, claims.UserID)
+	if err != nil {
+		return nil, errors.Join(errors.New("can not get user from db"), err)
+	}
+
+	return &user, nil
 }
 
 func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) error {
@@ -44,18 +53,38 @@ func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quizzes, _ := h.repo.GetAllQuizzesWithStats()
-	studentCount, _ := h.repo.GetStudentCount()
-	stats, _ := h.repo.GetAdminStatistics()
-	recentActivity, _ := h.repo.GetRecentAttempts(10)
+	ctx := context.Background()
+	quizzes, _ := h.pool.GetNonArchivedQuizzes(ctx)
+	studentCount, _ := h.pool.GetStudentCount(ctx)
+	stats, _ := h.pool.GetAdminStatsData(ctx)
+	recentActivity, _ := h.pool.GetRecentAttempts(ctx, 10)
+
+	recentAttempts := make([]*types.RecentAttempt, 0, len(recentActivity))
+	for _, a := range recentActivity {
+		recentAttempts = append(recentAttempts, &types.RecentAttempt{
+			AttemptID:   a.ID.String(),
+			UserName:    a.UserName,
+			QuizTitle:   a.QuizTitle,
+			Score:       int(a.Score),
+			MaxScore:    int(a.MaxScore),
+			CompletedAt: a.CompletedAt.Format("2006-01-02 15:04"),
+		})
+	}
+
+	var avgScore float64
+	if stats.AvgScore != nil {
+		if f, ok := stats.AvgScore.(float64); ok {
+			avgScore = f
+		}
+	}
 
 	data := types.AdminDashboardData{
 		User:           user,
 		QuizCount:      len(quizzes),
 		StudentCount:   int(studentCount),
-		AttemptCount:   stats.TotalAttempts,
-		AvgScore:       stats.AvgScore,
-		RecentActivity: recentActivity,
+		AttemptCount:   int(stats.TotalAttempts),
+		AvgScore:       avgScore,
+		RecentActivity: recentAttempts,
 	}
 
 	return admin.DashboardPage(data).Render(r.Context(), w)
@@ -67,12 +96,21 @@ func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quizzes, _ := h.repo.GetAllQuizzesWithStats()
+	ctx := context.Background()
+	quizzes, _ := h.pool.GetNonArchivedQuizzes(ctx)
 
 	data := types.AdminQuizListData{
 		User:    user,
-		Quizzes: quizzes,
+		Quizzes: nil,
 	}
+
+	quizWithStats := make([]*types.QuizWithStats, len(quizzes))
+	for i, q := range quizzes {
+		quizWithStats[i] = &types.QuizWithStats{
+			Quiz: &models.Quiz{Quiz: q, Questions: nil},
+		}
+	}
+	data.Quizzes = quizWithStats
 
 	return admin.QuizzesPage(data).Render(r.Context(), w)
 }
@@ -135,24 +173,20 @@ func (h *AdminHandler) createQuiz(w http.ResponseWriter, r *http.Request) error 
 	title := r.FormValue("title")
 	description := r.FormValue("description")
 	subject := r.FormValue("subject")
-	gradeStr := r.FormValue("grade")
-	timeLimitStr := r.FormValue("time_limit")
+	grade, _ := strconv.Atoi(r.FormValue("grade"))
+	timeLimit, _ := strconv.Atoi(r.FormValue("time_limit"))
 
-	grade, _ := strconv.Atoi(gradeStr)
-	timeLimit, _ := strconv.Atoi(timeLimitStr)
-
-	quiz := &models.Quiz{
+	_, err = h.pool.CreateQuiz(context.Background(), db.CreateQuizParams{
 		ID:          uuid.New(),
 		Title:       title,
 		Description: description,
 		Subject:     subject,
 		Grade:       grade,
-		Status:      models.QuizStatusAvailable,
+		Status:      db.QuizStatusAvailable,
 		TimeLimit:   timeLimit,
 		CreatedBy:   user.ID,
-	}
-
-	err = h.repo.CreateQuiz(quiz)
+		CreatedAt:   time.Now(),
+	})
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -167,34 +201,43 @@ func (h *AdminHandler) editQuiz(w http.ResponseWriter, r *http.Request, quizID u
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	quiz, err := h.repo.GetQuizByID(quizID)
+	quiz, err := h.pool.GetQuizByID(context.Background(), quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
+	questions, err := h.pool.GetQuestionsByQuizID(context.Background(), quizID)
+	if err != nil {
+		questions = nil
+	}
+
 	data := types.AdminQuizEditData{
 		User:      user,
-		Quiz:      quiz,
-		Questions: quiz.Questions,
+		Quiz:      &models.Quiz{Quiz: quiz, Questions: questions},
+		Questions: questions,
 	}
 
 	return admin.QuizEditPage(data).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) updateQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
-	quiz, err := h.repo.GetQuizByID(quizID)
+	_, err := h.pool.GetQuizByID(context.Background(), quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	quiz.Title = r.FormValue("title")
-	quiz.Description = r.FormValue("description")
-	quiz.Subject = r.FormValue("subject")
-	quiz.Grade, _ = strconv.Atoi(r.FormValue("grade"))
-	quiz.TimeLimit, _ = strconv.Atoi(r.FormValue("time_limit"))
-	quiz.Status = models.QuizStatus(r.FormValue("status"))
+	grade, _ := strconv.Atoi(r.FormValue("grade"))
+	timeLimit, _ := strconv.Atoi(r.FormValue("time_limit"))
 
-	err = h.repo.UpdateQuiz(quiz)
+	_, err = h.pool.UpdateQuiz(context.Background(), db.UpdateQuizParams{
+		ID:          quizID,
+		Title:       r.FormValue("title"),
+		Description: r.FormValue("description"),
+		Subject:     r.FormValue("subject"),
+		Grade:       grade,
+		Status:      db.QuizStatus(r.FormValue("status")),
+		TimeLimit:   timeLimit,
+	})
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -204,7 +247,7 @@ func (h *AdminHandler) updateQuiz(w http.ResponseWriter, r *http.Request, quizID
 }
 
 func (h *AdminHandler) deleteQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
-	err := h.repo.DeleteQuiz(quizID)
+	err := h.pool.DeleteQuiz(context.Background(), quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -221,7 +264,10 @@ func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idStr)), http.StatusNotFound)
 	}
 
-	err = h.repo.UpdateQuizStatus(quizID, models.QuizStatusAvailable)
+	err = h.pool.UpdateQuizStatus(context.Background(), db.UpdateQuizStatusParams{
+		ID:     quizID,
+		Status: db.QuizStatusAvailable,
+	})
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -238,13 +284,10 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 	}
 
 	text := r.FormValue("text")
-	questionType := models.QuestionType(r.FormValue("type"))
+	questionType := db.QuestionType(r.FormValue("type"))
 	explanation := r.FormValue("explanation")
-	pointsStr := r.FormValue("points")
-	orderIndexStr := r.FormValue("order_index")
-
-	points, _ := strconv.Atoi(pointsStr)
-	orderIndex, _ := strconv.Atoi(orderIndexStr)
+	points, _ := strconv.Atoi(r.FormValue("points"))
+	orderIndex, _ := strconv.Atoi(r.FormValue("order_index"))
 
 	if points == 0 {
 		points = 10
@@ -253,7 +296,7 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 	var options []string
 	var correctAnswer string
 
-	if questionType == models.QuestionTypeChoice {
+	if questionType == db.QuestionTypeChoice {
 		r.ParseForm()
 		for key, values := range r.Form {
 			if strings.HasPrefix(key, "option_") {
@@ -273,7 +316,7 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 
 	optionsJSON, _ := json.Marshal(options)
 
-	question := &models.Question{
+	_, err = h.pool.CreateQuestion(context.Background(), db.CreateQuestionParams{
 		ID:            uuid.New(),
 		QuizID:        quizID,
 		Text:          text,
@@ -283,9 +326,7 @@ func (h *AdminHandler) addQuestion(w http.ResponseWriter, r *http.Request) error
 		Explanation:   explanation,
 		Points:        points,
 		OrderIndex:    orderIndex,
-	}
-
-	err = h.repo.CreateQuestion(question)
+	})
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -304,7 +345,7 @@ func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, errors.New("question not found")), http.StatusNotFound)
 	}
 
-	question, err := h.repo.GetQuestionByID(questionID)
+	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
 	if err != nil {
 		if r.Header.Get("hx-request") == "true" {
 			return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
@@ -313,7 +354,7 @@ func (h *AdminHandler) deleteQuestion(w http.ResponseWriter, r *http.Request) er
 	}
 	quizID := question.QuizID
 
-	err = h.repo.DeleteQuestion(questionID)
+	err = h.pool.DeleteQuestion(context.Background(), questionID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -338,34 +379,45 @@ func (h *AdminHandler) updateQuestion(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("invalid question ID")), http.StatusBadRequest)
 	}
 
-	question, err := h.repo.GetQuestionByID(questionID)
+	question, err := h.pool.GetQuestionByID(context.Background(), questionID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	question.Text = r.FormValue("text")
-	question.Type = models.QuestionType(r.FormValue("type"))
-	question.Explanation = r.FormValue("explanation")
-	question.Points, _ = strconv.Atoi(r.FormValue("points"))
+	points, _ := strconv.Atoi(r.FormValue("points"))
+	orderIndex, _ := strconv.Atoi(r.FormValue("order_index"))
 
-	if question.Type == models.QuestionTypeChoice {
-		var options []string
+	var options []byte
+	var correctAnswer string
+	questionType := db.QuestionType(r.FormValue("type"))
+
+	if questionType == db.QuestionTypeChoice {
+		var opts []string
 		for i := 0; i < 20; i++ {
 			key := fmt.Sprintf("option_%d", i)
 			if val, ok := r.Form[key]; ok && val[0] != "" {
-				options = append(options, val[0])
+				opts = append(opts, val[0])
 			}
 		}
-		question.Options, _ = json.Marshal(options)
+		options, _ = json.Marshal(opts)
 		correctAnswerRaw := r.FormValue("correct_answer")
-		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx < len(options) {
-			question.CorrectAnswer = options[idx]
+		if idx, err := strconv.Atoi(strings.TrimPrefix(correctAnswerRaw, "option_")); err == nil && idx < len(opts) {
+			correctAnswer = opts[idx]
 		}
 	} else {
-		question.CorrectAnswer = r.FormValue("correct_answer")
+		correctAnswer = r.FormValue("correct_answer")
 	}
 
-	err = h.repo.UpdateQuestion(question)
+	_, err = h.pool.UpdateQuestion(context.Background(), db.UpdateQuestionParams{
+		ID:            questionID,
+		Text:          r.FormValue("text"),
+		Type:          questionType,
+		Options:       options,
+		CorrectAnswer: correctAnswer,
+		Explanation:   r.FormValue("explanation"),
+		Points:        points,
+		OrderIndex:    orderIndex,
+	})
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -385,13 +437,35 @@ func (h *AdminHandler) Results(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	attempts, _ := h.repo.GetAllAttempts()
-	quizzes, _ := h.repo.GetNonArchivedQuizzes()
+	attempts, _ := h.pool.GetAllAttempts(context.Background())
+	quizzes, _ := h.pool.GetNonArchivedQuizzes(context.Background())
+
+	attemptWithUser := make([]*types.AttemptWithUser, 0, len(attempts))
+	for _, a := range attempts {
+		attemptWithUser = append(attemptWithUser, &types.AttemptWithUser{
+			QuizAttempt: &db.QuizAttempt{
+				ID:          a.ID,
+				UserID:      a.UserID,
+				QuizID:      a.QuizID,
+				Score:       a.Score,
+				MaxScore:    a.MaxScore,
+				StartedAt:   a.StartedAt,
+				CompletedAt: a.CompletedAt,
+			},
+			UserName:  a.UserName,
+			QuizTitle: a.QuizTitle,
+		})
+	}
 
 	data := types.AdminResultsData{
 		User:     user,
-		Attempts: attempts,
-		Quizzes:  quizzes,
+		Attempts: attemptWithUser,
+		Quizzes:  nil,
+	}
+
+	data.Quizzes = make([]*models.Quiz, len(quizzes))
+	for i, q := range quizzes {
+		data.Quizzes[i] = &models.Quiz{Quiz: q}
 	}
 
 	return admin.ResultsPage(data).Render(r.Context(), w)
@@ -403,8 +477,89 @@ func (h *AdminHandler) Statistics(w http.ResponseWriter, r *http.Request) error 
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	stats, _ := h.repo.GetAdminStatistics()
-	stats.User = user
+	stats, _ := h.pool.GetAdminStatsData(context.Background())
 
-	return admin.StatisticsPage(stats).Render(r.Context(), w)
+	var avgScore float64
+	if stats.AvgScore != nil {
+		if f, ok := stats.AvgScore.(float64); ok {
+			avgScore = f
+		}
+	}
+
+	data := types.AdminStatisticsData{
+		User:                user,
+		TotalQuizzes:        int(stats.TotalQuizzes),
+		TotalStudents:       int(stats.TotalStudents),
+		TotalAttempts:       int(stats.TotalAttempts),
+		AvgScore:            avgScore,
+		QuizStats:           nil,
+		GradeDistribution:   nil,
+		SubjectDistribution: nil,
+	}
+
+	return admin.StatisticsPage(&data).Render(r.Context(), w)
+}
+
+func (h *AdminHandler) QuizStatsData(w http.ResponseWriter, r *http.Request) error {
+	quizStats, err := h.pool.GetQuizStats(context.Background())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	stats := make([]types.QuizStatsResponse, 0, len(quizStats))
+	for _, qs := range quizStats {
+		var avgScore float64
+		if qs.AvgScore != nil {
+			if f, ok := qs.AvgScore.(float64); ok {
+				avgScore = f
+			}
+		}
+		stats = append(stats, types.QuizStatsResponse{
+			QuizID:       qs.QuizID,
+			Title:        qs.Title,
+			Subject:      qs.Subject,
+			AttemptCount: int(qs.AttemptCount),
+			AvgScore:     avgScore,
+			PassRate:     float64(qs.PassRate),
+		})
+	}
+
+	return admin.QuizStatsPartial(stats).Render(r.Context(), w)
+}
+
+func (h *AdminHandler) GradeDistData(w http.ResponseWriter, r *http.Request) error {
+	data, err := h.pool.GetGradeDistribution(context.Background())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	var dist map[string]int
+	if data != nil {
+		json.Unmarshal(data, &dist)
+	}
+	if dist == nil {
+		dist = make(map[string]int)
+	}
+
+	return admin.GradeDistPartial(dist).Render(r.Context(), w)
+}
+
+func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) error {
+	data, err := h.pool.GetSubjectDistribution(context.Background())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+
+	var dist map[string]int
+	if data != nil {
+		json.Unmarshal(data, &dist)
+	}
+	if dist == nil {
+		dist = make(map[string]int)
+	}
+
+	return admin.SubjectDistPartial(dist).Render(r.Context(), w)
 }

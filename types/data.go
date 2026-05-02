@@ -1,10 +1,11 @@
 package types
 
 import (
-	"time"
+	"encoding/json"
+
+	"github.com/goquizvibe/models"
 
 	"github.com/google/uuid"
-	"github.com/goquizvibe/models"
 )
 
 type DashboardData struct {
@@ -66,4 +67,105 @@ type LoginError struct {
 
 type RegisterError struct {
 	Message string
+}
+
+type AdminDashboardData struct {
+	User           *models.User
+	QuizCount      int
+	StudentCount   int
+	AttemptCount   int
+	AvgScore       float64
+	RecentActivity []*RecentAttempt
+}
+
+type RecentAttempt struct {
+	AttemptID   string
+	UserName    string
+	QuizTitle   string
+	Score       int
+	MaxScore    int
+	CompletedAt string
+}
+
+type AdminQuizListData struct {
+	User    *models.User
+	Quizzes []*QuizWithStats
+}
+
+type QuizWithStats struct {
+	*models.Quiz
+	AttemptCount int
+	AvgScore     float64
+}
+
+type AdminResultsData struct {
+	User     *models.User
+	Attempts []*AttemptWithUser
+	Quizzes  []*models.Quiz
+}
+
+type AttemptWithUser struct {
+	*models.QuizAttempt
+	UserName  string `json:"user_name"`
+	QuizTitle string `json:"quiz_title"`
+}
+
+type AdminStatisticsData struct {
+	User                *models.User
+	TotalQuizzes        int
+	TotalStudents       int
+	TotalAttempts       int
+	AvgScore            float64
+	QuizStats           []*QuizStatistics
+	GradeDistribution   map[string]int
+	SubjectDistribution map[string]int
+}
+
+type QuizStatistics struct {
+	QuizID       uuid.UUID `json:"quiz_id"`
+	Title        string    `json:"title"`
+	Subject      string    `json:"subject"`
+	AttemptCount int       `json:"attempt_count"`
+	AvgScore     float64   `json:"avg_score"`
+	PassRate     float64   `json:"pass_rate"`
+}
+
+type AdminQuizEditData struct {
+	User      *models.User
+	Quiz      *models.Quiz
+	Questions []models.Question
+}
+
+type QuizStatsResponse struct {
+	QuizID       uuid.UUID `json:"quiz_id"`
+	Title        string    `json:"title"`
+	Subject      string    `json:"subject"`
+	AttemptCount int       `json:"attempt_count"`
+	AvgScore     float64   `json:"avg_score"`
+	PassRate     float64   `json:"pass_rate"`
+}
+
+type GradeDistResponse struct {
+	Distribution map[string]int `json:"distribution"`
+}
+
+type SubjectDistResponse struct {
+	Distribution map[string]int `json:"distribution"`
+}
+
+type HTMXQuizStatsRow struct {
+	QuizID       uuid.UUID `json:"quiz_id"`
+	Title        string    `json:"title"`
+	Subject      string    `json:"subject"`
+	AttemptCount int64     `json:"attempt_count"`
+	AvgScore     float64   `json:"avg_score"`
+	PassRate     float64   `json:"pass_rate"`
+}
+
+type HTMXGradeDistRow struct {
+	GradeDist json.RawMessage `json:"grade_dist"`
+}
+
+type HTMXSubjectDistRow struct {
+	SubjectDist json.RawMessage `json:"subject_dist"`
 }

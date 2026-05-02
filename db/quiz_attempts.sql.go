@@ -78,6 +78,58 @@ func (q *Queries) CreateUserAnswer(ctx context.Context, arg CreateUserAnswerPara
 	return i, err
 }
 
+const getAllAttempts = `-- name: GetAllAttempts :many
+SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
+       u.name as user_name, q.title as quiz_title
+FROM quiz_attempts a
+JOIN users u ON u.id = a.user_id
+JOIN quizzes q ON q.id = a.quiz_id
+WHERE a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC
+`
+
+type GetAllAttemptsRow struct {
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	QuizID      uuid.UUID `json:"quiz_id"`
+	Score       int       `json:"score"`
+	MaxScore    int       `json:"max_score"`
+	StartedAt   time.Time `json:"started_at"`
+	CompletedAt time.Time `json:"completed_at"`
+	UserName    string    `json:"user_name"`
+	QuizTitle   string    `json:"quiz_title"`
+}
+
+func (q *Queries) GetAllAttempts(ctx context.Context) ([]GetAllAttemptsRow, error) {
+	rows, err := q.db.Query(ctx, getAllAttempts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAllAttemptsRow{}
+	for rows.Next() {
+		var i GetAllAttemptsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.QuizID,
+			&i.Score,
+			&i.MaxScore,
+			&i.StartedAt,
+			&i.CompletedAt,
+			&i.UserName,
+			&i.QuizTitle,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAnswersByAttempt = `-- name: GetAnswersByAttempt :many
 SELECT id, attempt_id, question_id, user_answer, is_correct FROM user_answers WHERE attempt_id = $1
 `
@@ -125,6 +177,55 @@ func (q *Queries) GetAttemptByID(ctx context.Context, id uuid.UUID) (QuizAttempt
 		&i.CompletedAt,
 	)
 	return i, err
+}
+
+const getAttemptsByQuiz = `-- name: GetAttemptsByQuiz :many
+SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
+       u.name as user_name
+FROM quiz_attempts a
+JOIN users u ON u.id = a.user_id
+WHERE a.quiz_id = $1 AND a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC
+`
+
+type GetAttemptsByQuizRow struct {
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	QuizID      uuid.UUID `json:"quiz_id"`
+	Score       int       `json:"score"`
+	MaxScore    int       `json:"max_score"`
+	StartedAt   time.Time `json:"started_at"`
+	CompletedAt time.Time `json:"completed_at"`
+	UserName    string    `json:"user_name"`
+}
+
+func (q *Queries) GetAttemptsByQuiz(ctx context.Context, quizID uuid.UUID) ([]GetAttemptsByQuizRow, error) {
+	rows, err := q.db.Query(ctx, getAttemptsByQuiz, quizID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAttemptsByQuizRow{}
+	for rows.Next() {
+		var i GetAttemptsByQuizRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.QuizID,
+			&i.Score,
+			&i.MaxScore,
+			&i.StartedAt,
+			&i.CompletedAt,
+			&i.UserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAttemptsByUser = `-- name: GetAttemptsByUser :many
@@ -192,6 +293,21 @@ func (q *Queries) GetCompletedAttemptsCount(ctx context.Context, userID uuid.UUI
 	return count, err
 }
 
+const getGradeDistribution = `-- name: GetGradeDistribution :one
+SELECT json_object_agg(grade_level, count) as grade_dist FROM (
+    SELECT COALESCE(grade::text, 'unknown') as grade_level, COUNT(*) as count 
+    FROM quizzes WHERE status != 'archived' AND grade IS NOT NULL 
+    GROUP BY grade
+) sub
+`
+
+func (q *Queries) GetGradeDistribution(ctx context.Context) ([]byte, error) {
+	row := q.db.QueryRow(ctx, getGradeDistribution)
+	var grade_dist []byte
+	err := row.Scan(&grade_dist)
+	return grade_dist, err
+}
+
 const getLastActiveDate = `-- name: GetLastActiveDate :one
 SELECT MAX(completed_at) FROM quiz_attempts
 WHERE user_id = $1 AND completed_at IS NOT NULL
@@ -235,6 +351,123 @@ func (q *Queries) GetQuizErrors(ctx context.Context, userID uuid.UUID) ([]QuizAt
 		return nil, err
 	}
 	return items, nil
+}
+
+const getQuizStats = `-- name: GetQuizStats :many
+SELECT
+    q.id as quiz_id, q.title, q.subject,
+    COUNT(a.id) as attempt_count,
+    COALESCE(AVG(a.score * 100.0 / NULLIF(a.max_score, 0)), 0) as avg_score,
+    CASE WHEN COUNT(a.id) > 0
+         THEN (COUNT(*) FILTER (WHERE a.score * 100.0 / NULLIF(a.max_score, 0) >= 60))::float / COUNT(*) * 100
+         ELSE 0
+    END as pass_rate
+FROM quizzes q
+LEFT JOIN quiz_attempts a ON a.quiz_id = q.id AND a.completed_at IS NOT NULL AND a.max_score > 0
+WHERE q.status != 'archived'
+GROUP BY q.id, q.title, q.subject
+ORDER BY q.created_at DESC
+`
+
+type GetQuizStatsRow struct {
+	QuizID       uuid.UUID   `json:"quiz_id"`
+	Title        string      `json:"title"`
+	Subject      string      `json:"subject"`
+	AttemptCount int64       `json:"attempt_count"`
+	AvgScore     interface{} `json:"avg_score"`
+	PassRate     int32       `json:"pass_rate"`
+}
+
+func (q *Queries) GetQuizStats(ctx context.Context) ([]GetQuizStatsRow, error) {
+	rows, err := q.db.Query(ctx, getQuizStats)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetQuizStatsRow{}
+	for rows.Next() {
+		var i GetQuizStatsRow
+		if err := rows.Scan(
+			&i.QuizID,
+			&i.Title,
+			&i.Subject,
+			&i.AttemptCount,
+			&i.AvgScore,
+			&i.PassRate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRecentAttempts = `-- name: GetRecentAttempts :many
+SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
+       u.name as user_name, q.title as quiz_title
+FROM quiz_attempts a
+JOIN users u ON u.id = a.user_id
+JOIN quizzes q ON q.id = a.quiz_id
+WHERE a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC LIMIT $1
+`
+
+type GetRecentAttemptsRow struct {
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	QuizID      uuid.UUID `json:"quiz_id"`
+	Score       int       `json:"score"`
+	MaxScore    int       `json:"max_score"`
+	StartedAt   time.Time `json:"started_at"`
+	CompletedAt time.Time `json:"completed_at"`
+	UserName    string    `json:"user_name"`
+	QuizTitle   string    `json:"quiz_title"`
+}
+
+func (q *Queries) GetRecentAttempts(ctx context.Context, limit int32) ([]GetRecentAttemptsRow, error) {
+	rows, err := q.db.Query(ctx, getRecentAttempts, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetRecentAttemptsRow{}
+	for rows.Next() {
+		var i GetRecentAttemptsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.QuizID,
+			&i.Score,
+			&i.MaxScore,
+			&i.StartedAt,
+			&i.CompletedAt,
+			&i.UserName,
+			&i.QuizTitle,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSubjectDistribution = `-- name: GetSubjectDistribution :one
+SELECT json_object_agg(subject_name, count) as subject_dist FROM (
+    SELECT subject as subject_name, COUNT(*) as count FROM quizzes WHERE status != 'archived' AND subject IS NOT NULL GROUP BY subject
+) sub
+`
+
+func (q *Queries) GetSubjectDistribution(ctx context.Context) ([]byte, error) {
+	row := q.db.QueryRow(ctx, getSubjectDistribution)
+	var subject_dist []byte
+	err := row.Scan(&subject_dist)
+	return subject_dist, err
 }
 
 const getUserStats = `-- name: GetUserStats :one

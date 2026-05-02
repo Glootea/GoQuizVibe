@@ -59,6 +59,45 @@ func (q *Queries) EmailExists(ctx context.Context, email string) (bool, error) {
 	return exists, err
 }
 
+const getAdminStatsData = `-- name: GetAdminStatsData :one
+SELECT
+    (SELECT COUNT(*) FROM quizzes WHERE status != 'archived') as total_quizzes,
+    (SELECT COUNT(*) FROM users WHERE role = 'student') as total_students,
+    (SELECT COUNT(*) FROM quiz_attempts WHERE completed_at IS NOT NULL) as total_attempts,
+    COALESCE((SELECT AVG(score * 100.0 / NULLIF(max_score, 0))
+              FROM quiz_attempts WHERE completed_at IS NOT NULL AND max_score > 0), 0) as avg_score
+`
+
+type GetAdminStatsDataRow struct {
+	TotalQuizzes  int64       `json:"total_quizzes"`
+	TotalStudents int64       `json:"total_students"`
+	TotalAttempts int64       `json:"total_attempts"`
+	AvgScore      interface{} `json:"avg_score"`
+}
+
+func (q *Queries) GetAdminStatsData(ctx context.Context) (GetAdminStatsDataRow, error) {
+	row := q.db.QueryRow(ctx, getAdminStatsData)
+	var i GetAdminStatsDataRow
+	err := row.Scan(
+		&i.TotalQuizzes,
+		&i.TotalStudents,
+		&i.TotalAttempts,
+		&i.AvgScore,
+	)
+	return i, err
+}
+
+const getStudentCount = `-- name: GetStudentCount :one
+select COUNT(*) from users where role = 'student'
+`
+
+func (q *Queries) GetStudentCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getStudentCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, name, email, password_hash, role, created_at FROM users WHERE email = $1
 `

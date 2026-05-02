@@ -57,12 +57,55 @@ func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, e
 	return i, err
 }
 
+const deleteQuiz = `-- name: DeleteQuiz :exec
+UPDATE quizzes SET status = 'archived' WHERE id = $1
+`
+
+func (q *Queries) DeleteQuiz(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteQuiz, id)
+	return err
+}
+
 const getAvailableQuizzes = `-- name: GetAvailableQuizzes :many
 SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes WHERE status = 'available' ORDER BY created_at DESC
 `
 
 func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
 	rows, err := q.db.Query(ctx, getAvailableQuizzes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Quiz{}
+	for rows.Next() {
+		var i Quiz
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.Subject,
+			&i.Grade,
+			&i.Status,
+			&i.TimeLimit,
+			&i.CreatedBy,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNonArchivedQuizzes = `-- name: GetNonArchivedQuizzes :many
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes WHERE status != 'archived' ORDER BY created_at DESC
+`
+
+func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
+	rows, err := q.db.Query(ctx, getNonArchivedQuizzes)
 	if err != nil {
 		return nil, err
 	}
@@ -178,4 +221,58 @@ func (q *Queries) GetQuizzesForUser(ctx context.Context, createdBy uuid.UUID) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateQuiz = `-- name: UpdateQuiz :one
+UPDATE quizzes SET title = $2, description = $3, subject = $4, grade = $5, status = $6, time_limit = $7
+WHERE id = $1 RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at
+`
+
+type UpdateQuizParams struct {
+	ID          uuid.UUID  `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Subject     string     `json:"subject"`
+	Grade       int        `json:"grade"`
+	Status      QuizStatus `json:"status"`
+	TimeLimit   int        `json:"time_limit"`
+}
+
+func (q *Queries) UpdateQuiz(ctx context.Context, arg UpdateQuizParams) (Quiz, error) {
+	row := q.db.QueryRow(ctx, updateQuiz,
+		arg.ID,
+		arg.Title,
+		arg.Description,
+		arg.Subject,
+		arg.Grade,
+		arg.Status,
+		arg.TimeLimit,
+	)
+	var i Quiz
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.Subject,
+		&i.Grade,
+		&i.Status,
+		&i.TimeLimit,
+		&i.CreatedBy,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateQuizStatus = `-- name: UpdateQuizStatus :exec
+UPDATE quizzes SET status = $2 WHERE id = $1
+`
+
+type UpdateQuizStatusParams struct {
+	ID     uuid.UUID  `json:"id"`
+	Status QuizStatus `json:"status"`
+}
+
+func (q *Queries) UpdateQuizStatus(ctx context.Context, arg UpdateQuizStatusParams) error {
+	_, err := q.db.Exec(ctx, updateQuizStatus, arg.ID, arg.Status)
+	return err
 }

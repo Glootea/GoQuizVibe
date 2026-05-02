@@ -5,27 +5,24 @@ import (
 	"errors"
 	"time"
 
-	"github.com/goquizvibe/db"
-	"github.com/goquizvibe/models"
-	"github.com/goquizvibe/store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
-	"github.com/goquizvibe/store"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	repo          *store.Repository
-	jwtSecret     []byte
-	jwtExpiration time.Duration
+	pool         *db.Queries
+	jwtSecret    []byte
+	jwtExp       time.Duration
 }
 
-func NewAuthService(r *store.Repository, secret string) *AuthService {
+func NewAuthService(pool *db.Queries, secret string, exp time.Duration) *AuthService {
 	return &AuthService{
-		repo:          r,
-		jwtSecret:     []byte(secret),
-		jwtExpiration: 24 * time.Hour * 7,
+		pool:         pool,
+		jwtSecret:    []byte(secret),
+		jwtExp:       exp,
 	}
 }
 
@@ -35,24 +32,23 @@ func (s *AuthService) Register(ctx context.Context, name, email, password string
 		return nil, err
 	}
 
-	user := &db.User{
+	user, err := s.pool.CreateUser(ctx, db.CreateUserParams{
 		ID:           uuid.New(),
 		Name:         name,
 		Email:        email,
 		PasswordHash: string(hash),
 		Role:         role,
 		CreatedAt:    time.Now(),
-	}
-
-	if err := s.repo.CreateUser(ctx, user); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (*db.User, error) {
-	user, err := s.repo.GetUserByEmail(ctx, email)
+	user, err := s.pool.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
@@ -61,7 +57,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*db.Us
 		return nil, errors.New("invalid credentials")
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func (s *AuthService) GenerateToken(user *db.User) (string, error) {
@@ -69,7 +65,7 @@ func (s *AuthService) GenerateToken(user *db.User) (string, error) {
 		"user_id": user.ID.String(),
 		"email":   user.Email,
 		"role":    string(user.Role),
-		"exp":     time.Now().Add(s.jwtExpiration).Unix(),
+		"exp":     time.Now().Add(s.jwtExp).Unix(),
 		"iat":     time.Now().Unix(),
 	}
 
