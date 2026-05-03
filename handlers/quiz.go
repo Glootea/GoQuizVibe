@@ -35,8 +35,8 @@ func NewQuiz(pool *db.Queries, qs *services.QuizService, gs *services.Gamificati
 	}
 }
 
-func (h *QuizHandler) QuizPage(w http.ResponseWriter, r *http.Request) error {
-	quizID, err := uuid.Parse(r.URL.Query().Get("id"))
+func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error {
+	quizID, index, err := extractQuizIDAndIndexFromPath(r.URL.Path)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
@@ -58,20 +58,37 @@ func (h *QuizHandler) QuizPage(w http.ResponseWriter, r *http.Request) error {
 	}
 	stats, _ := h.gamification.GetUserStats(ctx, userID)
 
-	sessionID := r.URL.Query().Get("session")
-	if sessionID == "" {
+	sessionIDStr := r.URL.Query().Get("session")
+	var sessionID uuid.UUID
+	if sessionIDStr == "" {
 		session := h.createSession(ctx, userID, quizID)
-		sessionID = session.ID.String()
+		sessionID = session.ID
+		sessionIDStr = sessionID.String()
+	} else {
+		sessionID, err = uuid.Parse(sessionIDStr)
+		if err != nil {
+			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+		}
 	}
 
-	data := types.QuizPageData{
-		User:      &user,
-		Quiz:      quiz,
-		Stats:     stats,
-		SessionID: sessionID,
+	if index >= len(quiz.Questions) {
+		http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
+		return nil
 	}
 
-	return pages.QuizPage(data).Render(r.Context(), w)
+	isHtmx := r.Header.Get("HX-Request") == "true"
+	if !isHtmx {
+		data := types.QuizPageData{
+			User:      &user,
+			Quiz:      quiz,
+			Stats:     stats,
+			SessionID: sessionIDStr,
+			Index:     index,
+		}
+		return pages.QuizPage(data).Render(r.Context(), w)
+	}
+
+	return pages.QuestionCard(quiz, index, sessionIDStr).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) createSession(ctx context.Context, userID, quizID uuid.UUID) *db.QuizSession {
@@ -194,39 +211,6 @@ func NormalizeAnswer(answer string) string {
 	answer = strings.ToLower(answer)
 	answer = strings.TrimRight(answer, ".")
 	return answer
-}
-
-func (h *QuizHandler) QuizNextHTMX(w http.ResponseWriter, r *http.Request) error {
-	sessionIDStr := r.URL.Query().Get("session")
-	if sessionIDStr == "" {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("session ID missing from query params")), http.StatusBadRequest)
-	}
-
-	indexStr := r.URL.Query().Get("index")
-	index, _ := strconv.Atoi(indexStr)
-
-	quizID, err := extractQuizIDFromPath(r.URL.Path)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
-	}
-
-	_, err = h.getUserIDFromRequest(r)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
-	}
-
-	ctx := r.Context()
-	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
-	}
-
-	if index >= len(quiz.Questions) {
-		http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
-		return nil
-	}
-
-	return pages.QuestionCard(quiz, index, sessionIDStr).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
@@ -439,6 +423,22 @@ func extractQuizIDFromPath(path string) (uuid.UUID, error) {
 		return uuid.Nil, fmt.Errorf("invalid path format: %s", path)
 	}
 	return uuid.Parse(parts[1])
+}
+
+func extractQuizIDAndIndexFromPath(path string) (uuid.UUID, int, error) {
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if len(parts) < 4 || parts[2] != "q" {
+		return uuid.Nil, 0, errors.New("invalid path format: expected /quiz/{id}/q/{index}")
+	}
+	quizID, err := uuid.Parse(parts[1])
+	if err != nil {
+		return uuid.Nil, 0, err
+	}
+	index, err := strconv.Atoi(parts[3])
+	if err != nil {
+		return uuid.Nil, 0, err
+	}
+	return quizID, index, nil
 }
 
 func getExplanation(q models.Question) string {

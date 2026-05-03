@@ -1,0 +1,1 @@
+Используй `go tool templ generate` для генерации templates 

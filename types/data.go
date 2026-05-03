@@ -20,6 +20,7 @@ type QuizPageData struct {
 	Quiz      *models.Quiz
 	Stats     *models.UserStats
 	SessionID string
+	Index     int
 }
 
 type QuizResultData struct {

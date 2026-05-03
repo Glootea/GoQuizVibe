@@ -2,6 +2,7 @@ package pages
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
@@ -34,7 +35,7 @@ templ QuizPage(data types.QuizPageData) {
 					<div class="p-8 bg-white rounded-2xl shadow-xl">
 						<div id="question-content">
 							<div class="mb-6">
-								<span id="question-counter" class="text-sm font-medium text-indigo-600">Вопрос 1 из { len(data.Quiz.Questions) }</span>
+								<span id="question-counter" class="text-sm font-medium text-indigo-600">Вопрос { data.Index + 1 } из { len(data.Quiz.Questions) }</span>
 							</div>
 							<form
 								id="quiz-form"
@@ -42,20 +43,20 @@ templ QuizPage(data types.QuizPageData) {
 								hx-target="#question-content"
 								hx-swap="innerHTML"
 							>
-								<input type="hidden" name="question_index" id="question-index" value="0"/>
+								<input type="hidden" name="question_index" id="question-index" value={ strconv.Itoa(data.Index) }/>
 								<div id="question-text" class="mb-6 text-xl font-medium">
-									{ data.Quiz.Questions[0].Text }
+									{ data.Quiz.Questions[data.Index].Text }
 								</div>
-								if len(data.Quiz.Questions[0].Images) > 0 {
+								if len(data.Quiz.Questions[data.Index].Images) > 0 {
 									<div class="flex flex-wrap gap-3 mb-6">
-										for _, img := range data.Quiz.Questions[0].Images {
+										for _, img := range data.Quiz.Questions[data.Index].Images {
 											<img src={ img.URL } class="object-contain max-w-md max-h-64 rounded-lg border"/>
 										}
 									</div>
 								}
-								if data.Quiz.Questions[0].Type == models.QuestionTypeChoice {
+								if data.Quiz.Questions[data.Index].Type == models.QuestionTypeChoice {
 									<div id="options-container" class="space-y-3">
-										for _, option := range data.Quiz.Questions[0].GetOptions() {
+										for _, option := range data.Quiz.Questions[data.Index].GetOptions() {
 											<label class="block p-4 rounded-xl border border-gray-200 transition cursor-pointer hover:bg-indigo-50 hover:border-indigo-300">
 												<input
 													type="radio"
@@ -220,7 +221,7 @@ templ ErrorsPage(data types.ErrorsPageData) {
 									<p class="text-sm text-gray-500">{ len(qe.WrongAnswers) } { plural(len(qe.WrongAnswers), "ошибка", "ошибки", "ошибок") }</p>
 								</div>
 								<div class="flex gap-3 items-center">
-									<a href={ templ.URL("/quiz?id=" + qe.Quiz.ID.String()) } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+									<a href={ templ.URL("/quiz/" + qe.Quiz.ID.String() + "/q/0") } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
 										Пройти заново
 									</a>
 									<i class="text-gray-400 transition-transform fas fa-chevron-down"></i>

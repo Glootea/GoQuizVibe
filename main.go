@@ -91,25 +91,26 @@ func main() {
 
 	mux.HandleFunc("/dashboard", handlers.ErrorHandler(dashboardHandler.DashboardPage))
 
-	mux.HandleFunc("/quiz", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" {
-			quizHandler.QuizPage(w, r)
-		}
-	})
-
 	mux.HandleFunc("/quiz/", handlers.ErrorHandler(func(w http.ResponseWriter, r *http.Request) error {
 		path := r.URL.Path
 		if r.Method == "POST" && strings.HasSuffix(path, "/submit") {
 			return quizHandler.QuizSubmitHTMX(w, r)
 		}
-		if r.Method == "GET" && strings.Contains(path, "/next") {
-			return quizHandler.QuizNextHTMX(w, r)
+		if r.Method == "GET" && strings.HasSuffix(path, "/result") {
+			return quizHandler.QuizResult(w, r)
 		}
 		if r.Method == "GET" && strings.HasSuffix(path, "/result") {
 			return quizHandler.QuizResult(w, r)
 		}
 		if r.Method == "GET" {
-			return quizHandler.QuizPage(w, r)
+			parts := strings.Split(strings.Trim(path, "/"), "/")
+			if len(parts) == 2 {
+				http.Redirect(w, r, path+"/q/0", http.StatusFound)
+				return nil
+			}
+			if len(parts) >= 4 && parts[2] == "q" {
+				return quizHandler.QuizQuestion(w, r)
+			}
 		}
 		return ce.ErrNotFound
 	}))

@@ -76,11 +76,12 @@ templ QuestionWithFeedback(quiz *models.Quiz, questionIndex int, sessionID strin
 		if !feedback.IsLast {
 			<div class="mt-4">
 				<a
-					href={ templ.URL("/quiz/" + quiz.ID.String() + "/next?session=" + sessionID + "&index=" + strconv.Itoa(questionIndex+1)) }
+					href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID) }
 					class="block py-3 w-full font-semibold text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
-					hx-get={ "/quiz/" + quiz.ID.String() + "/next?session=" + sessionID + "&index=" + strconv.Itoa(questionIndex+1) }
+					hx-get={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID }
 					hx-target="#question-content"
 					hx-swap="innerHTML"
+					hx-push-url={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) }
 				>
 					Следующий вопрос
 				</a>
@@ -113,11 +114,12 @@ templ QuestionWithWrongFeedback(quiz *models.Quiz, questionIndex int, sessionID 
 		if !feedback.IsLast {
 			<div class="mt-4">
 				<a
-					href={ templ.URL("/quiz/" + quiz.ID.String() + "/next?session=" + sessionID + "&index=" + strconv.Itoa(questionIndex+1)) }
+					href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID) }
 					class="block py-3 w-full font-semibold text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
-					hx-get={ "/quiz/" + quiz.ID.String() + "/next?session=" + sessionID + "&index=" + strconv.Itoa(questionIndex+1) }
+					hx-get={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID }
 					hx-target="#question-content"
 					hx-swap="innerHTML"
+					hx-push-url={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) }
 				>
 					Следующий вопрос
 				</a>
