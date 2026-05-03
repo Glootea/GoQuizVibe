@@ -46,6 +46,13 @@ templ QuizPage(data types.QuizPageData) {
 								<div id="question-text" class="mb-6 text-xl font-medium">
 									{ data.Quiz.Questions[0].Text }
 								</div>
+								if len(data.Quiz.Questions[0].Images) > 0 {
+									<div class="flex flex-wrap gap-3 mb-6">
+										for _, img := range data.Quiz.Questions[0].Images {
+											<img src={ img.URL } class="object-contain max-w-md max-h-64 rounded-lg border"/>
+										}
+									</div>
+								}
 								if data.Quiz.Questions[0].Type == models.QuestionTypeChoice {
 									<div id="options-container" class="space-y-3">
 										for _, option := range data.Quiz.Questions[0].GetOptions() {
