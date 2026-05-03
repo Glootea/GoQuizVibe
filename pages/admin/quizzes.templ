@@ -11,61 +11,60 @@ templ QuizzesPage(data types.AdminQuizListData) {
 	@BaseAdmin("Тесты", data.User) {
 		<div class="flex justify-between items-center mb-8">
 			<h1 class="text-3xl font-bold">Управление тестами</h1>
-			<button onclick="document.getElementById('createModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
-				<i class="fas fa-plus mr-2"></i>Создать тест
+			<button onclick="document.getElementById('createModal').classList.remove('hidden')" class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700">
+				<i class="mr-2 fas fa-plus"></i>Создать тест
 			</button>
 		</div>
-
 		if len(data.Quizzes) == 0 {
-			<div class="bg-white rounded-xl shadow-sm p-12 text-center">
-				<i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
-				<p class="text-gray-500 text-lg">Пока нет тестов</p>
+			<div class="p-12 text-center bg-white rounded-xl shadow-sm">
+				<i class="mb-4 text-6xl text-gray-300 fas fa-folder-open"></i>
+				<p class="text-lg text-gray-500">Пока нет тестов</p>
 				<button onclick="document.getElementById('createModal').classList.remove('hidden')" class="mt-4 text-indigo-600 hover:text-indigo-800">
-					<i class="fas fa-plus mr-1"></i>Создать первый тест
+					<i class="mr-1 fas fa-plus"></i>Создать первый тест
 				</button>
 			</div>
 		} else {
-			<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+			<div class="overflow-hidden bg-white rounded-xl shadow-sm">
 				<table class="w-full">
 					<thead class="bg-gray-50 border-b">
 						<tr>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Название</th>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Предмет</th>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Класс</th>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Вопросов</th>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Прохождений</th>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Ср. балл</th>
-							<th class="text-left px-6 py-4 font-semibold text-gray-600">Статус</th>
-							<th class="text-right px-6 py-4 font-semibold text-gray-600">Действия</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Название</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Предмет</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Класс</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Вопросов</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Прохождений</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Ср. балл</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">Статус</th>
+							<th class="py-4 px-6 font-semibold text-right text-gray-600">Действия</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y">
 						for _, quiz := range data.Quizzes {
 							<tr class={ "hover:bg-gray-50 " + getRowClass(string(quiz.Status)) }>
-								<td class="px-6 py-4">
+								<td class="py-4 px-6">
 									<p class={ "font-medium " + getTextClass(string(quiz.Status)) }>{ quiz.Title }</p>
 									<p class="text-sm text-gray-500">{ quiz.Description }</p>
 								</td>
-								<td class="px-6 py-4">
-									<span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-sm">{ quiz.Subject }</span>
+								<td class="py-4 px-6">
+									<span class="py-1 px-2 text-sm text-indigo-700 bg-indigo-100 rounded">{ quiz.Subject }</span>
 								</td>
-								<td class="px-6 py-4">{ quiz.Grade }</td>
-								<td class="px-6 py-4">{ len(quiz.Questions) }</td>
-								<td class="px-6 py-4">{ quiz.AttemptCount }</td>
-								<td class="px-6 py-4">
+								<td class="py-4 px-6">{ quiz.Grade }</td>
+								<td class="py-4 px-6">{ len(quiz.Questions) }</td>
+								<td class="py-4 px-6">{ quiz.AttemptCount }</td>
+								<td class="py-4 px-6">
 									if quiz.AttemptCount > 0 {
 										<span class={ getScoreClass(quiz.AvgScore) }>{ fmt.Sprintf("%.1f", quiz.AvgScore) }%</span>
 									} else {
 										<span class="text-gray-400">—</span>
 									}
 								</td>
-								<td class="px-6 py-4">
+								<td class="py-4 px-6">
 									<span class={ "px-2 py-1 rounded text-sm " + getStatusClass(string(quiz.Status)) }>
 										{ getStatusText(string(quiz.Status)) }
 									</span>
 								</td>
-								<td class="px-6 py-4 text-right">
-									<a href={ templ.URL("/admin/quizzes/" + quiz.ID.String()) } class="text-indigo-600 hover:text-indigo-800 mr-3">
+								<td class="py-4 px-6 text-right">
+									<a href={ templ.URL("/admin/quizzes/" + quiz.ID.String()) } class="mr-3 text-indigo-600 hover:text-indigo-800">
 										<i class="fas fa-edit"></i>
 									</a>
 									if quiz.Status == models.QuizStatusArchived {
@@ -75,7 +74,8 @@ templ QuizzesPage(data types.AdminQuizListData) {
 											</button>
 										</form>
 									} else {
-										<div hx-delete={ "/admin/quizzes/" + quiz.ID.String() }
+										<div
+											hx-delete={ "/admin/quizzes/" + quiz.ID.String() }
 											hx-confirm="Удалить тест?"
 											class="inline"
 										>
@@ -91,40 +91,39 @@ templ QuizzesPage(data types.AdminQuizListData) {
 				</table>
 			</div>
 		}
-
-		<div id="createModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-			<div class="bg-white rounded-xl p-6 w-full max-w-md">
-				<h3 class="text-xl font-bold mb-4">Создать тест</h3>
+		<div id="createModal" class="flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+			<div class="p-6 w-full max-w-md bg-white rounded-xl">
+				<h3 class="mb-4 text-xl font-bold">Создать тест</h3>
 				<form hx-post="/admin/quizzes/new" hx-target="body" hx-swap="none">
 					<div class="space-y-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
-							<input type="text" name="title" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+							<label class="block mb-1 text-sm font-medium text-gray-700">Название</label>
+							<input type="text" name="title" required class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
-							<textarea name="description" rows="2" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+							<label class="block mb-1 text-sm font-medium text-gray-700">Описание</label>
+							<textarea name="description" rows="2" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"></textarea>
 						</div>
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-1">Предмет</label>
-								<input type="text" name="subject" placeholder="Математика" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+								<label class="block mb-1 text-sm font-medium text-gray-700">Предмет</label>
+								<input type="text" name="subject" placeholder="Математика" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 							</div>
 							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-1">Класс</label>
-								<input type="number" name="grade" min="1" max="11" value="5" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+								<label class="block mb-1 text-sm font-medium text-gray-700">Класс</label>
+								<input type="number" name="grade" min="1" max="11" value="5" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 							</div>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">Время (мин)</label>
-							<input type="number" name="time_limit" min="0" value="30" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+							<label class="block mb-1 text-sm font-medium text-gray-700">Время (мин)</label>
+							<input type="number" name="time_limit" min="0" value="30" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 						</div>
 					</div>
-					<div class="flex justify-end gap-3 mt-6">
-						<button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+					<div class="flex gap-3 justify-end mt-6">
+						<button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="py-2 px-4 text-gray-600 hover:text-gray-800">
 							Отмена
 						</button>
-						<button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+						<button type="submit" class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700">
 							Создать
 						</button>
 					</div>

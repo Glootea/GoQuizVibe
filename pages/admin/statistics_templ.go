@@ -48,59 +48,59 @@ func StatisticsPage(data *types.AdminStatisticsData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1 class=\"text-3xl font-bold mb-8\">Сводная статистика</h1><div class=\"grid md:grid-cols-4 gap-6 mb-8\"><div class=\"bg-white rounded-xl shadow-sm p-6\"><div class=\"flex items-center justify-between\"><div><p class=\"text-gray-500 text-sm\">Тестов</p><p class=\"text-3xl font-bold text-indigo-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1 class=\"mb-8 text-3xl font-bold\">Сводная статистика</h1><div class=\"grid gap-6 mb-8 md:grid-cols-4\"><div class=\"p-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-500\">Тестов</p><p class=\"text-3xl font-bold text-indigo-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.TotalQuizzes)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 19, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 18, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</p></div><i class=\"fas fa-file-alt text-3xl text-indigo-200\"></i></div></div><div class=\"bg-white rounded-xl shadow-sm p-6\"><div class=\"flex items-center justify-between\"><div><p class=\"text-gray-500 text-sm\">Учеников</p><p class=\"text-3xl font-bold text-green-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</p></div><i class=\"text-3xl text-indigo-200 fas fa-file-alt\"></i></div></div><div class=\"p-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-500\">Учеников</p><p class=\"text-3xl font-bold text-green-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(data.TotalStudents)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 28, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 27, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</p></div><i class=\"fas fa-users text-3xl text-green-200\"></i></div></div><div class=\"bg-white rounded-xl shadow-sm p-6\"><div class=\"flex items-center justify-between\"><div><p class=\"text-gray-500 text-sm\">Прохождений</p><p class=\"text-3xl font-bold text-orange-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</p></div><i class=\"text-3xl text-green-200 fas fa-users\"></i></div></div><div class=\"p-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-500\">Прохождений</p><p class=\"text-3xl font-bold text-orange-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.TotalAttempts)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 37, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 36, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><i class=\"fas fa-play-circle text-3xl text-orange-200\"></i></div></div><div class=\"bg-white rounded-xl shadow-sm p-6\"><div class=\"flex items-center justify-between\"><div><p class=\"text-gray-500 text-sm\">Средний балл</p><p class=\"text-3xl font-bold text-purple-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><i class=\"text-3xl text-orange-200 fas fa-play-circle\"></i></div></div><div class=\"p-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-500\">Средний балл</p><p class=\"text-3xl font-bold text-purple-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.1f", data.AvgScore))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 46, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 45, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "%</p></div><i class=\"fas fa-chart-line text-3xl text-purple-200\"></i></div></div></div><div class=\"grid md:grid-cols-2 gap-8 mb-8\"><div class=\"bg-white rounded-xl shadow-sm p-6\"><h2 class=\"text-xl font-bold mb-4\">Статистика по тестам</h2><div id=\"quiz-stats-table\" hx-get=\"/admin/api/quiz-stats\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><div class=\"text-center py-8 text-gray-500\"><p>Загрузка...</p></div></div></div><div class=\"bg-white rounded-xl shadow-sm p-6\"><h2 class=\"text-xl font-bold mb-4\">Распределение по предметам</h2><div id=\"subject-dist\" hx-get=\"/admin/api/subject-dist\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><div class=\"text-center py-8 text-gray-500\"><p>Загрузка...</p></div></div></div></div><div class=\"bg-white rounded-xl shadow-sm p-6\"><h2 class=\"text-xl font-bold mb-4\">Распределение учеников по классам</h2><div id=\"grade-dist\" hx-get=\"/admin/api/grade-dist\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><div class=\"text-center py-8 text-gray-500\"><p>Загрузка...</p></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "%</p></div><i class=\"text-3xl text-purple-200 fas fa-chart-line\"></i></div></div></div><div class=\"grid gap-8 mb-8 md:grid-cols-2\"><div class=\"p-6 bg-white rounded-xl shadow-sm\"><h2 class=\"mb-4 text-xl font-bold\">Статистика по тестам</h2><div id=\"quiz-stats-table\" hx-get=\"/admin/api/quiz-stats\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><div class=\"py-8 text-center text-gray-500\"><p>Загрузка...</p></div></div></div><div class=\"p-6 bg-white rounded-xl shadow-sm\"><h2 class=\"mb-4 text-xl font-bold\">Распределение по предметам</h2><div id=\"subject-dist\" hx-get=\"/admin/api/subject-dist\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><div class=\"py-8 text-center text-gray-500\"><p>Загрузка...</p></div></div></div></div><div class=\"p-6 bg-white rounded-xl shadow-sm\"><h2 class=\"mb-4 text-xl font-bold\">Распределение учеников по классам</h2><div id=\"grade-dist\" hx-get=\"/admin/api/grade-dist\" hx-trigger=\"load\" hx-swap=\"innerHTML\"><div class=\"py-8 text-center text-gray-500\"><p>Загрузка...</p></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -136,12 +136,12 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if len(stats) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"text-center py-8 text-gray-500\"><p>Пока нет данных</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"py-8 text-center text-gray-500\"><p>Пока нет данных</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr class=\"border-b\"><th class=\"text-left py-2 text-gray-600\">Тест</th><th class=\"text-right py-2 text-gray-600\">Прохождений</th><th class=\"text-right py-2 text-gray-600\">Ср. балл</th><th class=\"text-right py-2 text-gray-600\">Успешность</th></tr></thead> <tbody>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr class=\"border-b\"><th class=\"py-2 text-left text-gray-600\">Тест</th><th class=\"py-2 text-right text-gray-600\">Прохождений</th><th class=\"py-2 text-right text-gray-600\">Ср. балл</th><th class=\"py-2 text-right text-gray-600\">Успешность</th></tr></thead> <tbody>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -153,7 +153,7 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(stat.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 104, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 100, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -166,7 +166,7 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(stat.Subject)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 105, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 101, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -179,7 +179,7 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(stat.AttemptCount)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 107, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 103, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -214,13 +214,13 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.1f%%", stat.AvgScore))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 109, Col: 96}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 105, Col: 96}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span></td><td class=\"py-3 text-right\"><div class=\"flex items-center justify-end gap-2\"><div class=\"w-16 bg-gray-200 rounded-full h-2\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span></td><td class=\"py-3 text-right\"><div class=\"flex gap-2 justify-end items-center\"><div class=\"w-16 h-2 bg-gray-200 rounded-full\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -249,7 +249,7 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 				var templ_7745c5c3_Var16 string
 				templ_7745c5c3_Var16, templ_7745c5c3_Err = templruntime.SanitizeStyleAttributeValues(fmt.Sprintf("width: %.0f%%", stat.PassRate))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 114, Col: 135}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 110, Col: 135}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 				if templ_7745c5c3_Err != nil {
@@ -262,7 +262,7 @@ func QuizStatsPartial(stats []types.QuizStatsResponse) templ.Component {
 				var templ_7745c5c3_Var17 string
 				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f%%", stat.PassRate))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 116, Col: 69}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 112, Col: 69}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 				if templ_7745c5c3_Err != nil {
@@ -304,12 +304,12 @@ func GradeDistPartial(dist map[string]int) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if len(dist) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"text-center py-8 text-gray-500\"><p>Пока нет данных</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"py-8 text-center text-gray-500\"><p>Пока нет данных</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"flex items-end justify-around gap-2 h-48\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"flex gap-2 justify-around items-end h-48\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -321,20 +321,20 @@ func GradeDistPartial(dist map[string]int) templ.Component {
 				var templ_7745c5c3_Var19 string
 				templ_7745c5c3_Var19, templ_7745c5c3_Err = templruntime.SanitizeStyleAttributeValues(fmt.Sprintf("height: %dpx", getBarHeight(getGradeCount(dist, grade), dist)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 136, Col: 129}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 132, Col: 129}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\"></div><span class=\"text-xs text-gray-500 mt-1\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\"></div><span class=\"mt-1 text-xs text-gray-500\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var20 string
 				templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(grade)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 137, Col: 53}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 133, Col: 53}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 				if templ_7745c5c3_Err != nil {
@@ -376,7 +376,7 @@ func SubjectDistPartial(dist map[string]int) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if len(dist) == 0 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "<div class=\"text-center py-8 text-gray-500\"><p>Пока нет данных</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "<div class=\"py-8 text-center text-gray-500\"><p>Пока нет данных</p></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -386,14 +386,14 @@ func SubjectDistPartial(dist map[string]int) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for subject, count := range dist {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div><div class=\"flex justify-between text-sm mb-1\"><span class=\"font-medium\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div><div class=\"flex justify-between mb-1 text-sm\"><span class=\"font-medium\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var22 string
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(subject)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 154, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 150, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -406,20 +406,20 @@ func SubjectDistPartial(dist map[string]int) templ.Component {
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(count)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 155, Col: 41}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 151, Col: 41}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, " тест(ов)</span></div><div class=\"w-full bg-gray-200 rounded-full h-3\"><div class=\"bg-indigo-500 h-3 rounded-full\" style=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, " тест(ов)</span></div><div class=\"w-full h-3 bg-gray-200 rounded-full\"><div class=\"h-3 bg-indigo-500 rounded-full\" style=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var24 string
 				templ_7745c5c3_Var24, templ_7745c5c3_Err = templruntime.SanitizeStyleAttributeValues(fmt.Sprintf("width: %d%%", (count*100)/getMaxCount(dist)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 158, Col: 115}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/statistics.templ`, Line: 154, Col: 115}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 				if templ_7745c5c3_Err != nil {

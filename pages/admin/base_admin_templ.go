@@ -8,9 +8,7 @@ package admin
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"github.com/goquizvibe/models"
-)
+import "github.com/goquizvibe/models"
 
 func BaseAdmin(title string, user *models.User) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -40,13 +38,13 @@ func BaseAdmin(title string, user *models.User) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/base_admin.templ`, Line: 13, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/base_admin.templ`, Line: 11, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - GoQuizVibe Admin</title><script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@1.9.10\"></script><link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"></head><body class=\"bg-gray-100 text-gray-900 min-h-screen\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " - GoQuizVibe Admin</title><link href=\"/static/style/app.css\" rel=\"stylesheet\"><script src=\"https://unpkg.com/htmx.org@1.9.10\"></script><link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"></head><body class=\"min-h-screen text-gray-900 bg-gray-100\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -54,7 +52,7 @@ func BaseAdmin(title string, user *models.User) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<main class=\"max-w-7xl mx-auto px-4 py-8\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<main class=\"py-8 px-4 mx-auto max-w-7xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -91,20 +89,20 @@ func AdminNavbar(user *models.User) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"bg-gray-900 text-white shadow-lg\"><div class=\"max-w-7xl mx-auto px-4\"><div class=\"flex justify-between items-center py-4\"><div class=\"flex items-center gap-8\"><a href=\"/admin\" class=\"text-xl font-bold text-indigo-400\"><i class=\"fas fa-graduation-cap mr-2\"></i>GoQuizVibe Admin</a><div class=\"flex items-center gap-6\"><a href=\"/admin\" class=\"hover:text-indigo-300 transition\"><i class=\"fas fa-home mr-1\"></i>Обзор</a> <a href=\"/admin/quizzes\" class=\"hover:text-indigo-300 transition\"><i class=\"fas fa-list mr-1\"></i>Тесты</a> <a href=\"/admin/results\" class=\"hover:text-indigo-300 transition\"><i class=\"fas fa-chart-bar mr-1\"></i>Результаты</a> <a href=\"/admin/statistics\" class=\"hover:text-indigo-300 transition\"><i class=\"fas fa-chart-pie mr-1\"></i>Статистика</a></div></div><div class=\"flex items-center gap-4\"><div class=\"flex items-center gap-3\"><span class=\"text-gray-300 text-sm\"><i class=\"fas fa-user-shield mr-1\"></i>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<nav class=\"text-white bg-gray-900 shadow-lg\"><div class=\"px-4 mx-auto max-w-7xl\"><div class=\"flex justify-between items-center py-4\"><div class=\"flex gap-8 items-center\"><a href=\"/admin\" class=\"text-xl font-bold text-indigo-400\"><i class=\"mr-2 fas fa-graduation-cap\"></i>GoQuizVibe Admin</a><div class=\"flex gap-6 items-center\"><a href=\"/admin\" class=\"transition hover:text-indigo-300\"><i class=\"mr-1 fas fa-home\"></i>Обзор</a> <a href=\"/admin/quizzes\" class=\"transition hover:text-indigo-300\"><i class=\"mr-1 fas fa-list\"></i>Тесты</a> <a href=\"/admin/results\" class=\"transition hover:text-indigo-300\"><i class=\"mr-1 fas fa-chart-bar\"></i>Результаты</a> <a href=\"/admin/statistics\" class=\"transition hover:text-indigo-300\"><i class=\"mr-1 fas fa-chart-pie\"></i>Статистика</a></div></div><div class=\"flex gap-4 items-center\"><div class=\"flex gap-3 items-center\"><span class=\"text-sm text-gray-300\"><i class=\"mr-1 fas fa-user-shield\"></i>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(user.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/base_admin.templ`, Line: 53, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/base_admin.templ`, Line: 51, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</span> <a href=\"/logout\" class=\"text-red-400 hover:text-red-300 text-sm\"><i class=\"fas fa-sign-out-alt\"></i></a></div><a href=\"/dashboard\" class=\"text-sm text-indigo-400 hover:text-indigo-300\"><i class=\"fas fa-arrow-left mr-1\"></i>Ученикам</a></div></div></div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</span> <a href=\"/logout\" class=\"text-sm text-red-400 hover:text-red-300\"><i class=\"fas fa-sign-out-alt\"></i></a></div><a href=\"/dashboard\" class=\"text-sm text-indigo-400 hover:text-indigo-300\"><i class=\"mr-1 fas fa-arrow-left\"></i>Ученикам</a></div></div></div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

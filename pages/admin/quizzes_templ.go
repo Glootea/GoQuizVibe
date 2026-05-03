@@ -48,17 +48,17 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-between items-center mb-8\"><h1 class=\"text-3xl font-bold\">Управление тестами</h1><button onclick=\"document.getElementById('createModal').classList.remove('hidden')\" class=\"bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition\"><i class=\"fas fa-plus mr-2\"></i>Создать тест</button></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-between items-center mb-8\"><h1 class=\"text-3xl font-bold\">Управление тестами</h1><button onclick=\"document.getElementById('createModal').classList.remove('hidden')\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\"><i class=\"mr-2 fas fa-plus\"></i>Создать тест</button></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(data.Quizzes) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"bg-white rounded-xl shadow-sm p-12 text-center\"><i class=\"fas fa-folder-open text-6xl text-gray-300 mb-4\"></i><p class=\"text-gray-500 text-lg\">Пока нет тестов</p><button onclick=\"document.getElementById('createModal').classList.remove('hidden')\" class=\"mt-4 text-indigo-600 hover:text-indigo-800\"><i class=\"fas fa-plus mr-1\"></i>Создать первый тест</button></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"p-12 text-center bg-white rounded-xl shadow-sm\"><i class=\"mb-4 text-6xl text-gray-300 fas fa-folder-open\"></i><p class=\"text-lg text-gray-500\">Пока нет тестов</p><button onclick=\"document.getElementById('createModal').classList.remove('hidden')\" class=\"mt-4 text-indigo-600 hover:text-indigo-800\"><i class=\"mr-1 fas fa-plus\"></i>Создать первый тест</button></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"bg-white rounded-xl shadow-sm overflow-hidden\"><table class=\"w-full\"><thead class=\"bg-gray-50 border-b\"><tr><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Название</th><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Предмет</th><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Класс</th><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Вопросов</th><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Прохождений</th><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Ср. балл</th><th class=\"text-left px-6 py-4 font-semibold text-gray-600\">Статус</th><th class=\"text-right px-6 py-4 font-semibold text-gray-600\">Действия</th></tr></thead> <tbody class=\"divide-y\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"overflow-hidden bg-white rounded-xl shadow-sm\"><table class=\"w-full\"><thead class=\"bg-gray-50 border-b\"><tr><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Название</th><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Предмет</th><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Класс</th><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Вопросов</th><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Прохождений</th><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Ср. балл</th><th class=\"py-4 px-6 font-semibold text-left text-gray-600\">Статус</th><th class=\"py-4 px-6 font-semibold text-right text-gray-600\">Действия</th></tr></thead> <tbody class=\"divide-y\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -81,7 +81,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><td class=\"px-6 py-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><td class=\"py-4 px-6\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -110,7 +110,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 					var templ_7745c5c3_Var7 string
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 46, Col: 85}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 45, Col: 85}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -123,65 +123,65 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Description)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 47, Col: 60}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 46, Col: 60}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</p></td><td class=\"px-6 py-4\"><span class=\"px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-sm\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</p></td><td class=\"py-4 px-6\"><span class=\"py-1 px-2 text-sm text-indigo-700 bg-indigo-100 rounded\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Subject)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 50, Col: 93}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 49, Col: 93}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></td><td class=\"px-6 py-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></td><td class=\"py-4 px-6\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var10 string
 					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Grade)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 52, Col: 42}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 51, Col: 42}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"px-6 py-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"py-4 px-6\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var11 string
 					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(len(quiz.Questions))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 53, Col: 51}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 52, Col: 51}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td><td class=\"px-6 py-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</td><td class=\"py-4 px-6\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.AttemptCount)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 54, Col: 49}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 53, Col: 49}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td class=\"px-6 py-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</td><td class=\"py-4 px-6\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -211,7 +211,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 						var templ_7745c5c3_Var15 string
 						templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.1f", quiz.AvgScore))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 57, Col: 91}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 56, Col: 91}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 						if templ_7745c5c3_Err != nil {
@@ -227,7 +227,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</td><td class=\"px-6 py-4\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</td><td class=\"py-4 px-6\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -256,26 +256,26 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 					var templ_7745c5c3_Var18 string
 					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(getStatusText(string(quiz.Status)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 64, Col: 46}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 63, Col: 46}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></td><td class=\"px-6 py-4 text-right\"><a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></td><td class=\"py-4 px-6 text-right\"><a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var19 templ.SafeURL
 					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/admin/quizzes/" + quiz.ID.String()))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 68, Col: 66}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 67, Col: 66}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" class=\"text-indigo-600 hover:text-indigo-800 mr-3\"><i class=\"fas fa-edit\"></i></a> ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" class=\"mr-3 text-indigo-600 hover:text-indigo-800\"><i class=\"fas fa-edit\"></i></a> ")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -287,7 +287,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 						var templ_7745c5c3_Var20 templ.SafeURL
 						templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/admin/quizzes/" + quiz.ID.String() + "/restore"))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 72, Col: 99}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 71, Col: 99}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 						if templ_7745c5c3_Err != nil {
@@ -305,7 +305,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 						var templ_7745c5c3_Var21 string
 						templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quiz.ID.String())
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 78, Col: 63}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 78, Col: 59}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 						if templ_7745c5c3_Err != nil {
@@ -326,7 +326,7 @@ func QuizzesPage(data types.AdminQuizListData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, " <div id=\"createModal\" class=\"hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50\"><div class=\"bg-white rounded-xl p-6 w-full max-w-md\"><h3 class=\"text-xl font-bold mb-4\">Создать тест</h3><form hx-post=\"/admin/quizzes/new\" hx-target=\"body\" hx-swap=\"none\"><div class=\"space-y-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Название</label> <input type=\"text\" name=\"title\" required class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Описание</label> <textarea name=\"description\" rows=\"2\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></textarea></div><div class=\"grid grid-cols-2 gap-4\"><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Предмет</label> <input type=\"text\" name=\"subject\" placeholder=\"Математика\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Класс</label> <input type=\"number\" name=\"grade\" min=\"1\" max=\"11\" value=\"5\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><div><label class=\"block text-sm font-medium text-gray-700 mb-1\">Время (мин)</label> <input type=\"number\" name=\"time_limit\" min=\"0\" value=\"30\" class=\"w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500\"></div></div><div class=\"flex justify-end gap-3 mt-6\"><button type=\"button\" onclick=\"document.getElementById('createModal').classList.add('hidden')\" class=\"px-4 py-2 text-gray-600 hover:text-gray-800\">Отмена</button> <button type=\"submit\" class=\"px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition\">Создать</button></div></form></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, " <div id=\"createModal\" class=\"flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50\"><div class=\"p-6 w-full max-w-md bg-white rounded-xl\"><h3 class=\"mb-4 text-xl font-bold\">Создать тест</h3><form hx-post=\"/admin/quizzes/new\" hx-target=\"body\" hx-swap=\"none\"><div class=\"space-y-4\"><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Название</label> <input type=\"text\" name=\"title\" required class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></div><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Описание</label> <textarea name=\"description\" rows=\"2\" class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></textarea></div><div class=\"grid grid-cols-2 gap-4\"><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Предмет</label> <input type=\"text\" name=\"subject\" placeholder=\"Математика\" class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></div><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Класс</label> <input type=\"number\" name=\"grade\" min=\"1\" max=\"11\" value=\"5\" class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></div></div><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Время (мин)</label> <input type=\"number\" name=\"time_limit\" min=\"0\" value=\"30\" class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></div></div><div class=\"flex gap-3 justify-end mt-6\"><button type=\"button\" onclick=\"document.getElementById('createModal').classList.add('hidden')\" class=\"py-2 px-4 text-gray-600 hover:text-gray-800\">Отмена</button> <button type=\"submit\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\">Создать</button></div></form></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

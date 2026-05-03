@@ -58,7 +58,7 @@ func QuizPage(data types.QuizPageData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50\"><div class=\"max-w-2xl mx-auto px-4 py-8\"><div class=\"flex justify-between items-center mb-6\"><a href=\"/dashboard\" class=\"text-gray-600 hover:text-gray-900\"><i class=\"fas fa-arrow-left mr-2\"></i>Назад</a><div class=\"text-right\"><p class=\"font-bold text-lg\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50\"><div class=\"py-8 px-4 mx-auto max-w-2xl\"><div class=\"flex justify-between items-center mb-6\"><a href=\"/dashboard\" class=\"text-gray-600 hover:text-gray-900\"><i class=\"mr-2 fas fa-arrow-left\"></i>Назад</a><div class=\"text-right\"><p class=\"text-lg font-bold\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -84,14 +84,14 @@ func QuizPage(data types.QuizPageData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " вопросов</p></div></div><div id=\"quiz-container\" hx-ext=\"json-enc\"><div class=\"bg-white rounded-2xl shadow-xl p-8\"><div id=\"question-content\"><div class=\"mb-6\"><span id=\"question-counter\" class=\"text-sm text-indigo-600 font-medium\">Вопрос 1 из ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " вопросов</p></div></div><div id=\"quiz-container\" hx-ext=\"json-enc\"><div class=\"p-8 bg-white rounded-2xl shadow-xl\"><div id=\"question-content\"><div class=\"mb-6\"><span id=\"question-counter\" class=\"text-sm font-medium text-indigo-600\">Вопрос 1 из ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(len(data.Quiz.Questions))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 38, Col: 126}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 37, Col: 126}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -104,20 +104,20 @@ func QuizPage(data types.QuizPageData) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("/quiz/" + data.Quiz.ID.String() + "/submit?session=" + data.SessionID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 43, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 41, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" hx-target=\"#question-content\" hx-swap=\"innerHTML\"><input type=\"hidden\" name=\"question_index\" id=\"question-index\" value=\"0\"><div id=\"question-text\" class=\"text-xl font-medium mb-6\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" hx-target=\"#question-content\" hx-swap=\"innerHTML\"><input type=\"hidden\" name=\"question_index\" id=\"question-index\" value=\"0\"><div id=\"question-text\" class=\"mb-6 text-xl font-medium\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.Quiz.Questions[0].Text)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 50, Col: 38}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 47, Col: 38}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -133,14 +133,14 @@ func QuizPage(data types.QuizPageData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				for _, option := range data.Quiz.Questions[0].GetOptions() {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<label class=\"block p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition\"><input type=\"radio\" name=\"answer\" value=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<label class=\"block p-4 rounded-xl border border-gray-200 transition cursor-pointer hover:bg-indigo-50 hover:border-indigo-300\"><input type=\"radio\" name=\"answer\" value=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(option)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 60, Col: 27}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 56, Col: 27}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -153,7 +153,7 @@ func QuizPage(data types.QuizPageData) templ.Component {
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(option)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 64, Col: 20}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 60, Col: 20}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -169,12 +169,12 @@ func QuizPage(data types.QuizPageData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<input type=\"text\" name=\"answer\" id=\"answer-input\" class=\"w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition\" placeholder=\"Введите ответ...\" required> ")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<input type=\"text\" name=\"answer\" id=\"answer-input\" class=\"py-3 px-4 w-full rounded-xl border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\" placeholder=\"Введите ответ...\" required> ")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<button type=\"submit\" class=\"w-full mt-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition\">Ответить</button></form></div><div id=\"feedback-container\" class=\"hidden mt-6 p-4 rounded-xl\"></div></div></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<button type=\"submit\" class=\"py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700\">Ответить</button></form></div><div id=\"feedback-container\" class=\"hidden p-4 mt-6 rounded-xl\"></div></div></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -209,7 +209,7 @@ func QuestionFeedback(answer string, isCorrect bool, explanation string) templ.C
 			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"p-4 rounded-xl bg-green-50 border border-green-200\"><div class=\"flex items-center gap-2 mb-2\"><i class=\"fas fa-check-circle text-green-600\"></i> <span class=\"font-semibold text-green-700\">Правильно!</span></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"p-4 bg-green-50 rounded-xl border border-green-200\"><div class=\"flex gap-2 items-center mb-2\"><i class=\"text-green-600 fas fa-check-circle\"></i> <span class=\"font-semibold text-green-700\">Правильно!</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -221,7 +221,7 @@ func QuestionFeedback(answer string, isCorrect bool, explanation string) templ.C
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(explanation)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 103, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 97, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -277,27 +277,27 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " <main class=\"max-w-3xl mx-auto px-4 py-8\"><div class=\"text-center mb-8\"><div class=\"w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4\"><i class=\"fas fa-check text-4xl text-white\"></i></div><h1 class=\"text-3xl font-bold mb-2\">Тест завершён!</h1><p class=\"text-xl text-gray-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " <main class=\"py-8 px-4 mx-auto max-w-3xl\"><div class=\"mb-8 text-center\"><div class=\"flex justify-center items-center mx-auto mb-4 w-20 h-20 bg-green-500 rounded-full\"><i class=\"text-4xl text-white fas fa-check\"></i></div><h1 class=\"mb-2 text-3xl font-bold\">Тест завершён!</h1><p class=\"text-xl text-gray-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(data.Quiz.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 118, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 111, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p></div><div class=\"bg-white rounded-2xl shadow-xl p-8 mb-6\"><div class=\"grid grid-cols-3 gap-4 mb-6\"><div class=\"text-center p-4 bg-green-50 rounded-xl\"><p class=\"text-2xl font-bold text-green-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</p></div><div class=\"p-8 mb-6 bg-white rounded-2xl shadow-xl\"><div class=\"grid grid-cols-3 gap-4 mb-6\"><div class=\"p-4 text-center bg-green-50 rounded-xl\"><p class=\"text-2xl font-bold text-green-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(data.Score)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 124, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 116, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -310,33 +310,33 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(data.MaxScore)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 124, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 116, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</p><p class=\"text-sm text-gray-600\">Баллы</p></div><div class=\"text-center p-4 bg-green-50 rounded-xl\"><p class=\"text-2xl font-bold text-green-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</p><p class=\"text-sm text-gray-600\">Баллы</p></div><div class=\"p-4 text-center bg-green-50 rounded-xl\"><p class=\"text-2xl font-bold text-green-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.CorrectCount)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 128, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 120, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</p><p class=\"text-sm text-gray-600\">Правильных</p></div><div class=\"text-center p-4 bg-red-50 rounded-xl\"><p class=\"text-2xl font-bold text-red-600\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</p><p class=\"text-sm text-gray-600\">Правильных</p></div><div class=\"p-4 text-center bg-red-50 rounded-xl\"><p class=\"text-2xl font-bold text-red-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(data.WrongCount)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 132, Col: 66}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 124, Col: 66}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -349,13 +349,13 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(floatToPercent(data.Score, data.MaxScore))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 139, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 130, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "%</span></div><a href=\"/dashboard\" class=\"block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition text-center\">Вернуться к тестам</a></div><div class=\"bg-white rounded-2xl shadow-xl p-8\"><h2 class=\"text-xl font-bold mb-4\">Детализация ответов</h2><div class=\"space-y-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "%</span></div><a href=\"/dashboard\" class=\"block py-3 w-full font-semibold text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700\">Вернуться к тестам</a></div><div class=\"p-8 bg-white rounded-2xl shadow-xl\"><h2 class=\"mb-4 text-xl font-bold\">Детализация ответов</h2><div class=\"space-y-4\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -385,7 +385,7 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 				var templ_7745c5c3_Var22 string
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(i + 1)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 157, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 146, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -396,24 +396,24 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if answer.IsCorrect {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<span class=\"px-2 py-1 bg-green-100 text-green-700 text-sm rounded-full\"><i class=\"fas fa-check mr-1\"></i>Правильно</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<span class=\"py-1 px-2 text-sm text-green-700 bg-green-100 rounded-full\"><i class=\"mr-1 fas fa-check\"></i>Правильно</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<span class=\"px-2 py-1 bg-red-100 text-red-700 text-sm rounded-full\"><i class=\"fas fa-times mr-1\"></i>Ошибка</span>")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<span class=\"py-1 px-2 text-sm text-red-700 bg-red-100 rounded-full\"><i class=\"mr-1 fas fa-times\"></i>Ошибка</span>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</div><p class=\"text-gray-700 mb-2\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</div><p class=\"mb-2 text-gray-700\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(answer.Question)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 168, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 157, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -448,7 +448,7 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(answer.UserAnswer)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 172, Col: 121}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 161, Col: 121}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -466,7 +466,7 @@ func QuizResultPage(data types.QuizResultData) templ.Component {
 					var templ_7745c5c3_Var27 string
 					templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(answer.CorrectAnswer)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 177, Col: 73}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 166, Col: 73}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 					if templ_7745c5c3_Err != nil {
@@ -548,12 +548,12 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, " <main class=\"max-w-4xl mx-auto px-4 py-8\"><h1 class=\"text-2xl font-bold mb-6\">Ретроспектива ошибок</h1>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, " <main class=\"py-8 px-4 mx-auto max-w-4xl\"><h1 class=\"mb-6 text-2xl font-bold\">Ретроспектива ошибок</h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(data.QuizErrors) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<div class=\"bg-white rounded-xl p-8 text-center\"><div class=\"w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4\"><i class=\"fas fa-check text-3xl text-green-600\"></i></div><h2 class=\"text-xl font-semibold mb-2\">Отличная работа!</h2><p class=\"text-gray-600\">У вас пока нет ошибок. Продолжайте в том же духе!</p></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "<div class=\"p-8 text-center bg-white rounded-xl\"><div class=\"flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full\"><i class=\"text-3xl text-green-600 fas fa-check\"></i></div><h2 class=\"mb-2 text-xl font-semibold\">Отличная работа!</h2><p class=\"text-gray-600\">У вас пока нет ошибок. Продолжайте в том же духе!</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -563,27 +563,27 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				for _, qe := range data.QuizErrors {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<div class=\"bg-white rounded-xl shadow-sm overflow-hidden quiz-card\" data-quiz-id=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<div class=\"overflow-hidden bg-white rounded-xl shadow-sm quiz-card\" data-quiz-id=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var30 string
 					templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(qe.Quiz.ID.String())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 222, Col: 108}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 209, Col: 109}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"><div class=\"p-5 cursor-pointer hover:bg-gray-50 flex justify-between items-center\" data-action=\"toggle\"><div><h3 class=\"font-semibold text-lg\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"><div class=\"flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50\" data-action=\"toggle\"><div><h3 class=\"text-lg font-semibold\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var31 string
 					templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(qe.Quiz.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 225, Col: 57}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 212, Col: 58}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 					if templ_7745c5c3_Err != nil {
@@ -596,7 +596,7 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 					var templ_7745c5c3_Var32 string
 					templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(len(qe.WrongAnswers))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 226, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 213, Col: 64}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 					if templ_7745c5c3_Err != nil {
@@ -609,33 +609,33 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 					var templ_7745c5c3_Var33 string
 					templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(plural(len(qe.WrongAnswers), "ошибка", "ошибки", "ошибок"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 226, Col: 144}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 213, Col: 145}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</p></div><div class=\"flex items-center gap-3\"><a href=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</p></div><div class=\"flex gap-3 items-center\"><a href=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var34 templ.SafeURL
 					templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz?id=" + qe.Quiz.ID.String()))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 229, Col: 62}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 216, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" class=\"px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700\">Пройти заново</a> <i class=\"fas fa-chevron-down text-gray-400 transition-transform\"></i></div></div><div class=\"errors-content hidden px-5 pb-5 border-t\" id=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "\" class=\"py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700\">Пройти заново</a> <i class=\"text-gray-400 transition-transform fas fa-chevron-down\"></i></div></div><div class=\"hidden px-5 pb-5 border-t errors-content\" id=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var35 string
 					templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("errors-%s", qe.Quiz.ID.String()))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 235, Col: 110}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 222, Col: 111}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 					if templ_7745c5c3_Err != nil {
@@ -658,7 +658,7 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 							var templ_7745c5c3_Var36 string
 							templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(wa.Timestamp.Format("02.01.2006 15:04"))
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 240, Col: 88}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 227, Col: 89}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 							if templ_7745c5c3_Err != nil {
@@ -669,27 +669,27 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 								return templ_7745c5c3_Err
 							}
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<div class=\"mb-2\"><p class=\"text-sm text-gray-500\">Ваш ответ:</p><p class=\"text-red-600 font-medium\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 52, "<div class=\"mb-2\"><p class=\"text-sm text-gray-500\">Ваш ответ:</p><p class=\"font-medium text-red-600\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var37 string
 						templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(wa.UserAnswer)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 245, Col: 61}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 232, Col: 62}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
-						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "</p></div><div class=\"mb-2\"><p class=\"text-sm text-gray-500\">Правильный ответ:</p><p class=\"text-green-600 font-medium\">")
+						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 53, "</p></div><div class=\"mb-2\"><p class=\"text-sm text-gray-500\">Правильный ответ:</p><p class=\"font-medium text-green-600\">")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var38 string
 						templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(wa.CorrectAnswer)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 249, Col: 66}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 236, Col: 67}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 						if templ_7745c5c3_Err != nil {
@@ -700,14 +700,14 @@ func ErrorsPage(data types.ErrorsPageData) templ.Component {
 							return templ_7745c5c3_Err
 						}
 						if wa.Explanation != "" {
-							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<div><p class=\"text-sm text-gray-500\">Пояснение:</p><p class=\"text-blue-600 text-sm\">")
+							templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 55, "<div><p class=\"text-sm text-gray-500\">Пояснение:</p><p class=\"text-sm text-blue-600\">")
 							if templ_7745c5c3_Err != nil {
 								return templ_7745c5c3_Err
 							}
 							var templ_7745c5c3_Var39 string
 							templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(wa.Explanation)
 							if templ_7745c5c3_Err != nil {
-								return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 254, Col: 60}
+								return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 241, Col: 61}
 							}
 							_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 							if templ_7745c5c3_Err != nil {
@@ -784,12 +784,12 @@ func LeaderboardPage(data types.LeaderboardPageData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, " <main class=\"max-w-4xl mx-auto px-4 py-8\"><h1 class=\"text-2xl font-bold mb-6\">Таблица лидеров</h1><div class=\"bg-white rounded-xl shadow-sm p-5\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, " <main class=\"py-8 px-4 mx-auto max-w-4xl\"><h1 class=\"mb-6 text-2xl font-bold\">Таблица лидеров</h1><div class=\"p-5 bg-white rounded-xl shadow-sm\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(data.Entries) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<div class=\"text-center text-gray-500 py-8\"><p>Пока нет участников</p></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 62, "<div class=\"py-8 text-center text-gray-500\"><p>Пока нет участников</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -891,33 +891,33 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int) templ.Comp
 		var templ_7745c5c3_Var47 string
 		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(position)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 307, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 292, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "</div><div class=\"flex-1\"><p class=\"font-semibold text-lg\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "</div><div class=\"flex-1\"><p class=\"text-lg font-semibold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var48 string
 		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(entry.UserName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 310, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 295, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</p><p class=\"text-sm text-gray-500\"><i class=\"fas fa-fire mr-1\"></i>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</p><p class=\"text-sm text-gray-500\"><i class=\"mr-1 fas fa-fire\"></i>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var49 string
 		templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(entry.Streak)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 312, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 297, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 		if templ_7745c5c3_Err != nil {
@@ -930,7 +930,7 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int) templ.Comp
 		var templ_7745c5c3_Var50 string
 		templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(entry.XP)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 316, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 301, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 		if templ_7745c5c3_Err != nil {

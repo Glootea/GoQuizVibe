@@ -8,70 +8,65 @@ import (
 
 templ DashboardPage(data types.AdminDashboardData) {
 	@BaseAdmin("Обзор", data.User) {
-		<h1 class="text-3xl font-bold mb-8">Панель управления</h1>
-
-		<div class="grid md:grid-cols-4 gap-6 mb-8">
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+		<h1 class="mb-8 text-3xl font-bold">Панель управления</h1>
+		<div class="grid gap-6 mb-8 md:grid-cols-4">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Всего тестов</p>
+						<p class="text-sm text-gray-500">Всего тестов</p>
 						<p class="text-3xl font-bold text-indigo-600">{ data.QuizCount }</p>
 					</div>
-					<i class="fas fa-file-alt text-4xl text-indigo-200"></i>
+					<i class="text-4xl text-indigo-200 fas fa-file-alt"></i>
 				</div>
 			</div>
-
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Всего учеников</p>
+						<p class="text-sm text-gray-500">Всего учеников</p>
 						<p class="text-3xl font-bold text-green-600">{ data.StudentCount }</p>
 					</div>
-					<i class="fas fa-users text-4xl text-green-200"></i>
+					<i class="text-4xl text-green-200 fas fa-users"></i>
 				</div>
 			</div>
-
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Прохождений</p>
+						<p class="text-sm text-gray-500">Прохождений</p>
 						<p class="text-3xl font-bold text-orange-600">{ data.AttemptCount }</p>
 					</div>
-					<i class="fas fa-play-circle text-4xl text-orange-200"></i>
+					<i class="text-4xl text-orange-200 fas fa-play-circle"></i>
 				</div>
 			</div>
-
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Средний балл</p>
+						<p class="text-sm text-gray-500">Средний балл</p>
 						<p class="text-3xl font-bold text-purple-600">{ fmt.Sprintf("%.1f", data.AvgScore) }%</p>
 					</div>
-					<i class="fas fa-percentage text-4xl text-purple-200"></i>
+					<i class="text-4xl text-purple-200 fas fa-percentage"></i>
 				</div>
 			</div>
 		</div>
-
-		<div class="grid md:grid-cols-2 gap-8">
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<h2 class="text-xl font-bold mb-4">Быстрые действия</h2>
+		<div class="grid gap-8 md:grid-cols-2">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">Быстрые действия</h2>
 				<div class="space-y-3">
-					<a href="/admin/quizzes" class="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition">
-						<i class="fas fa-plus-circle text-indigo-600 text-xl"></i>
+					<a href="/admin/quizzes" class="flex gap-3 items-center p-4 bg-indigo-50 rounded-lg transition hover:bg-indigo-100">
+						<i class="text-xl text-indigo-600 fas fa-plus-circle"></i>
 						<div>
 							<p class="font-medium text-gray-900">Создать тест</p>
 							<p class="text-sm text-gray-500">Новый тест с вопросами</p>
 						</div>
 					</a>
-					<a href="/admin/results" class="flex items-center gap-3 p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
-						<i class="fas fa-check-circle text-green-600 text-xl"></i>
+					<a href="/admin/results" class="flex gap-3 items-center p-4 bg-green-50 rounded-lg transition hover:bg-green-100">
+						<i class="text-xl text-green-600 fas fa-check-circle"></i>
 						<div>
 							<p class="font-medium text-gray-900">Проверить результаты</p>
 							<p class="text-sm text-gray-500">Посмотреть ответы учеников</p>
 						</div>
 					</a>
-					<a href="/admin/statistics" class="flex items-center gap-3 p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-						<i class="fas fa-chart-line text-purple-600 text-xl"></i>
+					<a href="/admin/statistics" class="flex gap-3 items-center p-4 bg-purple-50 rounded-lg transition hover:bg-purple-100">
+						<i class="text-xl text-purple-600 fas fa-chart-line"></i>
 						<div>
 							<p class="font-medium text-gray-900">Аналитика</p>
 							<p class="text-sm text-gray-500">Статистика по тестам</p>
@@ -79,20 +74,19 @@ templ DashboardPage(data types.AdminDashboardData) {
 					</a>
 				</div>
 			</div>
-
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<h2 class="text-xl font-bold mb-4">Последние активности</h2>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">Последние активности</h2>
 				if len(data.RecentActivity) == 0 {
-					<div class="text-center text-gray-500 py-8">
-						<i class="fas fa-inbox text-4xl mb-4"></i>
+					<div class="py-8 text-center text-gray-500">
+						<i class="mb-4 text-4xl fas fa-inbox"></i>
 						<p>Пока нет активности</p>
 					</div>
 				} else {
 					<div class="space-y-3">
 						for _, activity := range data.RecentActivity {
-							<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-								<div class="flex items-center gap-3">
-									<i class="fas fa-user-graduate text-gray-400"></i>
+							<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+								<div class="flex gap-3 items-center">
+									<i class="text-gray-400 fas fa-user-graduate"></i>
 									<div>
 										<p class="font-medium">{ activity.UserName }</p>
 										<p class="text-sm text-gray-500">{ activity.QuizTitle }</p>
