@@ -2,19 +2,16 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/goquizvibe/config"
-	ce "github.com/goquizvibe/custom_errors"
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/handlers"
 	"github.com/goquizvibe/models"
-	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 )
 
@@ -55,83 +52,76 @@ func main() {
 	quizHandler := handlers.NewQuiz(queries, quizService, gamification, authService)
 	adminHandler := handlers.NewAdmin(queries, authService, storageService)
 
-	adminMiddleware := authHandler.RequireRole(models.RoleTeacher)
-
 	mux := http.NewServeMux()
 
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	type Route struct {
+		Method  string
+		Pattern string
+		Handler func(w http.ResponseWriter, r *http.Request) error
+	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" && r.Method == "GET" {
-			pages.LandingPage().Render(r.Context(), w)
-			return
+	wrapHandler := func(handler interface{}) http.HandlerFunc {
+		switch h := handler.(type) {
+		case func(w http.ResponseWriter, r *http.Request):
+			return h
+		case func(w http.ResponseWriter, r *http.Request) error:
+			return handlers.ErrorHandler(h)
+		case http.Handler:
+			return h.ServeHTTP
+		default:
+			panic("unknown handler type")
 		}
-		pages.NotFoundPage().Render(r.Context(), w)
-	})
+	}
 
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			authHandler.LoginPage(w, r)
-		case "POST":
-			authHandler.LoginSubmit(w, r)
+	routes := []Route{
+		{"GET", "/", authHandler.LandingPage},
+		{"GET", "/login", authHandler.LoginPage},
+		{"GET", "/register", authHandler.RegisterPage},
+		{"POST", "/login", authHandler.LoginSubmit},
+		{"POST", "/register", authHandler.RegisterSubmit},
+		{"GET", "/logout", authHandler.Logout},
+		{"GET", "/dashboard", dashboardHandler.DashboardPage},
+		{"GET", "/quiz/{id}", quizHandler.QuizStart},
+		{"GET", "/quiz/{id}/q/{index}", quizHandler.QuizQuestion},
+		{"POST", "/quiz/{id}/submit", quizHandler.QuizSubmitHTMX},
+		{"GET", "/quiz/{id}/result", quizHandler.QuizResult},
+		{"GET", "/errors", quizHandler.ErrorsPage},
+		{"GET", "/leaderboard", quizHandler.LeaderboardPage},
+		{"GET", "/admin", adminHandler.Dashboard},
+		{"GET", "/admin/quizzes", adminHandler.Quizzes},
+		{"GET", "/admin/quizzes/new", adminHandler.QuizzesNew},
+		{"GET", "/admin/quizzes/{id}", adminHandler.QuizView},
+		{"PUT", "/admin/quizzes/{id}", adminHandler.QuizUpdate},
+		{"DELETE", "/admin/quizzes/{id}", adminHandler.QuizDelete},
+		{"POST", "/admin/quizzes/{id}/question", adminHandler.AddQuestion},
+		{"PUT", "/admin/quizzes/{id}/question/{qid}", adminHandler.UpdateQuestion},
+		{"DELETE", "/admin/quizzes/{id}/question/{qid}", adminHandler.DeleteQuestion},
+		{"POST", "/admin/quizzes/{id}/question/{qid}/image", adminHandler.UploadQuestionImage},
+		{"DELETE", "/admin/quizzes/{id}/question/{qid}/image/{imgid}", adminHandler.DeleteQuestionImage},
+		{"POST", "/admin/quizzes/{id}/restore", adminHandler.RestoreQuiz},
+		{"GET", "/admin/results", adminHandler.Results},
+		{"GET", "/admin/statistics", adminHandler.Statistics},
+		{"GET", "/admin/api/quiz-stats", adminHandler.QuizStatsData},
+		{"GET", "/admin/api/grade-dist", adminHandler.GradeDistData},
+		{"GET", "/admin/api/subject-dist", adminHandler.SubjectDistData},
+	}
+
+	wrapRoute := func(r Route) http.HandlerFunc {
+		wrapped := wrapHandler(r.Handler)
+		if r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register" {
+			return wrapped
 		}
-	})
-
-	mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			authHandler.RegisterPage(w, r)
-		case "POST":
-			authHandler.RegisterSubmit(w, r)
+		if strings.HasPrefix(r.Pattern, "/admin") {
+			return authHandler.RequireRole(models.RoleTeacher)(wrapped).ServeHTTP
 		}
-	})
+		return authHandler.RequireAuth(wrapped).ServeHTTP
+	}
 
-	mux.HandleFunc("/logout", handlers.ErrorHandler(authHandler.Logout))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
-	mux.HandleFunc("/dashboard", handlers.ErrorHandler(dashboardHandler.DashboardPage))
-
-	mux.HandleFunc("/quiz/", handlers.ErrorHandler(func(w http.ResponseWriter, r *http.Request) error {
-		path := r.URL.Path
-		if r.Method == "POST" && strings.HasSuffix(path, "/submit") {
-			return quizHandler.QuizSubmitHTMX(w, r)
-		}
-		if r.Method == "GET" && strings.HasSuffix(path, "/result") {
-			return quizHandler.QuizResult(w, r)
-		}
-		if r.Method == "GET" && strings.HasSuffix(path, "/result") {
-			return quizHandler.QuizResult(w, r)
-		}
-		if r.Method == "GET" {
-			parts := strings.Split(strings.Trim(path, "/"), "/")
-			if len(parts) == 2 {
-				http.Redirect(w, r, path+"/q/0", http.StatusFound)
-				return nil
-			}
-			if len(parts) >= 4 && parts[2] == "q" {
-				return quizHandler.QuizQuestion(w, r)
-			}
-		}
-		return ce.ErrNotFound
-	}))
-
-	mux.HandleFunc("/errors", handlers.ErrorHandler(quizHandler.ErrorsPage))
-
-	mux.HandleFunc("/leaderboard", handlers.ErrorHandler(quizHandler.LeaderboardPage))
-
-	mux.Handle("/admin", adminMiddleware(handlers.ErrorHandler(adminHandler.Dashboard)))
-	mux.Handle("/admin/quizzes", adminMiddleware(handlers.ErrorHandler(adminHandler.Quizzes)))
-	mux.Handle("/admin/quizzes/new", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizzesNew)))
-
-	mux.Handle("/admin/quizzes/", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizEditOp)))
-
-	mux.Handle("/admin/results", adminMiddleware(handlers.ErrorHandler(adminHandler.Results)))
-	mux.Handle("/admin/statistics", adminMiddleware(handlers.ErrorHandler(adminHandler.Statistics)))
-	mux.Handle("/admin/api/quiz-stats", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizStatsData)))
-	mux.Handle("/admin/api/grade-dist", adminMiddleware(handlers.ErrorHandler(adminHandler.GradeDistData)))
-	mux.Handle("/admin/api/subject-dist", adminMiddleware(handlers.ErrorHandler(adminHandler.SubjectDistData)))
-
-	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(handlers.ErrorHandler(adminHandler.RestoreQuiz)))
+	for _, r := range routes {
+		mux.HandleFunc(r.Method+" "+r.Pattern, wrapRoute(r))
+	}
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))
@@ -144,5 +134,3 @@ func withCommonHeaders(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-var _ = fmt.Sprintf

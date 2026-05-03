@@ -35,16 +35,20 @@ func NewQuiz(pool *db.Queries, qs *services.QuizService, gs *services.Gamificati
 	}
 }
 
-func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error {
-	quizID, index, err := extractQuizIDAndIndexFromPath(r.URL.Path)
+func (h *QuizHandler) QuizStart(w http.ResponseWriter, r *http.Request) error {
+	quizIDStr := r.PathValue("id")
+	quizID, err := uuid.Parse(quizIDStr)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
+	http.Redirect(w, r, "/quiz/"+quizID.String()+"/q/0", http.StatusFound)
+	return nil
+}
 
-	userID, err := h.getUserIDFromRequest(r)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
-	}
+func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	index, _ := strconv.Atoi(r.PathValue("index"))
+	userID, _ := h.getUserIDFromRequest(r)
 
 	ctx := r.Context()
 	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
@@ -52,20 +56,12 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	user, err := h.pool.GetUserByID(ctx, userID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
-	}
-	stats, _ := h.gamification.GetUserStats(ctx, userID)
-
 	sessionIDStr := r.URL.Query().Get("session")
-	var sessionID uuid.UUID
 	if sessionIDStr == "" {
 		session := h.createSession(ctx, userID, quizID)
-		sessionID = session.ID
-		sessionIDStr = sessionID.String()
+		sessionIDStr = session.ID.String()
 	} else {
-		sessionID, err = uuid.Parse(sessionIDStr)
+		_, err = uuid.Parse(sessionIDStr)
 		if err != nil {
 			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 		}
@@ -78,6 +74,8 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 
 	isHtmx := r.Header.Get("HX-Request") == "true"
 	if !isHtmx {
+		user, _ := h.pool.GetUserByID(ctx, userID)
+		stats, _ := h.gamification.GetUserStats(ctx, userID)
 		data := types.QuizPageData{
 			User:      &user,
 			Quiz:      quiz,
@@ -128,10 +126,7 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
 
-	quizID, err := extractQuizIDFromPath(r.URL.Path)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
-	}
+	quizID, _ := uuid.Parse(r.PathValue("id"))
 
 	sessionIDStr := r.URL.Query().Get("session")
 	sessionID, err := uuid.Parse(sessionIDStr)
@@ -144,10 +139,7 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 	questionIndex, _ := strconv.Atoi(questionIndexStr)
 
 	ctx := r.Context()
-	userID, err := h.getUserIDFromRequest(r)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
-	}
+	userID, _ := h.getUserIDFromRequest(r)
 
 	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
@@ -214,10 +206,7 @@ func NormalizeAnswer(answer string) string {
 }
 
 func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
-	quizID, err := extractQuizIDFromPath(r.URL.Path)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
-	}
+	quizID, _ := uuid.Parse(r.PathValue("id"))
 
 	sessionIDStr := r.URL.Query().Get("session")
 	if sessionIDStr == "" {
@@ -226,10 +215,7 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 	sessionID, _ := uuid.Parse(sessionIDStr)
 
 	ctx := r.Context()
-	userID, err := h.getUserIDFromRequest(r)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
-	}
+	userID, _ := h.getUserIDFromRequest(r)
 
 	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
@@ -415,30 +401,6 @@ func (h *QuizHandler) getUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
 		return uuid.Nil, errors.Join(errors.New("validate token"), err)
 	}
 	return claims.UserID, nil
-}
-
-func extractQuizIDFromPath(path string) (uuid.UUID, error) {
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) < 2 {
-		return uuid.Nil, fmt.Errorf("invalid path format: %s", path)
-	}
-	return uuid.Parse(parts[1])
-}
-
-func extractQuizIDAndIndexFromPath(path string) (uuid.UUID, int, error) {
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) < 4 || parts[2] != "q" {
-		return uuid.Nil, 0, errors.New("invalid path format: expected /quiz/{id}/q/{index}")
-	}
-	quizID, err := uuid.Parse(parts[1])
-	if err != nil {
-		return uuid.Nil, 0, err
-	}
-	index, err := strconv.Atoi(parts[3])
-	if err != nil {
-		return uuid.Nil, 0, err
-	}
-	return quizID, index, nil
 }
 
 func getExplanation(q models.Question) string {

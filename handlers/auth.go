@@ -21,22 +21,22 @@ func NewAuth(pool *db.Queries, a *services.AuthService) *AuthHandler {
 	return &AuthHandler{pool: pool, authService: a}
 }
 
-func (h *AuthHandler) LandingPage(w http.ResponseWriter, r *http.Request) {
-	pages.LandingPage().Render(r.Context(), w)
+func (h *AuthHandler) LandingPage(w http.ResponseWriter, r *http.Request) error {
+	return pages.LandingPage().Render(r.Context(), w)
+
 }
 
-func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	pages.LoginPage(nil).Render(r.Context(), w)
+func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) error {
+	return pages.LoginPage(nil).Render(r.Context(), w)
 }
 
-func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) error {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
 	user, err := h.authService.Login(r.Context(), email, password)
 	if err != nil {
-		pages.LoginPage(&types.LoginError{Message: "Неверный email или пароль"}).Render(r.Context(), w)
-		return
+		return pages.LoginPage(&types.LoginError{Message: "Неверный email или пароль"}).Render(r.Context(), w)
 	}
 
 	token, _ := h.authService.GenerateToken(user)
@@ -54,26 +54,25 @@ func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/dashboard", http.StatusFound)
 	}
+	return nil
 }
 
-func (h *AuthHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
-	pages.RegisterPage(nil).Render(r.Context(), w)
+func (h *AuthHandler) RegisterPage(w http.ResponseWriter, r *http.Request) error {
+	return pages.RegisterPage(nil).Render(r.Context(), w)
 }
 
-func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) error {
 	name := r.FormValue("name")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
 	if len(password) < 6 {
-		pages.RegisterPage(&types.RegisterError{Message: "Пароль должен быть минимум 6 символов"}).Render(r.Context(), w)
-		return
+		return pages.RegisterPage(&types.RegisterError{Message: "Пароль должен быть минимум 6 символов"}).Render(r.Context(), w)
 	}
 
 	user, err := h.authService.Register(r.Context(), name, email, password, models.RoleStudent)
 	if err != nil {
-		pages.RegisterPage(&types.RegisterError{Message: "Email уже зарегистрирован"}).Render(r.Context(), w)
-		return
+		return pages.RegisterPage(&types.RegisterError{Message: "Email уже зарегистрирован"}).Render(r.Context(), w)
 	}
 
 	token, _ := h.authService.GenerateToken(user)
@@ -86,6 +85,7 @@ func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 	})
 	http.Redirect(w, r, "/dashboard", http.StatusFound)
+	return nil
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) error {
@@ -103,11 +103,19 @@ func (h *AuthHandler) RequireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
 		if err != nil {
+			if r.Header.Get("hx-request") == "true" {
+				http.NotFound(w, r)
+				return
+			}
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 		_, err = h.authService.ValidateToken(cookie.Value)
 		if err != nil {
+			if r.Header.Get("hx-request") == "true" {
+				http.NotFound(w, r)
+				return
+			}
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
@@ -120,16 +128,28 @@ func (h *AuthHandler) RequireRole(roles ...models.Role) func(http.Handler) http.
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("token")
 			if err != nil {
+				if r.Header.Get("hx-request") == "true" {
+					http.NotFound(w, r)
+					return
+				}
 				http.Redirect(w, r, "/login", http.StatusFound)
 				return
 			}
 			claims, err := h.authService.ValidateToken(cookie.Value)
 			if err != nil {
+				if r.Header.Get("hx-request") == "true" {
+					http.NotFound(w, r)
+					return
+				}
 				http.Redirect(w, r, "/login", http.StatusFound)
 				return
 			}
 			if slices.Contains(roles, claims.Role) {
 				next.ServeHTTP(w, r)
+				return
+			}
+			if r.Header.Get("hx-request") == "true" {
+				http.NotFound(w, r)
 				return
 			}
 			http.Redirect(w, r, "/dashboard", http.StatusFound)

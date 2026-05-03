@@ -210,76 +210,49 @@ func (h *AdminHandler) QuizzesNew(w http.ResponseWriter, r *http.Request) error 
 	return h.Quizzes(w, r)
 }
 
-func (h *AdminHandler) QuizEditOp(w http.ResponseWriter, r *http.Request) error {
-	path := r.URL.Path
-	method := h.actualMethod(r)
+func (h *AdminHandler) QuizView(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	return h.editQuiz(w, r, quizID)
+}
 
-	if strings.HasPrefix(path, "/admin/quizzes/") && len(path) > len("/admin/quizzes/") {
-		idPart := strings.TrimPrefix(path, "/admin/quizzes/")
+func (h *AdminHandler) QuizUpdate(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	return h.updateQuiz(w, r, quizID)
+}
 
-		if strings.Contains(idPart, "/question") {
-			parts := strings.Split(idPart, "/")
+func (h *AdminHandler) QuizDelete(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	return h.deleteQuiz(w, r, quizID)
+}
 
-			if len(parts) >= 2 && parts[1] == "question" {
-				quizIDStr := parts[0]
-				quizID, err := uuid.Parse(quizIDStr)
-				if err != nil {
-					return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID")), http.StatusNotFound)
-				}
+func (h *AdminHandler) AddQuestion(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	return h.addQuestion(w, r, quizID)
+}
 
-				if len(parts) == 2 {
-					if method == "POST" {
-						return h.addQuestion(w, r, quizID)
-					}
-				} else if len(parts) >= 3 {
-					questionIDStr := parts[2]
-					questionID, err := uuid.Parse(questionIDStr)
-					if err != nil {
-						return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid question ID")), http.StatusNotFound)
-					}
+func (h *AdminHandler) UpdateQuestion(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	questionID, _ := uuid.Parse(r.PathValue("qid"))
+	return h.updateQuestion(w, r, quizID, questionID)
+}
 
-					if len(parts) == 3 {
-						if method == "PUT" {
-							return h.updateQuestion(w, r, quizID, questionID)
-						}
-						if method == "DELETE" {
-							return h.deleteQuestion(w, r, quizID, questionID)
-						}
-					} else if len(parts) == 4 && parts[3] == "image" {
-						if method == "POST" {
-							return h.uploadQuestionImage(w, r, quizID, questionID)
-						}
-					} else if len(parts) == 5 && parts[3] == "image" && parts[4] != "" {
-						imageIDStr := parts[4]
-						imageID, err := uuid.Parse(imageIDStr)
-						if err != nil {
-							return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid image ID")), http.StatusNotFound)
-						}
-						if method == "DELETE" {
-							return h.deleteQuestionImage(w, r, quizID, questionID, imageID)
-						}
-					}
-				}
-				return ce.ErrNotFound
-			}
-		}
+func (h *AdminHandler) DeleteQuestion(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	questionID, _ := uuid.Parse(r.PathValue("qid"))
+	return h.deleteQuestion(w, r, quizID, questionID)
+}
 
-		quizID, err := uuid.Parse(idPart)
-		if err != nil {
-			return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idPart)), http.StatusNotFound)
-		}
+func (h *AdminHandler) UploadQuestionImage(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	questionID, _ := uuid.Parse(r.PathValue("qid"))
+	return h.uploadQuestionImage(w, r, quizID, questionID)
+}
 
-		switch method {
-		case "GET":
-			return h.editQuiz(w, r, quizID)
-		case "PUT":
-			return h.updateQuiz(w, r, quizID)
-		case "DELETE":
-			return h.deleteQuiz(w, r, quizID)
-		}
-	}
-
-	return ce.ErrNotFound
+func (h *AdminHandler) DeleteQuestionImage(w http.ResponseWriter, r *http.Request) error {
+	quizID, _ := uuid.Parse(r.PathValue("id"))
+	questionID, _ := uuid.Parse(r.PathValue("qid"))
+	imageID, _ := uuid.Parse(r.PathValue("imgid"))
+	return h.deleteQuestionImage(w, r, quizID, questionID, imageID)
 }
 
 func (h *AdminHandler) editQuiz(w http.ResponseWriter, r *http.Request, quizID uuid.UUID) error {
@@ -801,15 +774,9 @@ func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) e
 }
 
 func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error {
-	path := r.URL.Path
-	idStr := strings.TrimPrefix(path, "/admin/quizzes/")
-	idStr = strings.TrimSuffix(idStr, "/restore")
-	quizID, err := uuid.Parse(idStr)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("invalid quiz ID: %s", idStr)), http.StatusNotFound)
-	}
+	quizID, _ := uuid.Parse(r.PathValue("id"))
 
-	err = h.pool.UpdateQuizStatus(context.Background(), db.UpdateQuizStatusParams{
+	err := h.pool.UpdateQuizStatus(context.Background(), db.UpdateQuizStatusParams{
 		ID:     quizID,
 		Status: db.QuizStatusAvailable,
 	})
