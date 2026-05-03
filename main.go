@@ -42,15 +42,24 @@ func main() {
 	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
 	quizService := services.NewQuizService(queries)
 	gamification := services.NewGamificationService(queries)
+	storageService, err := services.NewStorageService(cfg.Minio)
+	if err != nil {
+		log.Fatalf("Failed to initialize storage service: %v", err)
+	}
+	if err := storageService.EnsureBucket(ctx); err != nil {
+		log.Printf("Warning: Failed to ensure bucket exists: %v", err)
+	}
 
 	authHandler := handlers.NewAuth(queries, authService)
 	dashboardHandler := handlers.NewDashboard(queries, quizService, gamification, authService)
 	quizHandler := handlers.NewQuiz(queries, quizService, gamification, authService)
-	adminHandler := handlers.NewAdmin(queries, authService)
+	adminHandler := handlers.NewAdmin(queries, authService, storageService)
 
 	adminMiddleware := authHandler.RequireRole(models.RoleTeacher)
 
 	mux := http.NewServeMux()
+
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" && r.Method == "GET" {
@@ -109,26 +118,19 @@ func main() {
 
 	mux.HandleFunc("/leaderboard", handlers.ErrorHandler(quizHandler.LeaderboardPage))
 
-	adminRoutes := map[string]func(w http.ResponseWriter, r *http.Request) error{
-		"":                 adminHandler.Dashboard,
-		"quizzes":          adminHandler.QuizzesCreate,
-		"quizzes/":         adminHandler.QuizOp,
-		"results":          adminHandler.Results,
-		"statistics":       adminHandler.Statistics,
-		"api/quiz-stats":   adminHandler.QuizStatsData,
-		"api/grade-dist":   adminHandler.GradeDistData,
-		"api/subject-dist": adminHandler.SubjectDistData,
-	}
+	mux.Handle("/admin", adminMiddleware(handlers.ErrorHandler(adminHandler.Dashboard)))
+	mux.Handle("/admin/quizzes", adminMiddleware(handlers.ErrorHandler(adminHandler.Quizzes)))
+	mux.Handle("/admin/quizzes/new", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizzesNew)))
 
-	for path, handler := range adminRoutes {
-		fullPath := "/admin/" + path
-		if path == "" {
-			fullPath = "/admin"
-		}
-		mux.Handle(fullPath, adminMiddleware(handlers.ErrorHandlerFunc(handler)))
-	}
+	mux.Handle("/admin/quizzes/", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizEditOp)))
 
-	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(handlers.ErrorHandlerFunc(adminHandler.RestoreQuiz)))
+	mux.Handle("/admin/results", adminMiddleware(handlers.ErrorHandler(adminHandler.Results)))
+	mux.Handle("/admin/statistics", adminMiddleware(handlers.ErrorHandler(adminHandler.Statistics)))
+	mux.Handle("/admin/api/quiz-stats", adminMiddleware(handlers.ErrorHandler(adminHandler.QuizStatsData)))
+	mux.Handle("/admin/api/grade-dist", adminMiddleware(handlers.ErrorHandler(adminHandler.GradeDistData)))
+	mux.Handle("/admin/api/subject-dist", adminMiddleware(handlers.ErrorHandler(adminHandler.SubjectDistData)))
+
+	mux.Handle("/admin/quizzes/*/restore", adminMiddleware(handlers.ErrorHandler(adminHandler.RestoreQuiz)))
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))

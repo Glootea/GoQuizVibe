@@ -23,10 +23,18 @@ func (d *DatabaseConfig) DSN() string {
 	)
 }
 
+type MinioConfig struct {
+	Endpoint  string
+	AccessKey string
+	SecretKey string
+	Bucket    string
+}
+
 type Config struct {
 	ServerPort string
 	JWTSecret  string
 	Database   DatabaseConfig
+	Minio      MinioConfig
 }
 
 func Load() *Config {
@@ -78,6 +86,12 @@ func Load() *Config {
 			User:     dbUser,
 			Password: dbPassword,
 			DBName:   dbName,
+		},
+		Minio: MinioConfig{
+			Endpoint:  os.Getenv("MINIO_ENDPOINT"),
+			AccessKey: os.Getenv("MINIO_ROOT_USER"),
+			SecretKey: os.Getenv("MINIO_ROOT_PASSWORD"),
+			Bucket:    os.Getenv("MINIO_BUCKET"),
 		},
 	}
 }

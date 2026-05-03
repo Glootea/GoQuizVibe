@@ -43,7 +43,7 @@ func ErrorPage(data types.ErrorData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"max-w-md mx-auto px-4 py-16 text-center\"><div class=\"bg-white rounded-2xl shadow-xl p-8\"><div class=\"w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6\"><i class=\"fas fa-exclamation-triangle text-3xl text-red-500\"></i></div><h1 class=\"text-2xl font-bold mb-4\">Произошла ошибка</h1><p class=\"text-gray-600 mb-8\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"py-16 px-4 mx-auto max-w-md text-center\"><div class=\"p-8 bg-white rounded-2xl shadow-xl\"><div class=\"flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-red-100 rounded-full\"><i class=\"text-3xl text-red-500 fas fa-exclamation-triangle\"></i></div><h1 class=\"mb-4 text-2xl font-bold\">Произошла ошибка</h1><p class=\"mb-8 text-gray-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -69,7 +69,7 @@ func ErrorPage(data types.ErrorData) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" class=\"inline-block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition\">Вернуться на ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" class=\"inline-block py-3 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700\">Вернуться на ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -117,7 +117,7 @@ func ErrorAlert(message, redirectURL string) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"p-4 mb-4 bg-red-50 border border-red-200 rounded-xl\"><div class=\"flex items-center gap-2 mb-2\"><i class=\"fas fa-exclamation-circle text-red-500\"></i> <span class=\"font-semibold text-red-700\">Ошибка</span></div><p class=\"text-sm text-red-600 mb-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"p-4 mb-4 bg-red-50 rounded-xl border border-red-200\"><div class=\"flex gap-2 items-center mb-2\"><i class=\"text-red-500 fas fa-exclamation-circle\"></i> <span class=\"font-semibold text-red-700\">Ошибка</span></div><p class=\"mb-3 text-sm text-red-600\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -143,7 +143,7 @@ func ErrorAlert(message, redirectURL string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" hx-swap=\"innerHTML\" hx-target=\"#question-content\" class=\"px-4 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition\">Повторить</button></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" hx-swap=\"innerHTML\" hx-target=\"#question-content\" class=\"py-2 px-4 text-sm font-medium text-red-700 bg-red-100 rounded-lg transition hover:bg-red-200\">Повторить</button></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -184,7 +184,7 @@ func NotFoundPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<main class=\"max-w-lg mx-auto px-4 py-16 text-center\"><div class=\"bg-white rounded-2xl shadow-xl p-8\"><div class=\"w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6\"><i class=\"fas fa-map-signs text-4xl text-indigo-500\"></i></div><h1 class=\"text-6xl font-bold text-indigo-600 mb-4\">404</h1><h2 class=\"text-2xl font-bold mb-4\">Страница не найдена</h2><p class=\"text-gray-600 mb-8\">Извините, запрашиваемая страница не существует или была перемещена.</p><a href=\"/dashboard\" class=\"inline-block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition\"><i class=\"fas fa-home mr-2\"></i>Вернуться на главную</a></div></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<main class=\"py-16 px-4 mx-auto max-w-lg text-center\"><div class=\"p-8 bg-white rounded-2xl shadow-xl\"><div class=\"flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-indigo-100 rounded-full\"><i class=\"text-4xl text-indigo-500 fas fa-map-signs\"></i></div><h1 class=\"mb-4 text-6xl font-bold text-indigo-600\">404</h1><h2 class=\"mb-4 text-2xl font-bold\">Страница не найдена</h2><p class=\"mb-8 text-gray-600\">Извините, запрашиваемая страница не существует или была перемещена.</p><a href=\"/dashboard\" class=\"inline-block py-3 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700\"><i class=\"mr-2 fas fa-home\"></i>Вернуться на главную</a></div></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

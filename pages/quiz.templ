@@ -20,24 +20,22 @@ func plural(count int, one, few, many string) string {
 templ QuizPage(data types.QuizPageData) {
 	@Base("Тест") {
 		<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
-			<div class="max-w-2xl mx-auto px-4 py-8">
+			<div class="py-8 px-4 mx-auto max-w-2xl">
 				<div class="flex justify-between items-center mb-6">
 					<a href="/dashboard" class="text-gray-600 hover:text-gray-900">
-						<i class="fas fa-arrow-left mr-2"></i>Назад
+						<i class="mr-2 fas fa-arrow-left"></i>Назад
 					</a>
 					<div class="text-right">
-						<p class="font-bold text-lg">{ data.Quiz.Title }</p>
+						<p class="text-lg font-bold">{ data.Quiz.Title }</p>
 						<p class="text-sm text-gray-500">{ len(data.Quiz.Questions) } вопросов</p>
 					</div>
 				</div>
-
 				<div id="quiz-container" hx-ext="json-enc">
-					<div class="bg-white rounded-2xl shadow-xl p-8">
+					<div class="p-8 bg-white rounded-2xl shadow-xl">
 						<div id="question-content">
 							<div class="mb-6">
-								<span id="question-counter" class="text-sm text-indigo-600 font-medium">Вопрос 1 из { len(data.Quiz.Questions) }</span>
+								<span id="question-counter" class="text-sm font-medium text-indigo-600">Вопрос 1 из { len(data.Quiz.Questions) }</span>
 							</div>
-
 							<form
 								id="quiz-form"
 								hx-post={ "/quiz/" + data.Quiz.ID.String() + "/submit?session=" + data.SessionID }
@@ -45,15 +43,13 @@ templ QuizPage(data types.QuizPageData) {
 								hx-swap="innerHTML"
 							>
 								<input type="hidden" name="question_index" id="question-index" value="0"/>
-
-								<div id="question-text" class="text-xl font-medium mb-6">
+								<div id="question-text" class="mb-6 text-xl font-medium">
 									{ data.Quiz.Questions[0].Text }
 								</div>
-
 								if data.Quiz.Questions[0].Type == models.QuestionTypeChoice {
 									<div id="options-container" class="space-y-3">
-										for _, option := range data.Quiz.GetOptions(0) {
-											<label class="block p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition">
+										for _, option := range data.Quiz.Questions[0].GetOptions() {
+											<label class="block p-4 rounded-xl border border-gray-200 transition cursor-pointer hover:bg-indigo-50 hover:border-indigo-300">
 												<input
 													type="radio"
 													name="answer"
@@ -70,22 +66,20 @@ templ QuizPage(data types.QuizPageData) {
 										type="text"
 										name="answer"
 										id="answer-input"
-										class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+										class="py-3 px-4 w-full rounded-xl border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
 										placeholder="Введите ответ..."
 										required
 									/>
 								}
-
 								<button
 									type="submit"
-									class="w-full mt-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition"
+									class="py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
 								>
 									Ответить
 								</button>
 							</form>
 						</div>
-
-						<div id="feedback-container" class="hidden mt-6 p-4 rounded-xl"></div>
+						<div id="feedback-container" class="hidden p-4 mt-6 rounded-xl"></div>
 					</div>
 				</div>
 			</div>
@@ -94,9 +88,9 @@ templ QuizPage(data types.QuizPageData) {
 }
 
 templ QuestionFeedback(answer string, isCorrect bool, explanation string) {
-	<div class="p-4 rounded-xl bg-green-50 border border-green-200">
-		<div class="flex items-center gap-2 mb-2">
-			<i class="fas fa-check-circle text-green-600"></i>
+	<div class="p-4 bg-green-50 rounded-xl border border-green-200">
+		<div class="flex gap-2 items-center mb-2">
+			<i class="text-green-600 fas fa-check-circle"></i>
 			<span class="font-semibold text-green-700">Правильно!</span>
 		</div>
 		if explanation != "" {
@@ -108,64 +102,59 @@ templ QuestionFeedback(answer string, isCorrect bool, explanation string) {
 templ QuizResultPage(data types.QuizResultData) {
 	@Base("Результат") {
 		@Navbar(data.User)
-
-		<main class="max-w-3xl mx-auto px-4 py-8">
-			<div class="text-center mb-8">
-				<div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-					<i class="fas fa-check text-4xl text-white"></i>
+		<main class="py-8 px-4 mx-auto max-w-3xl">
+			<div class="mb-8 text-center">
+				<div class="flex justify-center items-center mx-auto mb-4 w-20 h-20 bg-green-500 rounded-full">
+					<i class="text-4xl text-white fas fa-check"></i>
 				</div>
-				<h1 class="text-3xl font-bold mb-2">Тест завершён!</h1>
+				<h1 class="mb-2 text-3xl font-bold">Тест завершён!</h1>
 				<p class="text-xl text-gray-600">{ data.Quiz.Title }</p>
 			</div>
-
-			<div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+			<div class="p-8 mb-6 bg-white rounded-2xl shadow-xl">
 				<div class="grid grid-cols-3 gap-4 mb-6">
-					<div class="text-center p-4 bg-green-50 rounded-xl">
+					<div class="p-4 text-center bg-green-50 rounded-xl">
 						<p class="text-2xl font-bold text-green-600">{ data.Score }/{ data.MaxScore }</p>
 						<p class="text-sm text-gray-600">Баллы</p>
 					</div>
-					<div class="text-center p-4 bg-green-50 rounded-xl">
+					<div class="p-4 text-center bg-green-50 rounded-xl">
 						<p class="text-2xl font-bold text-green-600">{ data.CorrectCount }</p>
 						<p class="text-sm text-gray-600">Правильных</p>
 					</div>
-					<div class="text-center p-4 bg-red-50 rounded-xl">
+					<div class="p-4 text-center bg-red-50 rounded-xl">
 						<p class="text-2xl font-bold text-red-600">{ data.WrongCount }</p>
 						<p class="text-sm text-gray-600">Ошибок</p>
 					</div>
 				</div>
-
 				<div class="mb-4 text-center">
 					<span class="text-lg font-semibold">
 						Результат: { floatToPercent(data.Score, data.MaxScore) }%
 					</span>
 				</div>
-
 				<a
 					href="/dashboard"
-					class="block w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition text-center"
+					class="block py-3 w-full font-semibold text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
 				>
 					Вернуться к тестам
 				</a>
 			</div>
-
-			<div class="bg-white rounded-2xl shadow-xl p-8">
-				<h2 class="text-xl font-bold mb-4">Детализация ответов</h2>
+			<div class="p-8 bg-white rounded-2xl shadow-xl">
+				<h2 class="mb-4 text-xl font-bold">Детализация ответов</h2>
 				<div class="space-y-4">
 					for i, answer := range data.Answers {
 						<div class={ "p-4 rounded-xl border " + ternary(answer.IsCorrect, "bg-green-50 border-green-200", "bg-red-50 border-red-200") }>
 							<div class="flex justify-between items-start mb-2">
 								<span class="font-medium">Вопрос { i + 1 }</span>
 								if answer.IsCorrect {
-									<span class="px-2 py-1 bg-green-100 text-green-700 text-sm rounded-full">
-										<i class="fas fa-check mr-1"></i>Правильно
+									<span class="py-1 px-2 text-sm text-green-700 bg-green-100 rounded-full">
+										<i class="mr-1 fas fa-check"></i>Правильно
 									</span>
 								} else {
-									<span class="px-2 py-1 bg-red-100 text-red-700 text-sm rounded-full">
-										<i class="fas fa-times mr-1"></i>Ошибка
+									<span class="py-1 px-2 text-sm text-red-700 bg-red-100 rounded-full">
+										<i class="mr-1 fas fa-times"></i>Ошибка
 									</span>
 								}
 							</div>
-							<p class="text-gray-700 mb-2">{ answer.Question }</p>
+							<p class="mb-2 text-gray-700">{ answer.Question }</p>
 							<div class="grid grid-cols-2 gap-4 text-sm">
 								<div>
 									<span class="text-gray-500">Ваш ответ: </span>
@@ -204,63 +193,61 @@ func ternary(condition bool, trueVal string, falseVal string) string {
 templ ErrorsPage(data types.ErrorsPageData) {
 	@Base("Ошибки") {
 		@Navbar(data.User)
-
-		<main class="max-w-4xl mx-auto px-4 py-8">
-			<h1 class="text-2xl font-bold mb-6">Ретроспектива ошибок</h1>
-
+		<main class="py-8 px-4 mx-auto max-w-4xl">
+			<h1 class="mb-6 text-2xl font-bold">Ретроспектива ошибок</h1>
 			if len(data.QuizErrors) == 0 {
-				<div class="bg-white rounded-xl p-8 text-center">
-					<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-						<i class="fas fa-check text-3xl text-green-600"></i>
+				<div class="p-8 text-center bg-white rounded-xl">
+					<div class="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-green-100 rounded-full">
+						<i class="text-3xl text-green-600 fas fa-check"></i>
 					</div>
-					<h2 class="text-xl font-semibold mb-2">Отличная работа!</h2>
+					<h2 class="mb-2 text-xl font-semibold">Отличная работа!</h2>
 					<p class="text-gray-600">У вас пока нет ошибок. Продолжайте в том же духе!</p>
 				</div>
 			} else {
-<div class="space-y-4">
-				for _, qe := range data.QuizErrors {
-					<div class="bg-white rounded-xl shadow-sm overflow-hidden quiz-card" data-quiz-id={ qe.Quiz.ID.String() }>
-						<div class="p-5 cursor-pointer hover:bg-gray-50 flex justify-between items-center" data-action="toggle">
-							<div>
-								<h3 class="font-semibold text-lg">{ qe.Quiz.Title }</h3>
-								<p class="text-sm text-gray-500">{ len(qe.WrongAnswers) } { plural(len(qe.WrongAnswers), "ошибка", "ошибки", "ошибок") }</p>
-							</div>
-							<div class="flex items-center gap-3">
-								<a href={ templ.URL("/quiz?id=" + qe.Quiz.ID.String()) } class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">
-									Пройти заново
-								</a>
-								<i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
-							</div>
-						</div>
-						<div class="errors-content hidden px-5 pb-5 border-t" id={ fmt.Sprintf("errors-%s", qe.Quiz.ID.String()) }>
-							for _, wa := range qe.WrongAnswers {
-								<div class="py-4 border-b last:border-b-0">
-									if !wa.Timestamp.IsZero() {
-										<div class="flex justify-between items-start mb-2">
-											<span class="text-sm text-gray-500">{ wa.Timestamp.Format("02.01.2006 15:04") }</span>
-										</div>
-									}
-									<div class="mb-2">
-										<p class="text-sm text-gray-500">Ваш ответ:</p>
-										<p class="text-red-600 font-medium">{ wa.UserAnswer }</p>
-									</div>
-									<div class="mb-2">
-										<p class="text-sm text-gray-500">Правильный ответ:</p>
-										<p class="text-green-600 font-medium">{ wa.CorrectAnswer }</p>
-									</div>
-									if wa.Explanation != "" {
-										<div>
-											<p class="text-sm text-gray-500">Пояснение:</p>
-											<p class="text-blue-600 text-sm">{ wa.Explanation }</p>
-										</div>
-									}
+				<div class="space-y-4">
+					for _, qe := range data.QuizErrors {
+						<div class="overflow-hidden bg-white rounded-xl shadow-sm quiz-card" data-quiz-id={ qe.Quiz.ID.String() }>
+							<div class="flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50" data-action="toggle">
+								<div>
+									<h3 class="text-lg font-semibold">{ qe.Quiz.Title }</h3>
+									<p class="text-sm text-gray-500">{ len(qe.WrongAnswers) } { plural(len(qe.WrongAnswers), "ошибка", "ошибки", "ошибок") }</p>
 								</div>
-							}
+								<div class="flex gap-3 items-center">
+									<a href={ templ.URL("/quiz?id=" + qe.Quiz.ID.String()) } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+										Пройти заново
+									</a>
+									<i class="text-gray-400 transition-transform fas fa-chevron-down"></i>
+								</div>
+							</div>
+							<div class="hidden px-5 pb-5 border-t errors-content" id={ fmt.Sprintf("errors-%s", qe.Quiz.ID.String()) }>
+								for _, wa := range qe.WrongAnswers {
+									<div class="py-4 border-b last:border-b-0">
+										if !wa.Timestamp.IsZero() {
+											<div class="flex justify-between items-start mb-2">
+												<span class="text-sm text-gray-500">{ wa.Timestamp.Format("02.01.2006 15:04") }</span>
+											</div>
+										}
+										<div class="mb-2">
+											<p class="text-sm text-gray-500">Ваш ответ:</p>
+											<p class="font-medium text-red-600">{ wa.UserAnswer }</p>
+										</div>
+										<div class="mb-2">
+											<p class="text-sm text-gray-500">Правильный ответ:</p>
+											<p class="font-medium text-green-600">{ wa.CorrectAnswer }</p>
+										</div>
+										if wa.Explanation != "" {
+											<div>
+												<p class="text-sm text-gray-500">Пояснение:</p>
+												<p class="text-sm text-blue-600">{ wa.Explanation }</p>
+											</div>
+										}
+									</div>
+								}
+							</div>
 						</div>
-					</div>
-				}
-			</div>
-			<script>
+					}
+				</div>
+				<script>
 				document.querySelectorAll('.quiz-card [data-action="toggle"]').forEach(function(el) {
 					el.addEventListener('click', function(e) {
 						if (e.target.tagName === 'A' || e.target.closest('a')) return;
@@ -280,13 +267,11 @@ templ ErrorsPage(data types.ErrorsPageData) {
 templ LeaderboardPage(data types.LeaderboardPageData) {
 	@Base("Таблица лидеров") {
 		@Navbar(data.User)
-
-		<main class="max-w-4xl mx-auto px-4 py-8">
-			<h1 class="text-2xl font-bold mb-6">Таблица лидеров</h1>
-
-			<div class="bg-white rounded-xl shadow-sm p-5">
+		<main class="py-8 px-4 mx-auto max-w-4xl">
+			<h1 class="mb-6 text-2xl font-bold">Таблица лидеров</h1>
+			<div class="p-5 bg-white rounded-xl shadow-sm">
 				if len(data.Entries) == 0 {
-					<div class="text-center text-gray-500 py-8">
+					<div class="py-8 text-center text-gray-500">
 						<p>Пока нет участников</p>
 					</div>
 				} else {
@@ -307,9 +292,9 @@ templ FullLeaderboardRow(entry *models.LeaderboardEntry, position int) {
 			{ position }
 		</div>
 		<div class="flex-1">
-			<p class="font-semibold text-lg">{ entry.UserName }</p>
+			<p class="text-lg font-semibold">{ entry.UserName }</p>
 			<p class="text-sm text-gray-500">
-				<i class="fas fa-fire mr-1"></i>{ entry.Streak } дней streak
+				<i class="mr-1 fas fa-fire"></i>{ entry.Streak } дней streak
 			</p>
 		</div>
 		<div class="text-right">

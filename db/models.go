@@ -201,3 +201,11 @@ type UserAnswer struct {
 	UserAnswer string    `json:"user_answer"`
 	IsCorrect  bool      `json:"is_correct"`
 }
+
+type QuestionImage struct {
+	ID         uuid.UUID `json:"id"`
+	QuestionID uuid.UUID `json:"question_id"`
+	URL        string    `json:"url"`
+	OrderIndex int       `json:"order_index"`
+	CreatedAt  time.Time `json:"created_at"`
+}

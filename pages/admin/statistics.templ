@@ -9,71 +9,67 @@ import (
 
 templ StatisticsPage(data *types.AdminStatisticsData) {
 	@BaseAdmin("Статистика", data.User) {
-		<h1 class="text-3xl font-bold mb-8">Сводная статистика</h1>
-
-		<div class="grid md:grid-cols-4 gap-6 mb-8">
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+		<h1 class="mb-8 text-3xl font-bold">Сводная статистика</h1>
+		<div class="grid gap-6 mb-8 md:grid-cols-4">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Тестов</p>
+						<p class="text-sm text-gray-500">Тестов</p>
 						<p class="text-3xl font-bold text-indigo-600">{ data.TotalQuizzes }</p>
 					</div>
-					<i class="fas fa-file-alt text-3xl text-indigo-200"></i>
+					<i class="text-3xl text-indigo-200 fas fa-file-alt"></i>
 				</div>
 			</div>
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Учеников</p>
+						<p class="text-sm text-gray-500">Учеников</p>
 						<p class="text-3xl font-bold text-green-600">{ data.TotalStudents }</p>
 					</div>
-					<i class="fas fa-users text-3xl text-green-200"></i>
+					<i class="text-3xl text-green-200 fas fa-users"></i>
 				</div>
 			</div>
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Прохождений</p>
+						<p class="text-sm text-gray-500">Прохождений</p>
 						<p class="text-3xl font-bold text-orange-600">{ data.TotalAttempts }</p>
 					</div>
-					<i class="fas fa-play-circle text-3xl text-orange-200"></i>
+					<i class="text-3xl text-orange-200 fas fa-play-circle"></i>
 				</div>
 			</div>
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<div class="flex items-center justify-between">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-gray-500 text-sm">Средний балл</p>
+						<p class="text-sm text-gray-500">Средний балл</p>
 						<p class="text-3xl font-bold text-purple-600">{ fmt.Sprintf("%.1f", data.AvgScore) }%</p>
 					</div>
-					<i class="fas fa-chart-line text-3xl text-purple-200"></i>
+					<i class="text-3xl text-purple-200 fas fa-chart-line"></i>
 				</div>
 			</div>
 		</div>
-
-		<div class="grid md:grid-cols-2 gap-8 mb-8">
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<h2 class="text-xl font-bold mb-4">Статистика по тестам</h2>
+		<div class="grid gap-8 mb-8 md:grid-cols-2">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">Статистика по тестам</h2>
 				<div id="quiz-stats-table" hx-get="/admin/api/quiz-stats" hx-trigger="load" hx-swap="innerHTML">
-					<div class="text-center py-8 text-gray-500">
+					<div class="py-8 text-center text-gray-500">
 						<p>Загрузка...</p>
 					</div>
 				</div>
 			</div>
-
-			<div class="bg-white rounded-xl shadow-sm p-6">
-				<h2 class="text-xl font-bold mb-4">Распределение по предметам</h2>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">Распределение по предметам</h2>
 				<div id="subject-dist" hx-get="/admin/api/subject-dist" hx-trigger="load" hx-swap="innerHTML">
-					<div class="text-center py-8 text-gray-500">
+					<div class="py-8 text-center text-gray-500">
 						<p>Загрузка...</p>
 					</div>
 				</div>
 			</div>
 		</div>
-
-		<div class="bg-white rounded-xl shadow-sm p-6">
-			<h2 class="text-xl font-bold mb-4">Распределение учеников по классам</h2>
+		<div class="p-6 bg-white rounded-xl shadow-sm">
+			<h2 class="mb-4 text-xl font-bold">Распределение учеников по классам</h2>
 			<div id="grade-dist" hx-get="/admin/api/grade-dist" hx-trigger="load" hx-swap="innerHTML">
-				<div class="text-center py-8 text-gray-500">
+				<div class="py-8 text-center text-gray-500">
 					<p>Загрузка...</p>
 				</div>
 			</div>
@@ -83,7 +79,7 @@ templ StatisticsPage(data *types.AdminStatisticsData) {
 
 templ QuizStatsPartial(stats []types.QuizStatsResponse) {
 	if len(stats) == 0 {
-		<div class="text-center py-8 text-gray-500">
+		<div class="py-8 text-center text-gray-500">
 			<p>Пока нет данных</p>
 		</div>
 	} else {
@@ -91,10 +87,10 @@ templ QuizStatsPartial(stats []types.QuizStatsResponse) {
 			<table class="w-full text-sm">
 				<thead>
 					<tr class="border-b">
-						<th class="text-left py-2 text-gray-600">Тест</th>
-						<th class="text-right py-2 text-gray-600">Прохождений</th>
-						<th class="text-right py-2 text-gray-600">Ср. балл</th>
-						<th class="text-right py-2 text-gray-600">Успешность</th>
+						<th class="py-2 text-left text-gray-600">Тест</th>
+						<th class="py-2 text-right text-gray-600">Прохождений</th>
+						<th class="py-2 text-right text-gray-600">Ср. балл</th>
+						<th class="py-2 text-right text-gray-600">Успешность</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -109,8 +105,8 @@ templ QuizStatsPartial(stats []types.QuizStatsResponse) {
 								<span class={ getScoreColorClass(stat.AvgScore) }>{ fmt.Sprintf("%.1f%%", stat.AvgScore) }</span>
 							</td>
 							<td class="py-3 text-right">
-								<div class="flex items-center justify-end gap-2">
-									<div class="w-16 bg-gray-200 rounded-full h-2">
+								<div class="flex gap-2 justify-end items-center">
+									<div class="w-16 h-2 bg-gray-200 rounded-full">
 										<div class={ "h-2 rounded-full " + getPassRateColorClass(stat.PassRate) } style={ fmt.Sprintf("width: %.0f%%", stat.PassRate) }></div>
 									</div>
 									<span class="text-xs">{ fmt.Sprintf("%.0f%%", stat.PassRate) }</span>
@@ -126,15 +122,15 @@ templ QuizStatsPartial(stats []types.QuizStatsResponse) {
 
 templ GradeDistPartial(dist map[string]int) {
 	if len(dist) == 0 {
-		<div class="text-center py-8 text-gray-500">
+		<div class="py-8 text-center text-gray-500">
 			<p>Пока нет данных</p>
 		</div>
 	} else {
-		<div class="flex items-end justify-around gap-2 h-48">
+		<div class="flex gap-2 justify-around items-end h-48">
 			for grade := 1; grade <= 11; grade++ {
 				<div class="flex flex-col items-center">
 					<div class="w-8 bg-indigo-500 rounded-t" style={ fmt.Sprintf("height: %dpx", getBarHeight(getGradeCount(dist, grade), dist)) }></div>
-					<span class="text-xs text-gray-500 mt-1">{ grade }</span>
+					<span class="mt-1 text-xs text-gray-500">{ grade }</span>
 				</div>
 			}
 		</div>
@@ -143,19 +139,19 @@ templ GradeDistPartial(dist map[string]int) {
 
 templ SubjectDistPartial(dist map[string]int) {
 	if len(dist) == 0 {
-		<div class="text-center py-8 text-gray-500">
+		<div class="py-8 text-center text-gray-500">
 			<p>Пока нет данных</p>
 		</div>
 	} else {
 		<div class="space-y-4">
 			for subject, count := range dist {
 				<div>
-					<div class="flex justify-between text-sm mb-1">
+					<div class="flex justify-between mb-1 text-sm">
 						<span class="font-medium">{ subject }</span>
 						<span class="text-gray-500">{ count } тест(ов)</span>
 					</div>
-					<div class="w-full bg-gray-200 rounded-full h-3">
-						<div class="bg-indigo-500 h-3 rounded-full" style={ fmt.Sprintf("width: %d%%", (count*100)/getMaxCount(dist)) }></div>
+					<div class="w-full h-3 bg-gray-200 rounded-full">
+						<div class="h-3 bg-indigo-500 rounded-full" style={ fmt.Sprintf("width: %d%%", (count*100)/getMaxCount(dist)) }></div>
 					</div>
 				</div>
 			}

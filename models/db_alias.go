@@ -6,28 +6,31 @@ import (
 	"github.com/goquizvibe/db"
 )
 
-type QuizWithQuestions struct {
+type QuizWithQuestionsAndImages struct {
 	db.Quiz
-	Questions []db.Question
+	Questions []QuestionWithImages `json:"questions"`
 }
 
-func (q *QuizWithQuestions) GetOptions(index int) []string {
-	if index < 0 || index >= len(q.Questions) {
-		return nil
-	}
-	if q.Questions[index].Options == nil {
+type QuestionWithImages struct {
+	db.Question
+	Images []db.QuestionImage `json:"images"`
+}
+
+func (q *QuestionWithImages) GetOptions() []string {
+	if q.Options == nil {
 		return nil
 	}
 	var opts []string
-	if err := json.Unmarshal(q.Questions[index].Options, &opts); err != nil {
+	if err := json.Unmarshal(q.Options, &opts); err != nil {
 		return nil
 	}
 	return opts
 }
 
 type User = db.User
-type Quiz = QuizWithQuestions
-type Question = db.Question
+type Quiz = QuizWithQuestionsAndImages
+type Question = QuestionWithImages
+type QuestionImage = db.QuestionImage
 type QuizAttempt = db.QuizAttempt
 type UserAnswer = db.UserAnswer
 type QuizSession = db.QuizSession
@@ -57,4 +60,8 @@ func GetQuestionOptions(q Question) []string {
 		return nil
 	}
 	return opts
+}
+
+func GetQuestionImages(q Question) []db.QuestionImage {
+	return q.Images
 }
