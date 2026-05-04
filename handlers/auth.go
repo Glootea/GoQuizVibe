@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	"slices"
 
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
@@ -97,64 +96,6 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) error {
 	})
 	http.Redirect(w, r, "/", http.StatusFound)
 	return nil
-}
-
-func (h *AuthHandler) RequireAuth(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("token")
-		if err != nil {
-			if r.Header.Get("hx-request") == "true" {
-				http.NotFound(w, r)
-				return
-			}
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-		_, err = h.authService.ValidateToken(cookie.Value)
-		if err != nil {
-			if r.Header.Get("hx-request") == "true" {
-				http.NotFound(w, r)
-				return
-			}
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (h *AuthHandler) RequireRole(roles ...models.Role) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookie, err := r.Cookie("token")
-			if err != nil {
-				if r.Header.Get("hx-request") == "true" {
-					http.NotFound(w, r)
-					return
-				}
-				http.Redirect(w, r, "/login", http.StatusFound)
-				return
-			}
-			claims, err := h.authService.ValidateToken(cookie.Value)
-			if err != nil {
-				if r.Header.Get("hx-request") == "true" {
-					http.NotFound(w, r)
-					return
-				}
-				http.Redirect(w, r, "/login", http.StatusFound)
-				return
-			}
-			if slices.Contains(roles, claims.Role) {
-				next.ServeHTTP(w, r)
-				return
-			}
-			if r.Header.Get("hx-request") == "true" {
-				http.NotFound(w, r)
-				return
-			}
-			http.Redirect(w, r, "/dashboard", http.StatusFound)
-		})
-	}
 }
 
 func (h *AuthHandler) GetUserFromRequest(r *http.Request) (*db.User, error) {

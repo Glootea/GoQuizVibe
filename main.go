@@ -11,6 +11,7 @@ import (
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/handlers"
+	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/services"
 )
@@ -52,6 +53,11 @@ func main() {
 	quizHandler := handlers.NewQuiz(queries, quizService, gamification, authService)
 	adminHandler := handlers.NewAdmin(queries, authService, storageService)
 
+	requireAuthMiddleware := middleware.NewRequireAuthMiddleware(authService).Wrap
+	requiredRoleMiddleware := middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher).Wrap
+	compressionMiddleware := middleware.NewCompressionMiddleware().Wrap
+	commonHeadersMiddleware := middleware.NewCommonHeaders().Wrap
+
 	mux := http.NewServeMux()
 
 	type Route struct {
@@ -60,7 +66,7 @@ func main() {
 		Handler func(w http.ResponseWriter, r *http.Request) error
 	}
 
-	wrapHandler := func(handler interface{}) http.HandlerFunc {
+	wrapHandler := func(handler any) http.HandlerFunc {
 		switch h := handler.(type) {
 		case func(w http.ResponseWriter, r *http.Request):
 			return h
@@ -109,12 +115,15 @@ func main() {
 	wrapRoute := func(r Route) http.HandlerFunc {
 		wrapped := wrapHandler(r.Handler)
 		if r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register" {
-			return wrapped
+
+		} else if strings.HasPrefix(r.Pattern, "/admin") {
+			wrapped = requireAuthMiddleware(wrapped)
+		} else {
+			wrapped = requiredRoleMiddleware(wrapped)
 		}
-		if strings.HasPrefix(r.Pattern, "/admin") {
-			return authHandler.RequireRole(models.RoleTeacher)(wrapped).ServeHTTP
-		}
-		return authHandler.RequireAuth(wrapped).ServeHTTP
+		wrapped = compressionMiddleware(wrapped)
+		wrapped = commonHeadersMiddleware(wrapped)
+		return wrapped
 	}
 
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
@@ -124,13 +133,5 @@ func main() {
 	}
 
 	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, withCommonHeaders(mux)))
-}
-
-func withCommonHeaders(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("X-Frame-Options", "DENY")
-		next.ServeHTTP(w, r)
-	})
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
 }
