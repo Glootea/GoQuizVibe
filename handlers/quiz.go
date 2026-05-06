@@ -19,13 +19,15 @@ type QuizHandler struct {
 	sessionService *services.QuizSessionService
 	quizService    *services.QuizService
 	pool           *db.Queries
+	authService    *services.AuthService
 }
 
-func NewQuiz(pool *db.Queries, qs *services.QuizService, ss *services.QuizSessionService) *QuizHandler {
+func NewQuiz(pool *db.Queries, qs *services.QuizService, ss *services.QuizSessionService, auth *services.AuthService) *QuizHandler {
 	return &QuizHandler{
 		sessionService: ss,
 		quizService:    qs,
 		pool:           pool,
+		authService:    auth,
 	}
 }
 
@@ -50,7 +52,7 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
 
-	userID, err := h.sessionService.GetUserIDFromRequest(r)
+	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
@@ -129,7 +131,7 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 	}
 
 	ctx := r.Context()
-	_, err = h.sessionService.GetUserIDFromRequest(r)
+	_, err = h.sessionService.GetUserIDFromRequest(r, h.authService)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
@@ -178,7 +180,7 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	ctx := r.Context()
-	userID, err := h.sessionService.GetUserIDFromRequest(r)
+	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
@@ -193,7 +195,7 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 
 func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
 	ctx := context.Background()
-	userID, err := h.sessionService.GetUserIDFromRequest(r)
+	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
@@ -208,7 +210,7 @@ func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
 
 func (h *QuizHandler) LeaderboardPage(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	userID, err := h.sessionService.GetUserIDFromRequest(r)
+	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
@@ -222,5 +224,5 @@ func (h *QuizHandler) LeaderboardPage(w http.ResponseWriter, r *http.Request) er
 }
 
 func (h *QuizHandler) getUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
-	return h.sessionService.GetUserIDFromRequest(r)
+	return h.sessionService.GetUserIDFromRequest(r, h.authService)
 }

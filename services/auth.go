@@ -9,20 +9,21 @@ import (
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
+	r "github.com/goquizvibe/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	pool         *db.Queries
-	jwtSecret    []byte
-	jwtExp       time.Duration
+	users     r.UserRepository
+	jwtSecret []byte
+	jwtExp    time.Duration
 }
 
-func NewAuthService(pool *db.Queries, secret string, exp time.Duration) *AuthService {
+func NewAuthService(users r.UserRepository, secret string, exp time.Duration) *AuthService {
 	return &AuthService{
-		pool:         pool,
-		jwtSecret:    []byte(secret),
-		jwtExp:       exp,
+		users:     users,
+		jwtSecret: []byte(secret),
+		jwtExp:    exp,
 	}
 }
 
@@ -32,7 +33,7 @@ func (s *AuthService) Register(ctx context.Context, name, email, password string
 		return nil, err
 	}
 
-	user, err := s.pool.CreateUser(ctx, db.CreateUserParams{
+	user, err := s.users.CreateUser(ctx, db.CreateUserParams{
 		ID:           uuid.New(),
 		Name:         name,
 		Email:        email,
@@ -48,7 +49,7 @@ func (s *AuthService) Register(ctx context.Context, name, email, password string
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (*db.User, error) {
-	user, err := s.pool.GetUserByEmail(ctx, email)
+	user, err := s.users.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
@@ -74,7 +75,7 @@ func (s *AuthService) GenerateToken(user *db.User) (string, error) {
 }
 
 func (s *AuthService) ValidateToken(tokenString string) (*models.AuthClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}
@@ -90,15 +91,28 @@ func (s *AuthService) ValidateToken(tokenString string) (*models.AuthClaims, err
 		return nil, errors.New("invalid token claims")
 	}
 
-	userIDStr := claims["user_id"].(string)
+	userIDStr, ok := claims["user_id"].(string)
+	if !ok {
+		return nil, errors.New("missing user_id claim")
+	}
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, errors.New("invalid user_id in token")
 	}
 
+	email, ok := claims["email"].(string)
+	if !ok {
+		return nil, errors.New("missing email claim")
+	}
+
+	role, ok := claims["role"].(string)
+	if !ok {
+		return nil, errors.New("missing role claim")
+	}
+
 	return &models.AuthClaims{
 		UserID: userID,
-		Email:  claims["email"].(string),
-		Role:   db.Role(claims["role"].(string)),
+		Email:  email,
+		Role:   db.Role(role),
 	}, nil
 }

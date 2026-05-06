@@ -10,22 +10,34 @@ import (
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
+	r "github.com/goquizvibe/repositories"
 	"github.com/goquizvibe/types"
 )
 
 type QuizSessionService struct {
-	pool         *db.Queries
-	quizService  *QuizService
+	attempts     r.AttemptRepository
+	sessions     r.SessionRepository
+	quizzes      r.QuizRepository
+	questions    r.QuestionRepository
+	images       r.ImageRepository
 	gamification *GamificationService
-	authService  *AuthService
 }
 
-func NewQuizSessionService(pool *db.Queries, qs *QuizService, gs *GamificationService, as *AuthService) *QuizSessionService {
+func NewQuizSessionService(
+	attempts r.AttemptRepository,
+	sessions r.SessionRepository,
+	quizzes r.QuizRepository,
+	questions r.QuestionRepository,
+	images r.ImageRepository,
+	gamification *GamificationService,
+) *QuizSessionService {
 	return &QuizSessionService{
-		pool:         pool,
-		quizService:  qs,
-		gamification: gs,
-		authService:  as,
+		attempts:     attempts,
+		sessions:     sessions,
+		quizzes:      quizzes,
+		questions:    questions,
+		images:       images,
+		gamification: gamification,
 	}
 }
 
@@ -33,7 +45,7 @@ func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID u
 	attemptID := uuid.New()
 	now := time.Now()
 
-	_, err := s.pool.CreateAttempt(ctx, db.CreateAttemptParams{
+	_, err := s.attempts.CreateAttempt(ctx, db.CreateAttemptParams{
 		ID:        attemptID,
 		UserID:    userID,
 		QuizID:    quizID,
@@ -53,7 +65,7 @@ func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID u
 		CreatedAt:    now,
 	}
 
-	_, err = s.pool.CreateSession(ctx, db.CreateSessionParams{
+	_, err = s.sessions.CreateSession(ctx, db.CreateSessionParams{
 		ID:           session.ID,
 		UserID:       session.UserID,
 		QuizID:       session.QuizID,
@@ -77,7 +89,7 @@ type QuestionFeedback struct {
 }
 
 func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, questionIndex int, answer string) (*QuestionFeedback, error) {
-	quiz, err := s.quizService.GetQuizByID(ctx, quizID)
+	quiz, err := s.getQuizWithQuestions(ctx, quizID)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}
@@ -86,7 +98,7 @@ func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UU
 		return nil, fmt.Errorf("question index out of range")
 	}
 
-	session, err := s.pool.GetSession(ctx, sessionID)
+	session, err := s.sessions.GetSession(ctx, sessionID)
 	if err != nil {
 		return nil, fmt.Errorf("get session: %w", err)
 	}
@@ -109,7 +121,7 @@ func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UU
 		return nil, fmt.Errorf("marshal answers: %w", err)
 	}
 
-	_, err = s.pool.UpdateSession(ctx, db.UpdateSessionParams{
+	_, err = s.sessions.UpdateSession(ctx, db.UpdateSessionParams{
 		ID:           session.ID,
 		CurrentIndex: questionIndex + 1,
 		Answers:      answersJSON,
@@ -118,7 +130,7 @@ func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UU
 		return nil, fmt.Errorf("update session: %w", err)
 	}
 
-	_, err = s.pool.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
+	_, err = s.attempts.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
 		ID:         uuid.New(),
 		AttemptID:  session.AttemptID,
 		QuestionID: question.ID,
@@ -138,17 +150,17 @@ func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UU
 }
 
 func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid.UUID) (*db.QuizAttempt, error) {
-	session, err := s.pool.GetSession(ctx, sessionID)
+	session, err := s.sessions.GetSession(ctx, sessionID)
 	if err != nil {
 		return nil, fmt.Errorf("get session: %w", err)
 	}
 
-	quiz, err := s.quizService.GetQuizByID(ctx, session.QuizID)
+	quiz, err := s.getQuizWithQuestions(ctx, session.QuizID)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}
 
-	answers, err := s.pool.GetAnswersByAttempt(ctx, session.AttemptID)
+	answers, err := s.attempts.GetAnswersByAttempt(ctx, session.AttemptID)
 	if err != nil {
 		return nil, fmt.Errorf("get answers: %w", err)
 	}
@@ -165,7 +177,7 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid
 	}
 
 	now := time.Now()
-	updatedAttempt, err := s.pool.UpdateAttempt(ctx, db.UpdateAttemptParams{
+	updatedAttempt, err := s.attempts.UpdateAttempt(ctx, db.UpdateAttemptParams{
 		ID:          session.AttemptID,
 		Score:       score,
 		MaxScore:    maxScore,
@@ -175,7 +187,7 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid
 		return nil, fmt.Errorf("update attempt: %w", err)
 	}
 
-	err = s.pool.DeleteSession(ctx, sessionID)
+	err = s.sessions.DeleteSession(ctx, sessionID)
 	if err != nil {
 		return nil, fmt.Errorf("delete session: %w", err)
 	}
@@ -184,12 +196,13 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid
 }
 
 func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sessionID, userID uuid.UUID) (*types.QuizResultData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.attempts.GetAttemptsByUser(ctx, userID)
+	_ = user
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	quiz, err := s.quizService.GetQuizByID(ctx, quizID)
+	quiz, err := s.getQuizWithQuestions(ctx, quizID)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}
@@ -204,7 +217,7 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sess
 		return nil, fmt.Errorf("complete session: %w", err)
 	}
 
-	answers, err := s.pool.GetAnswersByAttempt(ctx, attempt.ID)
+	answers, err := s.attempts.GetAnswersByAttempt(ctx, attempt.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get answers: %w", err)
 	}
@@ -237,7 +250,6 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sess
 	}
 
 	return &types.QuizResultData{
-		User:         &user,
 		Quiz:         quiz,
 		Stats:        stats,
 		Score:        int(attempt.Score),
@@ -249,9 +261,9 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sess
 }
 
 func (s *QuizSessionService) GetErrorsPageData(ctx context.Context, userID uuid.UUID) (*types.ErrorsPageData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	attempts, err := s.attempts.GetQuizErrors(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("get user: %w", err)
+		return nil, fmt.Errorf("get quiz errors: %w", err)
 	}
 
 	stats, err := s.gamification.GetUserStats(ctx, userID)
@@ -259,19 +271,14 @@ func (s *QuizSessionService) GetErrorsPageData(ctx context.Context, userID uuid.
 		return nil, fmt.Errorf("get user stats: %w", err)
 	}
 
-	attempts, err := s.pool.GetQuizErrors(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("get quiz errors: %w", err)
-	}
-
 	var quizErrors []types.QuizErrors
 	for _, attempt := range attempts {
-		quiz, err := s.quizService.GetQuizByID(ctx, attempt.QuizID)
+		quiz, err := s.getQuizWithQuestions(ctx, attempt.QuizID)
 		if err != nil {
 			continue
 		}
 
-		answers, err := s.pool.GetAnswersByAttempt(ctx, attempt.ID)
+		answers, err := s.attempts.GetAnswersByAttempt(ctx, attempt.ID)
 		if err != nil {
 			continue
 		}
@@ -304,35 +311,28 @@ func (s *QuizSessionService) GetErrorsPageData(ctx context.Context, userID uuid.
 	}
 
 	return &types.ErrorsPageData{
-		User:       &user,
 		QuizErrors: quizErrors,
 		Stats:      stats,
 	}, nil
 }
 
 func (s *QuizSessionService) GetLeaderboardData(ctx context.Context, userID uuid.UUID) (*types.LeaderboardPageData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("get user: %w", err)
-	}
-
 	entries, err := s.gamification.GetLeaderboard(ctx, 100)
 	if err != nil {
 		return nil, fmt.Errorf("get leaderboard: %w", err)
 	}
 
 	return &types.LeaderboardPageData{
-		User:    &user,
 		Entries: entries,
 	}, nil
 }
 
-func (s *QuizSessionService) GetUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
+func (s *QuizSessionService) GetUserIDFromRequest(r *http.Request, auth Authenticator) (uuid.UUID, error) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("get cookie: %w", err)
 	}
-	claims, err := s.authService.ValidateToken(cookie.Value)
+	claims, err := auth.ValidateToken(cookie.Value)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("validate token: %w", err)
 	}
@@ -341,4 +341,32 @@ func (s *QuizSessionService) GetUserIDFromRequest(r *http.Request) (uuid.UUID, e
 
 func (s *QuizSessionService) GetUserStats(ctx context.Context, userID uuid.UUID) (*models.UserStats, error) {
 	return s.gamification.GetUserStats(ctx, userID)
+}
+
+func (s *QuizSessionService) getQuizWithQuestions(ctx context.Context, quizID uuid.UUID) (*models.QuizWithQuestionsAndImages, error) {
+	quiz, err := s.quizzes.GetQuizByID(ctx, quizID)
+	if err != nil {
+		return nil, err
+	}
+	questions, err := s.questions.GetQuestionsByQuizID(ctx, quizID)
+	if err != nil {
+		return nil, err
+	}
+	questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+	return &models.QuizWithQuestionsAndImages{
+		Quiz:      quiz,
+		Questions: questionsWithImages,
+	}, nil
+}
+
+func (s *QuizSessionService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.QuestionWithImages {
+	result := make([]models.QuestionWithImages, len(questions))
+	for i, q := range questions {
+		images, _ := s.images.GetImagesByQuestionID(ctx, q.ID)
+		result[i] = models.QuestionWithImages{
+			Question: q,
+			Images:   images,
+		}
+	}
+	return result
 }

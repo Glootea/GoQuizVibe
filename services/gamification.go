@@ -7,18 +7,25 @@ import (
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
+	r "github.com/goquizvibe/repositories"
 )
 
 type GamificationService struct {
-	pool *db.Queries
+	attempts     r.AttemptRepository
+	stats        r.StatsRepository
+	timeProvider TimeProvider
 }
 
-func NewGamificationService(pool *db.Queries) *GamificationService {
-	return &GamificationService{pool: pool}
+func NewGamificationService(attempts r.AttemptRepository, stats r.StatsRepository, tp TimeProvider) *GamificationService {
+	return &GamificationService{
+		attempts:     attempts,
+		stats:        stats,
+		timeProvider: tp,
+	}
 }
 
-func (s *GamificationService) calculateStreak(ctx context.Context, userID uuid.UUID) (int, error) {
-	attempts, err := s.pool.GetAttemptsByUser(ctx, userID)
+func (s *GamificationService) CalculateStreak(ctx context.Context, userID uuid.UUID) (int, error) {
+	attempts, err := s.attempts.GetAttemptsByUser(ctx, userID)
 	if err != nil {
 		return 0, err
 	}
@@ -34,7 +41,7 @@ func (s *GamificationService) calculateStreak(ctx context.Context, userID uuid.U
 	}
 
 	streak := 0
-	currentDate := time.Now().Format("2006-01-02")
+	currentDate := s.timeProvider.Now().Format("2006-01-02")
 	for {
 		if count, ok := dailyAttempts[currentDate]; ok && count > 0 {
 			streak++
@@ -49,7 +56,7 @@ func (s *GamificationService) calculateStreak(ctx context.Context, userID uuid.U
 }
 
 func (s *GamificationService) GetLeaderboard(ctx context.Context, limit int) ([]*models.LeaderboardEntry, error) {
-	attempts, err := s.pool.GetRecentAttempts(ctx, int32(limit))
+	attempts, err := s.attempts.GetRecentAttempts(ctx, int32(limit))
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +80,7 @@ func (s *GamificationService) GetLeaderboard(ctx context.Context, limit int) ([]
 		entries = append(entries, entry)
 	}
 
-	sortByXP(entries)
+	SortByXP(entries)
 
 	for i := range entries {
 		entries[i].Rank = i + 1
@@ -82,8 +89,8 @@ func (s *GamificationService) GetLeaderboard(ctx context.Context, limit int) ([]
 	return entries, nil
 }
 
-func sortByXP(entries []*models.LeaderboardEntry) {
-	for i := 0; i < len(entries); i++ {
+func SortByXP(entries []*models.LeaderboardEntry) {
+	for i := range entries {
 		for j := i + 1; j < len(entries); j++ {
 			if entries[j].XP > entries[i].XP {
 				entries[i], entries[j] = entries[j], entries[i]
@@ -93,7 +100,7 @@ func sortByXP(entries []*models.LeaderboardEntry) {
 }
 
 func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID) (*models.UserStats, error) {
-	stats, err := s.pool.GetUserStats(ctx, userID)
+	stats, err := s.stats.GetUserStats(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +110,7 @@ func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID
 		xp = 0
 	}
 
-	lastActive, err := s.pool.GetLastActiveDate(ctx, userID)
+	lastActive, err := s.stats.GetLastActiveDate(ctx, userID)
 	if err != nil {
 		lastActive = nil
 	}
@@ -118,17 +125,17 @@ func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID
 		}
 	}
 
-	attempts, err := s.pool.GetAttemptsByUser(ctx, userID)
+	attempts, err := s.attempts.GetAttemptsByUser(ctx, userID)
 	if err != nil {
 		attempts = nil
 	}
+
+	streak := s.calculateStreakFromAttempts(attempts)
 
 	completedQuizzes := make([]string, 0)
 	for _, a := range attempts {
 		completedQuizzes = append(completedQuizzes, a.QuizID.String())
 	}
-
-	streak, _ := s.calculateStreak(ctx, userID)
 
 	return &models.UserStats{
 		UserID:           userID.String(),
@@ -139,6 +146,32 @@ func (s *GamificationService) GetUserStats(ctx context.Context, userID uuid.UUID
 		CorrectCount:     int(stats.CorrectCnt),
 		WrongCount:       int(stats.WrongCnt),
 	}, nil
+}
+
+func (s *GamificationService) calculateStreakFromAttempts(attempts []db.QuizAttempt) int {
+	if len(attempts) == 0 {
+		return 0
+	}
+
+	dailyAttempts := make(map[string]int)
+	for _, a := range attempts {
+		day := a.CompletedAt.Format("2006-01-02")
+		dailyAttempts[day]++
+	}
+
+	streak := 0
+	currentDate := s.timeProvider.Now().Format("2006-01-02")
+	for {
+		if count, ok := dailyAttempts[currentDate]; ok && count > 0 {
+			streak++
+			t, _ := time.Parse("2006-01-02", currentDate)
+			currentDate = t.AddDate(0, 0, -1).Format("2006-01-02")
+		} else {
+			break
+		}
+	}
+
+	return streak
 }
 
 func (s *GamificationService) UpdateStreak(ctx context.Context, userID uuid.UUID) error {

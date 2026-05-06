@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"fmt"
+	"io"
 	"mime/multipart"
+	"net/url"
 	"path/filepath"
 	"time"
 
@@ -12,12 +14,29 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+type MinioClient interface {
+	PutObject(ctx context.Context, bucket, object string, r io.Reader, size int64, opts minio.PutObjectOptions) (minio.UploadInfo, error)
+	RemoveObject(ctx context.Context, bucket, object string, opts minio.RemoveObjectOptions) error
+	PresignedGetObject(ctx context.Context, bucket, object string, expires time.Duration, reqParams url.Values) (*url.URL, error)
+	BucketExists(ctx context.Context, bucket string) (bool, error)
+	MakeBucket(ctx context.Context, bucket string, opts minio.MakeBucketOptions) error
+	SetBucketPolicy(ctx context.Context, bucket, policy string) error
+	EndpointURL() *url.URL
+}
+
 type StorageService struct {
-	client *minio.Client
+	client MinioClient
 	bucket string
 }
 
-func NewStorageService(cfg config.MinioConfig) (*StorageService, error) {
+func NewStorageService(client MinioClient, bucket string) *StorageService {
+	return &StorageService{
+		client: client,
+		bucket: bucket,
+	}
+}
+
+func NewStorageServiceFromConfig(cfg config.MinioConfig) (*StorageService, error) {
 	client, err := minio.New(cfg.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
 		Secure: false,

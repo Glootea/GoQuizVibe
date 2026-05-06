@@ -7,32 +7,45 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/models"
+	r "github.com/goquizvibe/repositories"
 	"github.com/goquizvibe/types"
 )
 
 type DashboardService struct {
-	pool         *db.Queries
-	quizService  *QuizService
+	users        r.UserRepository
+	quizzes      r.QuizRepository
+	questions    r.QuestionRepository
+	images       r.ImageRepository
 	gamification *GamificationService
-	authService  *AuthService
+	auth         Authenticator
 }
 
-func NewDashboardService(pool *db.Queries, qs *QuizService, gs *GamificationService, as *AuthService) *DashboardService {
+func NewDashboardService(
+	users r.UserRepository,
+	quizzes r.QuizRepository,
+	questions r.QuestionRepository,
+	images r.ImageRepository,
+	gamification *GamificationService,
+	auth Authenticator,
+) *DashboardService {
 	return &DashboardService{
-		pool:         pool,
-		quizService:  qs,
-		gamification: gs,
-		authService:  as,
+		users:        users,
+		quizzes:      quizzes,
+		questions:    questions,
+		images:       images,
+		gamification: gamification,
+		auth:         auth,
 	}
 }
 
 func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUID) (*types.DashboardData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	quizzes, err := s.quizService.GetQuizzesForUser(ctx, userID)
+	quizzes, err := s.getQuizzesForUser(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get quizzes: %w", err)
 	}
@@ -60,9 +73,38 @@ func (s *DashboardService) GetUserIDFromRequest(r *http.Request) (uuid.UUID, err
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("get cookie: %w", err)
 	}
-	claims, err := s.authService.ValidateToken(cookie.Value)
+	claims, err := s.auth.ValidateToken(cookie.Value)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("validate token: %w", err)
 	}
 	return claims.UserID, nil
+}
+
+func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
+	quizzes, err := s.quizzes.GetQuizzesForUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*models.QuizWithQuestionsAndImages, len(quizzes))
+	for i, q := range quizzes {
+		questions, _ := s.questions.GetQuestionsByQuizID(ctx, q.ID)
+		questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+		result[i] = &models.QuizWithQuestionsAndImages{
+			Quiz:      q,
+			Questions: questionsWithImages,
+		}
+	}
+	return result, err
+}
+
+func (s *DashboardService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.QuestionWithImages {
+	result := make([]models.QuestionWithImages, len(questions))
+	for i, q := range questions {
+		images, _ := s.images.GetImagesByQuestionID(ctx, q.ID)
+		result[i] = models.QuestionWithImages{
+			Question: q,
+			Images:   images,
+		}
+	}
+	return result
 }

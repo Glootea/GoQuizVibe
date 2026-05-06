@@ -15,18 +15,38 @@ import (
 	"github.com/google/uuid"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
+	r "github.com/goquizvibe/repositories"
 	"github.com/goquizvibe/types"
 )
 
 type AdminService struct {
-	pool           *db.Queries
+	users          r.UserRepository
+	quizzes        r.QuizRepository
+	questions      r.QuestionRepository
+	images         r.ImageRepository
+	attempts       r.AttemptRepository
+	stats          r.StatsRepository
 	authService    *AuthService
 	storageService *StorageService
 }
 
-func NewAdminService(pool *db.Queries, auth *AuthService, storage *StorageService) *AdminService {
+func NewAdminService(
+	users r.UserRepository,
+	quizzes r.QuizRepository,
+	questions r.QuestionRepository,
+	images r.ImageRepository,
+	attempts r.AttemptRepository,
+	stats r.StatsRepository,
+	auth *AuthService,
+	storage *StorageService,
+) *AdminService {
 	return &AdminService{
-		pool:           pool,
+		users:          users,
+		quizzes:        quizzes,
+		questions:      questions,
+		images:         images,
+		attempts:       attempts,
+		stats:          stats,
 		authService:    auth,
 		storageService: storage,
 	}
@@ -41,7 +61,7 @@ func (s *AdminService) GetUserFromRequest(r *http.Request) (*db.User, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("validate token"), err)
 	}
-	user, err := s.pool.GetUserByID(context.Background(), claims.UserID)
+	user, err := s.users.GetUserByID(context.Background(), claims.UserID)
 	if err != nil {
 		return nil, errors.Join(errors.New("can not get user from db"), err)
 	}
@@ -49,27 +69,27 @@ func (s *AdminService) GetUserFromRequest(r *http.Request) (*db.User, error) {
 }
 
 func (s *AdminService) GetDashboardData(ctx context.Context, userID uuid.UUID) (*types.AdminDashboardData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	quizzes, err := s.pool.GetNonArchivedQuizzes(ctx)
+	quizzes, err := s.quizzes.GetNonArchivedQuizzes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get quizzes: %w", err)
 	}
 
-	studentCount, err := s.pool.GetStudentCount(ctx)
+	studentCount, err := s.users.GetStudentCount(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get student count: %w", err)
 	}
 
-	stats, err := s.pool.GetAdminStatsData(ctx)
+	stats, err := s.stats.GetAdminStatsData(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get admin stats: %w", err)
 	}
 
-	recentActivity, err := s.pool.GetRecentAttempts(ctx, 10)
+	recentActivity, err := s.attempts.GetRecentAttempts(ctx, 10)
 	if err != nil {
 		return nil, fmt.Errorf("get recent attempts: %w", err)
 	}
@@ -99,17 +119,17 @@ func (s *AdminService) GetDashboardData(ctx context.Context, userID uuid.UUID) (
 }
 
 func (s *AdminService) GetQuizzesListData(ctx context.Context, userID uuid.UUID) (*types.AdminQuizListData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	quizzes, err := s.pool.GetNonArchivedQuizzes(ctx)
+	quizzes, err := s.quizzes.GetNonArchivedQuizzes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get quizzes: %w", err)
 	}
 
-	quizStats, err := s.pool.GetQuizStats(ctx)
+	quizStats, err := s.stats.GetQuizStats(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz stats: %w", err)
 	}
@@ -144,7 +164,7 @@ func (s *AdminService) GetQuizzesListData(ctx context.Context, userID uuid.UUID)
 
 func (s *AdminService) CreateQuiz(ctx context.Context, userID uuid.UUID, title, description, subject string, grade, timeLimit int) (uuid.UUID, error) {
 	newQuizID := uuid.New()
-	_, err := s.pool.CreateQuiz(ctx, db.CreateQuizParams{
+	_, err := s.quizzes.CreateQuiz(ctx, db.CreateQuizParams{
 		ID:          newQuizID,
 		Title:       title,
 		Description: description,
@@ -162,17 +182,17 @@ func (s *AdminService) CreateQuiz(ctx context.Context, userID uuid.UUID, title, 
 }
 
 func (s *AdminService) GetQuizEditData(ctx context.Context, userID, quizID uuid.UUID) (*types.AdminQuizEditData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	quiz, err := s.pool.GetQuizByID(ctx, quizID)
+	quiz, err := s.quizzes.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}
 
-	questions, err := s.pool.GetQuestionsByQuizID(ctx, quizID)
+	questions, err := s.questions.GetQuestionsByQuizID(ctx, quizID)
 	if err != nil {
 		return nil, fmt.Errorf("get questions: %w", err)
 	}
@@ -192,12 +212,12 @@ func (s *AdminService) GetQuizEditData(ctx context.Context, userID, quizID uuid.
 }
 
 func (s *AdminService) UpdateQuiz(ctx context.Context, quizID uuid.UUID, title, description, subject string, grade, timeLimit int, status db.QuizStatus) error {
-	_, err := s.pool.GetQuizByID(ctx, quizID)
+	_, err := s.quizzes.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return fmt.Errorf("quiz not found: %w", err)
 	}
 
-	inserted, err := s.pool.UpdateQuiz(ctx, db.UpdateQuizParams{
+	inserted, err := s.quizzes.UpdateQuiz(ctx, db.UpdateQuizParams{
 		ID:          quizID,
 		Title:       title,
 		Description: description,
@@ -216,7 +236,7 @@ func (s *AdminService) UpdateQuiz(ctx context.Context, quizID uuid.UUID, title, 
 }
 
 func (s *AdminService) DeleteQuiz(ctx context.Context, quizID uuid.UUID) error {
-	err := s.pool.DeleteQuiz(ctx, quizID)
+	err := s.quizzes.DeleteQuiz(ctx, quizID)
 	if err != nil {
 		return fmt.Errorf("delete quiz: %w", err)
 	}
@@ -234,7 +254,7 @@ func (s *AdminService) AddQuestion(ctx context.Context, quizID uuid.UUID, text s
 	}
 
 	newQuestionID := uuid.New()
-	_, err = s.pool.CreateQuestion(ctx, db.CreateQuestionParams{
+	_, err = s.questions.CreateQuestion(ctx, db.CreateQuestionParams{
 		ID:            newQuestionID,
 		QuizID:        quizID,
 		Text:          text,
@@ -253,7 +273,7 @@ func (s *AdminService) AddQuestion(ctx context.Context, quizID uuid.UUID, text s
 		if i >= MaxImagesPerQuestion {
 			break
 		}
-		count, err := s.pool.GetImageCountByQuestionID(ctx, newQuestionID)
+		count, err := s.images.GetImageCountByQuestionID(ctx, newQuestionID)
 		if err != nil {
 			continue
 		}
@@ -266,7 +286,7 @@ func (s *AdminService) AddQuestion(ctx context.Context, quizID uuid.UUID, text s
 			continue
 		}
 
-		_, err = s.pool.CreateQuestionImage(ctx, db.CreateQuestionImageParams{
+		_, err = s.images.CreateQuestionImage(ctx, db.CreateQuestionImageParams{
 			ID:         uuid.New(),
 			QuestionID: newQuestionID,
 			URL:        url,
@@ -282,7 +302,7 @@ func (s *AdminService) AddQuestion(ctx context.Context, quizID uuid.UUID, text s
 }
 
 func (s *AdminService) UpdateQuestion(ctx context.Context, questionID, quizID uuid.UUID, text string, questionType db.QuestionType, options []byte, correctAnswer, explanation string, points, orderIndex int) error {
-	question, err := s.pool.GetQuestionByID(ctx, questionID)
+	question, err := s.questions.GetQuestionByID(ctx, questionID)
 	if err != nil {
 		return fmt.Errorf("get question: %w", err)
 	}
@@ -291,7 +311,7 @@ func (s *AdminService) UpdateQuestion(ctx context.Context, questionID, quizID uu
 		return fmt.Errorf("question does not belong to this quiz")
 	}
 
-	_, err = s.pool.UpdateQuestion(ctx, db.UpdateQuestionParams{
+	_, err = s.questions.UpdateQuestion(ctx, db.UpdateQuestionParams{
 		ID:            questionID,
 		Text:          text,
 		Type:          questionType,
@@ -309,7 +329,7 @@ func (s *AdminService) UpdateQuestion(ctx context.Context, questionID, quizID uu
 }
 
 func (s *AdminService) DeleteQuestion(ctx context.Context, questionID, quizID uuid.UUID) error {
-	question, err := s.pool.GetQuestionByID(ctx, questionID)
+	question, err := s.questions.GetQuestionByID(ctx, questionID)
 	if err != nil {
 		return fmt.Errorf("get question: %w", err)
 	}
@@ -318,7 +338,7 @@ func (s *AdminService) DeleteQuestion(ctx context.Context, questionID, quizID uu
 		return fmt.Errorf("question does not belong to this quiz")
 	}
 
-	err = s.pool.DeleteQuestion(ctx, questionID)
+	err = s.questions.DeleteQuestion(ctx, questionID)
 	if err != nil {
 		return fmt.Errorf("delete question: %w", err)
 	}
@@ -327,7 +347,7 @@ func (s *AdminService) DeleteQuestion(ctx context.Context, questionID, quizID uu
 }
 
 func (s *AdminService) UploadQuestionImage(ctx context.Context, quizID, questionID uuid.UUID, file *multipart.FileHeader) error {
-	question, err := s.pool.GetQuestionByID(ctx, questionID)
+	question, err := s.questions.GetQuestionByID(ctx, questionID)
 	if err != nil {
 		return fmt.Errorf("get question: %w", err)
 	}
@@ -336,7 +356,7 @@ func (s *AdminService) UploadQuestionImage(ctx context.Context, quizID, question
 		return fmt.Errorf("question does not belong to this quiz")
 	}
 
-	count, err := s.pool.GetImageCountByQuestionID(ctx, questionID)
+	count, err := s.images.GetImageCountByQuestionID(ctx, questionID)
 	if err != nil {
 		return fmt.Errorf("get image count: %w", err)
 	}
@@ -363,7 +383,7 @@ func (s *AdminService) UploadQuestionImage(ctx context.Context, quizID, question
 		return fmt.Errorf("upload image: %w", err)
 	}
 
-	_, err = s.pool.CreateQuestionImage(ctx, db.CreateQuestionImageParams{
+	_, err = s.images.CreateQuestionImage(ctx, db.CreateQuestionImageParams{
 		ID:         uuid.New(),
 		QuestionID: questionID,
 		URL:        url,
@@ -379,7 +399,7 @@ func (s *AdminService) UploadQuestionImage(ctx context.Context, quizID, question
 }
 
 func (s *AdminService) DeleteQuestionImage(ctx context.Context, imageID, questionID uuid.UUID) error {
-	image, err := s.pool.GetQuestionImageByID(ctx, imageID)
+	image, err := s.images.GetQuestionImageByID(ctx, imageID)
 	if err != nil {
 		return fmt.Errorf("get image: %w", err)
 	}
@@ -388,7 +408,7 @@ func (s *AdminService) DeleteQuestionImage(ctx context.Context, imageID, questio
 		return fmt.Errorf("image does not belong to this question")
 	}
 
-	err = s.pool.DeleteQuestionImage(ctx, imageID)
+	err = s.images.DeleteQuestionImage(ctx, imageID)
 	if err != nil {
 		return fmt.Errorf("delete image: %w", err)
 	}
@@ -402,17 +422,17 @@ func (s *AdminService) DeleteQuestionImage(ctx context.Context, imageID, questio
 }
 
 func (s *AdminService) GetResultsData(ctx context.Context, userID uuid.UUID) (*types.AdminResultsData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	attempts, err := s.pool.GetAllAttempts(ctx)
+	attempts, err := s.attempts.GetRecentAttempts(ctx, 0)
 	if err != nil {
 		return nil, fmt.Errorf("get attempts: %w", err)
 	}
 
-	quizzes, err := s.pool.GetNonArchivedQuizzes(ctx)
+	quizzes, err := s.quizzes.GetNonArchivedQuizzes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get quizzes: %w", err)
 	}
@@ -447,12 +467,12 @@ func (s *AdminService) GetResultsData(ctx context.Context, userID uuid.UUID) (*t
 }
 
 func (s *AdminService) GetStatisticsData(ctx context.Context, userID uuid.UUID) (*types.AdminStatisticsData, error) {
-	user, err := s.pool.GetUserByID(ctx, userID)
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	stats, err := s.pool.GetAdminStatsData(ctx)
+	stats, err := s.stats.GetAdminStatsData(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get admin stats: %w", err)
 	}
@@ -470,7 +490,7 @@ func (s *AdminService) GetStatisticsData(ctx context.Context, userID uuid.UUID) 
 }
 
 func (s *AdminService) GetQuizStatsData(ctx context.Context) ([]types.QuizStatsResponse, error) {
-	quizStats, err := s.pool.GetQuizStats(ctx)
+	quizStats, err := s.stats.GetQuizStats(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz stats: %w", err)
 	}
@@ -491,7 +511,7 @@ func (s *AdminService) GetQuizStatsData(ctx context.Context) ([]types.QuizStatsR
 }
 
 func (s *AdminService) GetGradeDistributionData(ctx context.Context) (map[string]int, error) {
-	data, err := s.pool.GetGradeDistribution(ctx)
+	data, err := s.stats.GetGradeDistribution(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get grade distribution: %w", err)
 	}
@@ -510,7 +530,7 @@ func (s *AdminService) GetGradeDistributionData(ctx context.Context) (map[string
 }
 
 func (s *AdminService) GetSubjectDistributionData(ctx context.Context) (map[string]int, error) {
-	data, err := s.pool.GetSubjectDistribution(ctx)
+	data, err := s.stats.GetSubjectDistribution(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get subject distribution: %w", err)
 	}
@@ -529,7 +549,7 @@ func (s *AdminService) GetSubjectDistributionData(ctx context.Context) (map[stri
 }
 
 func (s *AdminService) RestoreQuiz(ctx context.Context, quizID uuid.UUID) error {
-	err := s.pool.UpdateQuizStatus(ctx, db.UpdateQuizStatusParams{
+	err := s.quizzes.UpdateQuizStatus(ctx, db.UpdateQuizStatusParams{
 		ID:     quizID,
 		Status: db.QuizStatusAvailable,
 	})
@@ -542,7 +562,7 @@ func (s *AdminService) RestoreQuiz(ctx context.Context, quizID uuid.UUID) error 
 func (s *AdminService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.Question {
 	result := make([]models.Question, len(questions))
 	for i, q := range questions {
-		images, err := s.pool.GetImagesByQuestionID(ctx, q.ID)
+		images, err := s.images.GetImagesByQuestionID(ctx, q.ID)
 		if err != nil {
 			images = nil
 		}
@@ -555,7 +575,7 @@ func (s *AdminService) attachImagesToQuestions(ctx context.Context, questions []
 }
 
 func (s *AdminService) GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUID) ([]models.Question, error) {
-	questions, err := s.pool.GetQuestionsByQuizID(ctx, quizID)
+	questions, err := s.questions.GetQuestionsByQuizID(ctx, quizID)
 	if err != nil {
 		return nil, fmt.Errorf("get questions: %w", err)
 	}
@@ -563,7 +583,7 @@ func (s *AdminService) GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUI
 }
 
 func (s *AdminService) GetQuizByID(ctx context.Context, quizID uuid.UUID) (*models.Quiz, error) {
-	quiz, err := s.pool.GetQuizByID(ctx, quizID)
+	quiz, err := s.quizzes.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}

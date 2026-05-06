@@ -38,9 +38,9 @@ func main() {
 
 	jwtExp := 24 * time.Hour * 7
 	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
-	quizService := services.NewQuizService(queries)
-	gamification := services.NewGamificationService(queries)
-	storageService, err := services.NewStorageService(cfg.Minio)
+	quizService := services.NewQuizService(queries, queries, queries, queries)
+	gamification := services.NewGamificationService(queries, queries, services.RealTimeProvider{})
+	storageService, err := services.NewStorageServiceFromConfig(cfg.Minio)
 	if err != nil {
 		log.Fatalf("Failed to initialize storage service: %v", err)
 	}
@@ -48,13 +48,13 @@ func main() {
 		log.Printf("Warning: Failed to ensure bucket exists: %v", err)
 	}
 
-	adminService := services.NewAdminService(queries, authService, storageService)
-	quizSessionService := services.NewQuizSessionService(queries, quizService, gamification, authService)
-	dashboardService := services.NewDashboardService(queries, quizService, gamification, authService)
+	adminService := services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService)
+	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, gamification)
+	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
 
 	authHandler := handlers.NewAuth(queries, authService)
 	dashboardHandler := handlers.NewDashboard(dashboardService)
-	quizHandler := handlers.NewQuiz(queries, quizService, quizSessionService)
+	quizHandler := handlers.NewQuiz(queries, quizService, quizSessionService, authService)
 	adminHandler := handlers.NewAdmin(adminService, authService)
 
 	requireAuthMiddleware := middleware.NewRequireAuthMiddleware(authService).Wrap
