@@ -48,10 +48,14 @@ func main() {
 		log.Printf("Warning: Failed to ensure bucket exists: %v", err)
 	}
 
+	adminService := services.NewAdminService(queries, authService, storageService)
+	quizSessionService := services.NewQuizSessionService(queries, quizService, gamification, authService)
+	dashboardService := services.NewDashboardService(queries, quizService, gamification, authService)
+
 	authHandler := handlers.NewAuth(queries, authService)
-	dashboardHandler := handlers.NewDashboard(queries, quizService, gamification, authService)
-	quizHandler := handlers.NewQuiz(queries, quizService, gamification, authService)
-	adminHandler := handlers.NewAdmin(queries, authService, storageService)
+	dashboardHandler := handlers.NewDashboard(dashboardService)
+	quizHandler := handlers.NewQuiz(queries, quizService, quizSessionService)
+	adminHandler := handlers.NewAdmin(adminService, authService)
 
 	requireAuthMiddleware := middleware.NewRequireAuthMiddleware(authService).Wrap
 	requiredRoleMiddleware := middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher).Wrap
