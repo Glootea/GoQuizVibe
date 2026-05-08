@@ -21,7 +21,7 @@ RETURNING id, question_id, url, order_index, created_at
 type CreateQuestionImageParams struct {
 	ID         uuid.UUID `json:"id"`
 	QuestionID uuid.UUID `json:"question_id"`
-	URL        string    `json:"url"`
+	Url        string    `json:"url"`
 	OrderIndex int       `json:"order_index"`
 	CreatedAt  time.Time `json:"created_at"`
 }
@@ -30,7 +30,7 @@ func (q *Queries) CreateQuestionImage(ctx context.Context, arg CreateQuestionIma
 	row := q.db.QueryRow(ctx, createQuestionImage,
 		arg.ID,
 		arg.QuestionID,
-		arg.URL,
+		arg.Url,
 		arg.OrderIndex,
 		arg.CreatedAt,
 	)
@@ -38,20 +38,11 @@ func (q *Queries) CreateQuestionImage(ctx context.Context, arg CreateQuestionIma
 	err := row.Scan(
 		&i.ID,
 		&i.QuestionID,
-		&i.URL,
+		&i.Url,
 		&i.OrderIndex,
 		&i.CreatedAt,
 	)
 	return i, err
-}
-
-const deleteQuestionImage = `-- name: DeleteQuestionImage :exec
-DELETE FROM question_images WHERE id = $1
-`
-
-func (q *Queries) DeleteQuestionImage(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteQuestionImage, id)
-	return err
 }
 
 const deleteImagesByQuestionID = `-- name: DeleteImagesByQuestionID :exec
@@ -63,15 +54,24 @@ func (q *Queries) DeleteImagesByQuestionID(ctx context.Context, questionID uuid.
 	return err
 }
 
+const deleteQuestionImage = `-- name: DeleteQuestionImage :exec
+DELETE FROM question_images WHERE id = $1
+`
+
+func (q *Queries) DeleteQuestionImage(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteQuestionImage, id)
+	return err
+}
+
 const getImageCountByQuestionID = `-- name: GetImageCountByQuestionID :one
 SELECT COUNT(*) FROM question_images WHERE question_id = $1
 `
 
 func (q *Queries) GetImageCountByQuestionID(ctx context.Context, questionID uuid.UUID) (int64, error) {
 	row := q.db.QueryRow(ctx, getImageCountByQuestionID, questionID)
-	var i int64
-	err := row.Scan(&i)
-	return i, err
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getImagesByQuestionID = `-- name: GetImagesByQuestionID :many
@@ -90,7 +90,7 @@ func (q *Queries) GetImagesByQuestionID(ctx context.Context, questionID uuid.UUI
 		if err := rows.Scan(
 			&i.ID,
 			&i.QuestionID,
-			&i.URL,
+			&i.Url,
 			&i.OrderIndex,
 			&i.CreatedAt,
 		); err != nil {
@@ -114,7 +114,7 @@ func (q *Queries) GetQuestionImageByID(ctx context.Context, id uuid.UUID) (Quest
 	err := row.Scan(
 		&i.ID,
 		&i.QuestionID,
-		&i.URL,
+		&i.Url,
 		&i.OrderIndex,
 		&i.CreatedAt,
 	)

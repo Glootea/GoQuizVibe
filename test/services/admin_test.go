@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -189,7 +190,7 @@ func TestAdminService_GetDashboardData(t *testing.T) {
 		mockUsers.EXPECT().GetStudentCount(gomock.Any()).Return(int64(25), nil)
 		mockStats.EXPECT().GetAdminStatsData(gomock.Any()).Return(db.GetAdminStatsDataRow{TotalAttempts: 100, AvgScore: 85.5}, nil)
 		mockAttempts.EXPECT().GetRecentAttempts(gomock.Any(), int32(10)).Return([]db.GetRecentAttemptsRow{
-			{ID: attemptID, UserName: "Student 1", QuizTitle: "Quiz 1", Score: 80, MaxScore: 100, CompletedAt: time.Now()},
+			{ID: attemptID, UserName: "Student 1", QuizTitle: "Quiz 1", Score: 80, MaxScore: 100, CompletedAt: sql.NullTime{Time: time.Now(), Valid: true}},
 		}, nil)
 
 		data, err := svc.GetDashboardData(context.Background(), userID)
@@ -388,7 +389,7 @@ func TestAdminService_GetQuizEditData(t *testing.T) {
 		user := db.User{ID: userID, Name: "Admin"}
 		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
 		question := db.Question{ID: questionID, QuizID: quizID, Text: "Question 1"}
-		images := []db.QuestionImage{{ID: uuid.New(), QuestionID: questionID, URL: "http://img.jpg"}}
+		images := []db.QuestionImage{{ID: uuid.New(), QuestionID: questionID, Url: "http://img.jpg"}}
 
 		mockUsers.EXPECT().GetUserByID(gomock.Any(), userID).Return(user, nil)
 		mockQuizzes.EXPECT().GetQuizByID(gomock.Any(), quizID).Return(quiz, nil)
@@ -976,7 +977,7 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 
 	t.Run("delete from db error", func(t *testing.T) {
 		imageID, questionID := uuid.New(), uuid.New()
-		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, URL: "http://storage/img.jpg"}, nil)
+		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, Url: "http://storage/img.jpg"}, nil)
 		mockImages.EXPECT().DeleteQuestionImage(gomock.Any(), imageID).Return(errors.New("delete error"))
 
 		err := svc.DeleteQuestionImage(context.Background(), imageID, questionID)
@@ -987,7 +988,7 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 
 	t.Run("delete from storage error", func(t *testing.T) {
 		imageID, questionID := uuid.New(), uuid.New()
-		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, URL: "http://storage/img.jpg"}, nil)
+		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, Url: "http://storage/img.jpg"}, nil)
 		mockImages.EXPECT().DeleteQuestionImage(gomock.Any(), imageID).Return(nil)
 		mockMinio.EXPECT().RemoveObject(gomock.Any(), "test-bucket", "img.jpg", gomock.Any()).Return(errors.New("storage error"))
 
@@ -999,7 +1000,7 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		imageID, questionID := uuid.New(), uuid.New()
-		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, URL: "http://storage/img.jpg"}, nil)
+		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, Url: "http://storage/img.jpg"}, nil)
 		mockImages.EXPECT().DeleteQuestionImage(gomock.Any(), imageID).Return(nil)
 		mockMinio.EXPECT().RemoveObject(gomock.Any(), "test-bucket", "img.jpg", gomock.Any()).Return(nil)
 

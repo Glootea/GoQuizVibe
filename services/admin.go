@@ -96,13 +96,17 @@ func (s *AdminService) GetDashboardData(ctx context.Context, userID uuid.UUID) (
 
 	recentAttempts := make([]*types.RecentAttempt, 0, len(recentActivity))
 	for _, a := range recentActivity {
+		completedAt := ""
+		if a.CompletedAt.Valid {
+			completedAt = a.CompletedAt.Time.Format("2006-01-02 15:04")
+		}
 		recentAttempts = append(recentAttempts, &types.RecentAttempt{
 			AttemptID:   a.ID.String(),
 			UserName:    a.UserName,
 			QuizTitle:   a.QuizTitle,
 			Score:       int(a.Score),
 			MaxScore:    int(a.MaxScore),
-			CompletedAt: a.CompletedAt.Format("2006-01-02 15:04"),
+			CompletedAt: completedAt,
 		})
 	}
 
@@ -289,7 +293,7 @@ func (s *AdminService) AddQuestion(ctx context.Context, quizID uuid.UUID, text s
 		_, err = s.images.CreateQuestionImage(ctx, db.CreateQuestionImageParams{
 			ID:         uuid.New(),
 			QuestionID: newQuestionID,
-			URL:        url,
+			Url:        url,
 			OrderIndex: int(count),
 			CreatedAt:  time.Now(),
 		})
@@ -386,7 +390,7 @@ func (s *AdminService) UploadQuestionImage(ctx context.Context, quizID, question
 	_, err = s.images.CreateQuestionImage(ctx, db.CreateQuestionImageParams{
 		ID:         uuid.New(),
 		QuestionID: questionID,
-		URL:        url,
+		Url:        url,
 		OrderIndex: int(count),
 		CreatedAt:  time.Now(),
 	})
@@ -413,7 +417,7 @@ func (s *AdminService) DeleteQuestionImage(ctx context.Context, imageID, questio
 		return fmt.Errorf("delete image: %w", err)
 	}
 
-	objectName := filepath.Base(image.URL)
+	objectName := filepath.Base(image.Url)
 	if err := s.storageService.DeleteImage(ctx, objectName); err != nil {
 		return fmt.Errorf("delete from storage: %w", err)
 	}

@@ -57,8 +57,8 @@ templ ResultsPage(data types.AdminResultsData, t locales.Translator) {
 								</td>
 								<td class="py-4 px-6 text-gray-600">{ attempt.QuizTitle }</td>
 								<td class="py-4 px-6 text-sm text-gray-500">
-									if !attempt.CompletedAt.IsZero() {
-										{ attempt.CompletedAt.Format("2006-01-02 15:04") }
+									if attempt.CompletedAt.Valid {
+										{ attempt.CompletedAt.Time.Format("2006-01-02 15:04") }
 									}
 								</td>
 								<td class="py-4 px-6 font-semibold">

@@ -52,7 +52,7 @@ templ QuizPage(data types.QuizPageData, t locales.Translator) {
 								</div>
 								if len(data.Quiz.Questions[data.Index].Images) > 0 {
 									for _, img := range data.Quiz.Questions[data.Index].Images {
-										<img src={ img.URL } class="object-contain max-w-md max-h-64 rounded-lg border"/>
+										<img src={ img.Url } class="object-contain max-w-md max-h-64 rounded-lg border"/>
 									}
 								}
 								if data.Quiz.Questions[data.Index].Type == models.QuestionTypeChoice {
@@ -226,6 +226,7 @@ templ ErrorsPage(data types.ErrorsPageData, t locales.Translator) {
 		}
 	}
 }
+
 templ LeaderboardPage(data types.LeaderboardPageData, t locales.Translator) {
 	@Base(t.Leaderboard(), t) {
 		@Navbar(data.User, t) {

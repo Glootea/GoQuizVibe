@@ -223,6 +223,17 @@ func (q *Queries) GetQuizzesForUser(ctx context.Context, createdBy uuid.UUID) ([
 	return items, nil
 }
 
+const quizTitleExists = `-- name: QuizTitleExists :one
+SELECT EXISTS(SELECT 1 FROM quizzes WHERE title = $1)
+`
+
+func (q *Queries) QuizTitleExists(ctx context.Context, title string) (bool, error) {
+	row := q.db.QueryRow(ctx, quizTitleExists, title)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const updateQuiz = `-- name: UpdateQuiz :one
 UPDATE quizzes SET title = $2, description = $3, subject = $4, grade = $5, status = $6, time_limit = $7
 WHERE id = $1 RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at

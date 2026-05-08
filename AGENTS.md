@@ -1,1 +1,3 @@
-Используй `go tool templ generate` для генерации templates 
+Используй:
+  - `go tool templ generate` для генерации templates
+  - `python3 run_bg.py` для запуска сервера в фоне, чтобы вернуть управление после старта. Уничтожь процесс при необходимости

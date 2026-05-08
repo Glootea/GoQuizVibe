@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"strings"
 	"time"
 
@@ -123,7 +124,7 @@ func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid
 		}
 	}
 
-	completedAt := time.Now()
+	completedAt := sql.NullTime{Time: time.Now(), Valid: true}
 	attempt, err := s.attempts.UpdateAttempt(ctx, db.UpdateAttemptParams{
 		ID:          attemptID,
 		Score:       score,

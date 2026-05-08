@@ -1819,7 +1819,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var110 string
-				templ_7745c5c3_Var110, templ_7745c5c3_Err = templ.JoinStringErrs(img.URL)
+				templ_7745c5c3_Var110, templ_7745c5c3_Err = templ.JoinStringErrs(img.Url)
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 644, Col: 24}
 				}

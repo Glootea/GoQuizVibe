@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -804,7 +805,7 @@ func TestQuizSessionService_GetErrorsPageData(t *testing.T) {
 	questionID := uuid.New()
 
 	attempts := []db.QuizAttempt{
-		{ID: attemptID, UserID: userID, QuizID: quizID, Score: 5, MaxScore: 10, StartedAt: now, CompletedAt: now},
+		{ID: attemptID, UserID: userID, QuizID: quizID, Score: 5, MaxScore: 10, StartedAt: now, CompletedAt: sql.NullTime{Time: now, Valid: true}},
 	}
 
 	quiz := &models.QuizWithQuestionsAndImages{

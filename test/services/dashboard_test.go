@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -184,7 +185,7 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		images := []db.QuestionImage{{ID: uuid.New(), QuestionID: questions[0].ID}}
 
 		statsRow := db.GetUserStatsRow{TotalXp: int64(100), CorrectCnt: 10, WrongCnt: 2}
-		attempts := []db.QuizAttempt{{ID: uuid.New(), UserID: userID, QuizID: quizzes[0].ID, Score: 100, CompletedAt: baseTime}}
+		attempts := []db.QuizAttempt{{ID: uuid.New(), UserID: userID, QuizID: quizzes[0].ID, Score: 100, CompletedAt: sql.NullTime{Time: baseTime, Valid: true}}}
 		recentAttempts := []db.GetRecentAttemptsRow{{UserID: userID, UserName: "Test User", Score: 100}}
 
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(user, nil)

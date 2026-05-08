@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -181,7 +182,7 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid
 		ID:          session.AttemptID,
 		Score:       score,
 		MaxScore:    maxScore,
-		CompletedAt: now,
+		CompletedAt: sql.NullTime{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("update attempt: %w", err)

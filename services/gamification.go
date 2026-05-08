@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,6 +10,13 @@ import (
 	"github.com/goquizvibe/models"
 	r "github.com/goquizvibe/repositories"
 )
+
+func formatCompletedAt(t sql.NullTime) string {
+	if !t.Valid {
+		return ""
+	}
+	return t.Time.Format("2006-01-02")
+}
 
 type GamificationService struct {
 	attempts     r.AttemptRepository
@@ -36,7 +44,7 @@ func (s *GamificationService) CalculateStreak(ctx context.Context, userID uuid.U
 
 	dailyAttempts := make(map[string]int)
 	for _, a := range attempts {
-		day := a.CompletedAt.Format("2006-01-02")
+		day := formatCompletedAt(a.CompletedAt)
 		dailyAttempts[day]++
 	}
 
@@ -155,7 +163,7 @@ func (s *GamificationService) calculateStreakFromAttempts(attempts []db.QuizAtte
 
 	dailyAttempts := make(map[string]int)
 	for _, a := range attempts {
-		day := a.CompletedAt.Format("2006-01-02")
+		day := formatCompletedAt(a.CompletedAt)
 		dailyAttempts[day]++
 	}
 

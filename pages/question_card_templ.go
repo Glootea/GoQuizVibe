@@ -115,7 +115,7 @@ func QuestionCard(quiz *models.Quiz, questionIndex int, sessionID string) templ.
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(img.URL)
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(img.Url)
 				if templ_7745c5c3_Err != nil {
 					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/question_card.templ`, Line: 27, Col: 24}
 				}

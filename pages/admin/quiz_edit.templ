@@ -641,7 +641,7 @@ templ QuestionImagesSection(q models.Question, quizID string, t locales.Translat
 			<div class="flex flex-wrap gap-2 mb-2">
 				for _, img := range q.Images {
 					<div class="relative group">
-						<img src={ img.URL } class="object-cover w-24 h-24 rounded-lg border"/>
+						<img src={ img.Url } class="object-cover w-24 h-24 rounded-lg border"/>
 						<button
 							type="button"
 							class="absolute -top-2 -right-2 w-6 h-6 text-xs text-white bg-red-500 rounded-full opacity-0 transition group-hover:opacity-100"

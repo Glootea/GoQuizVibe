@@ -5,6 +5,7 @@
 package db
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -153,6 +154,14 @@ type Question struct {
 	OrderIndex    int          `json:"order_index"`
 }
 
+type QuestionImage struct {
+	ID         uuid.UUID `json:"id"`
+	QuestionID uuid.UUID `json:"question_id"`
+	Url        string    `json:"url"`
+	OrderIndex int       `json:"order_index"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 type Quiz struct {
 	ID          uuid.UUID  `json:"id"`
 	Title       string     `json:"title"`
@@ -166,13 +175,13 @@ type Quiz struct {
 }
 
 type QuizAttempt struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	QuizID      uuid.UUID `json:"quiz_id"`
-	Score       int       `json:"score"`
-	MaxScore    int       `json:"max_score"`
-	StartedAt   time.Time `json:"started_at"`
-	CompletedAt time.Time `json:"completed_at"`
+	ID          uuid.UUID    `json:"id"`
+	UserID      uuid.UUID    `json:"user_id"`
+	QuizID      uuid.UUID    `json:"quiz_id"`
+	Score       int          `json:"score"`
+	MaxScore    int          `json:"max_score"`
+	StartedAt   time.Time    `json:"started_at"`
+	CompletedAt sql.NullTime `json:"completed_at"`
 }
 
 type QuizSession struct {
@@ -200,12 +209,4 @@ type UserAnswer struct {
 	QuestionID uuid.UUID `json:"question_id"`
 	UserAnswer string    `json:"user_answer"`
 	IsCorrect  bool      `json:"is_correct"`
-}
-
-type QuestionImage struct {
-	ID         uuid.UUID `json:"id"`
-	QuestionID uuid.UUID `json:"question_id"`
-	URL        string    `json:"url"`
-	OrderIndex int       `json:"order_index"`
-	CreatedAt  time.Time `json:"created_at"`
 }

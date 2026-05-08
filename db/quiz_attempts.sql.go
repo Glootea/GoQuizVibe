@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -89,15 +90,15 @@ ORDER BY a.completed_at DESC
 `
 
 type GetAllAttemptsRow struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	QuizID      uuid.UUID `json:"quiz_id"`
-	Score       int       `json:"score"`
-	MaxScore    int       `json:"max_score"`
-	StartedAt   time.Time `json:"started_at"`
-	CompletedAt time.Time `json:"completed_at"`
-	UserName    string    `json:"user_name"`
-	QuizTitle   string    `json:"quiz_title"`
+	ID          uuid.UUID    `json:"id"`
+	UserID      uuid.UUID    `json:"user_id"`
+	QuizID      uuid.UUID    `json:"quiz_id"`
+	Score       int          `json:"score"`
+	MaxScore    int          `json:"max_score"`
+	StartedAt   time.Time    `json:"started_at"`
+	CompletedAt sql.NullTime `json:"completed_at"`
+	UserName    string       `json:"user_name"`
+	QuizTitle   string       `json:"quiz_title"`
 }
 
 func (q *Queries) GetAllAttempts(ctx context.Context) ([]GetAllAttemptsRow, error) {
@@ -189,14 +190,14 @@ ORDER BY a.completed_at DESC
 `
 
 type GetAttemptsByQuizRow struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	QuizID      uuid.UUID `json:"quiz_id"`
-	Score       int       `json:"score"`
-	MaxScore    int       `json:"max_score"`
-	StartedAt   time.Time `json:"started_at"`
-	CompletedAt time.Time `json:"completed_at"`
-	UserName    string    `json:"user_name"`
+	ID          uuid.UUID    `json:"id"`
+	UserID      uuid.UUID    `json:"user_id"`
+	QuizID      uuid.UUID    `json:"quiz_id"`
+	Score       int          `json:"score"`
+	MaxScore    int          `json:"max_score"`
+	StartedAt   time.Time    `json:"started_at"`
+	CompletedAt sql.NullTime `json:"completed_at"`
+	UserName    string       `json:"user_name"`
 }
 
 func (q *Queries) GetAttemptsByQuiz(ctx context.Context, quizID uuid.UUID) ([]GetAttemptsByQuizRow, error) {
@@ -416,15 +417,15 @@ ORDER BY a.completed_at DESC LIMIT $1
 `
 
 type GetRecentAttemptsRow struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	QuizID      uuid.UUID `json:"quiz_id"`
-	Score       int       `json:"score"`
-	MaxScore    int       `json:"max_score"`
-	StartedAt   time.Time `json:"started_at"`
-	CompletedAt time.Time `json:"completed_at"`
-	UserName    string    `json:"user_name"`
-	QuizTitle   string    `json:"quiz_title"`
+	ID          uuid.UUID    `json:"id"`
+	UserID      uuid.UUID    `json:"user_id"`
+	QuizID      uuid.UUID    `json:"quiz_id"`
+	Score       int          `json:"score"`
+	MaxScore    int          `json:"max_score"`
+	StartedAt   time.Time    `json:"started_at"`
+	CompletedAt sql.NullTime `json:"completed_at"`
+	UserName    string       `json:"user_name"`
+	QuizTitle   string       `json:"quiz_title"`
 }
 
 func (q *Queries) GetRecentAttempts(ctx context.Context, limit int32) ([]GetRecentAttemptsRow, error) {
@@ -472,7 +473,7 @@ func (q *Queries) GetSubjectDistribution(ctx context.Context) ([]byte, error) {
 
 const getUserStats = `-- name: GetUserStats :one
 SELECT
-    COALESCE((SELECT SUM(score) FROM (SELECT DISTINCT id, score FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL) as attempts), 0) as total_xp,
+    COALESCE((SELECT SUM(score) FROM quiz_attempts qa WHERE qa.user_id = $1 AND qa.completed_at IS NOT NULL), 0) as total_xp,
     (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = true) as correct_cnt,
     (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = false) as wrong_cnt
 `
@@ -528,10 +529,10 @@ RETURNING id, user_id, quiz_id, score, max_score, started_at, completed_at
 `
 
 type UpdateAttemptParams struct {
-	ID          uuid.UUID `json:"id"`
-	Score       int       `json:"score"`
-	MaxScore    int       `json:"max_score"`
-	CompletedAt time.Time `json:"completed_at"`
+	ID          uuid.UUID    `json:"id"`
+	Score       int          `json:"score"`
+	MaxScore    int          `json:"max_score"`
+	CompletedAt sql.NullTime `json:"completed_at"`
 }
 
 func (q *Queries) UpdateAttempt(ctx context.Context, arg UpdateAttemptParams) (QuizAttempt, error) {

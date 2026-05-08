@@ -24,7 +24,7 @@ templ QuestionCard(quiz *models.Quiz, questionIndex int, sessionID string) {
 			if len(quiz.Questions[questionIndex].Images) > 0 {
 				<div class="flex flex-wrap gap-3 mb-6">
 					for _, img := range quiz.Questions[questionIndex].Images {
-						<img src={ img.URL } class="object-contain max-w-md max-h-64 rounded-lg border"/>
+						<img src={ img.Url } class="object-contain max-w-md max-h-64 rounded-lg border"/>
 					}
 				</div>
 			}

@@ -201,7 +201,7 @@ func QuizPage(data types.QuizPageData, t locales.Translator) templ.Component {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var13 string
-					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(img.URL)
+					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(img.Url)
 					if templ_7745c5c3_Err != nil {
 						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 55, Col: 28}
 					}
@@ -1041,7 +1041,7 @@ func LeaderboardPage(data types.LeaderboardPageData, t locales.Translator) templ
 				var templ_7745c5c3_Var63 string
 				templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(t.Leaderboard())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 233, Col: 57}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 234, Col: 57}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 				if templ_7745c5c3_Err != nil {
@@ -1059,7 +1059,7 @@ func LeaderboardPage(data types.LeaderboardPageData, t locales.Translator) templ
 					var templ_7745c5c3_Var64 string
 					templ_7745c5c3_Var64, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoParticipantsYet())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 237, Col: 33}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 238, Col: 33}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var64))
 					if templ_7745c5c3_Err != nil {
@@ -1173,7 +1173,7 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.
 		var templ_7745c5c3_Var70 string
 		templ_7745c5c3_Var70, templ_7745c5c3_Err = templ.JoinStringErrs(position)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 255, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 256, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var70))
 		if templ_7745c5c3_Err != nil {
@@ -1186,7 +1186,7 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.
 		var templ_7745c5c3_Var71 string
 		templ_7745c5c3_Var71, templ_7745c5c3_Err = templ.JoinStringErrs(entry.UserName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 258, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 259, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var71))
 		if templ_7745c5c3_Err != nil {
@@ -1199,7 +1199,7 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.
 		var templ_7745c5c3_Var72 string
 		templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs(entry.Streak)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 260, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 261, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 		if templ_7745c5c3_Err != nil {
@@ -1212,7 +1212,7 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.
 		var templ_7745c5c3_Var73 string
 		templ_7745c5c3_Var73, templ_7745c5c3_Err = templ.JoinStringErrs(t.DayStreak())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 260, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 261, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var73))
 		if templ_7745c5c3_Err != nil {
@@ -1225,7 +1225,7 @@ func FullLeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.
 		var templ_7745c5c3_Var74 string
 		templ_7745c5c3_Var74, templ_7745c5c3_Err = templ.JoinStringErrs(entry.XP)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 264, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 265, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var74))
 		if templ_7745c5c3_Err != nil {

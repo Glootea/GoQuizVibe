@@ -24,7 +24,7 @@ SELECT * FROM user_answers WHERE attempt_id = $1;
 
 -- name: GetUserStats :one
 SELECT
-    COALESCE((SELECT SUM(score) FROM (SELECT DISTINCT id, score FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL) as attempts), 0) as total_xp,
+    COALESCE((SELECT SUM(score) FROM quiz_attempts qa WHERE qa.user_id = $1 AND qa.completed_at IS NOT NULL), 0) as total_xp,
     (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = true) as correct_cnt,
     (SELECT COUNT(*) FROM user_answers ua JOIN quiz_attempts a ON a.id = ua.attempt_id WHERE a.user_id = $1 AND a.completed_at IS NOT NULL AND ua.is_correct = false) as wrong_cnt;
 

@@ -272,11 +272,11 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					if !attempt.CompletedAt.IsZero() {
+					if attempt.CompletedAt.Valid {
 						var templ_7745c5c3_Var18 string
-						templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.CompletedAt.Format("2006-01-02 15:04"))
+						templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.CompletedAt.Time.Format("2006-01-02 15:04"))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/results.templ`, Line: 61, Col: 58}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/results.templ`, Line: 61, Col: 63}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 						if templ_7745c5c3_Err != nil {

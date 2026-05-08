@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -58,9 +59,9 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		tp := &mockTimeProvider{now: baseTime}
 
 		attempts := []db.QuizAttempt{
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -1)},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -2)},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime, Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -1), Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -2), Valid: true}},
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
@@ -84,10 +85,10 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		tp := &mockTimeProvider{now: baseTime}
 
 		attempts := []db.QuizAttempt{
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -1)},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -3)},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -4)},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime, Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -1), Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -3), Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -4), Valid: true}},
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
@@ -111,7 +112,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		tp := &mockTimeProvider{now: baseTime}
 
 		attempts := []db.QuizAttempt{
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -1)},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -1), Valid: true}},
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
@@ -135,7 +136,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		tp := &mockTimeProvider{now: baseTime}
 
 		attempts := []db.QuizAttempt{
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime, Valid: true}},
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
@@ -419,9 +420,9 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 
 		baseTime := time.Date(2026, 5, 6, 12, 0, 0, 0, time.UTC)
 		attempts := []db.QuizAttempt{
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -1)},
-			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: baseTime.AddDate(0, 0, -2)},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime, Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -1), Valid: true}},
+			{ID: uuid.New(), UserID: userID, QuizID: uuid.New(), CompletedAt: sql.NullTime{Time: baseTime.AddDate(0, 0, -2), Valid: true}},
 		}
 
 		statsRow := db.GetUserStatsRow{
