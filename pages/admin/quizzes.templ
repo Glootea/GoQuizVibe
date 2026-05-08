@@ -3,24 +3,25 @@ package admin
 import (
 	"fmt"
 
+	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
 )
 
-templ QuizzesPage(data types.AdminQuizListData) {
-	@BaseAdmin("Тесты", data.User) {
+templ QuizzesPage(data types.AdminQuizListData, t locales.Translator) {
+	@BaseAdmin(t.Quizzes(), data.User, t) {
 		<div class="flex justify-between items-center mb-8">
-			<h1 class="text-3xl font-bold">Управление тестами</h1>
+			<h1 class="text-3xl font-bold">{ t.QuizManagement() }</h1>
 			<button onclick="document.getElementById('createModal').classList.remove('hidden')" class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700">
-				<i class="mr-2 fas fa-plus"></i>Создать тест
+				<i class="mr-2 fas fa-plus"></i>{ t.CreateQuiz() }
 			</button>
 		</div>
 		if len(data.Quizzes) == 0 {
 			<div class="p-12 text-center bg-white rounded-xl shadow-sm">
 				<i class="mb-4 text-6xl text-gray-300 fas fa-folder-open"></i>
-				<p class="text-lg text-gray-500">Пока нет тестов</p>
+				<p class="text-lg text-gray-500">{ t.NoQuizzesAvailableYet() }</p>
 				<button onclick="document.getElementById('createModal').classList.remove('hidden')" class="mt-4 text-indigo-600 hover:text-indigo-800">
-					<i class="mr-1 fas fa-plus"></i>Создать первый тест
+					<i class="mr-1 fas fa-plus"></i>{ t.CreateFirstQuiz() }
 				</button>
 			</div>
 		} else {
@@ -28,14 +29,14 @@ templ QuizzesPage(data types.AdminQuizListData) {
 				<table class="w-full">
 					<thead class="bg-gray-50 border-b">
 						<tr>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Название</th>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Предмет</th>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Класс</th>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Вопросов</th>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Прохождений</th>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Ср. балл</th>
-							<th class="py-4 px-6 font-semibold text-left text-gray-600">Статус</th>
-							<th class="py-4 px-6 font-semibold text-right text-gray-600">Действия</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.Title() }</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.Subject() }</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.Class() }</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.Questions(0) }</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.Attempts() }</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.AvgScore() }</th>
+							<th class="py-4 px-6 font-semibold text-left text-gray-600">{ t.Status() }</th>
+							<th class="py-4 px-6 font-semibold text-right text-gray-600">{ t.Actions() }</th>
 						</tr>
 					</thead>
 					<tbody class="divide-y">
@@ -60,7 +61,16 @@ templ QuizzesPage(data types.AdminQuizListData) {
 								</td>
 								<td class="py-4 px-6">
 									<span class={ "px-2 py-1 rounded text-sm " + getStatusClass(string(quiz.Status)) }>
-										{ getStatusText(string(quiz.Status)) }
+										switch quiz.Status {
+											case models.QuizStatusAvailable:
+												{ t.Available() }
+											case models.QuizStatusAssigned:
+												{ t.Assigned() }
+											case models.QuizStatusCompleted:
+												{ t.Completed() }
+											case models.QuizStatusArchived:
+												{ t.Archived() }
+										}
 									</span>
 								</td>
 								<td class="py-4 px-6 text-right">
@@ -76,7 +86,7 @@ templ QuizzesPage(data types.AdminQuizListData) {
 									} else {
 										<div
 											hx-delete={ "/admin/quizzes/" + quiz.ID.String() }
-											hx-confirm="Удалить тест?"
+											hx-confirm={ t.DeleteQuiz() }
 											class="inline"
 										>
 											<button type="button" class="text-red-600 hover:text-red-800">
@@ -93,38 +103,38 @@ templ QuizzesPage(data types.AdminQuizListData) {
 		}
 		<div id="createModal" class="flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
 			<div class="p-6 w-full max-w-md bg-white rounded-xl">
-				<h3 class="mb-4 text-xl font-bold">Создать тест</h3>
+				<h3 class="mb-4 text-xl font-bold">{ t.CreateQuiz() }</h3>
 				<form hx-post="/admin/quizzes/new" hx-target="body" hx-swap="none">
 					<div class="space-y-4">
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Название</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Title() }</label>
 							<input type="text" name="title" required class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 						</div>
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Описание</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Description() }</label>
 							<textarea name="description" rows="2" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"></textarea>
 						</div>
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block mb-1 text-sm font-medium text-gray-700">Предмет</label>
+								<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Subject() }</label>
 								<input type="text" name="subject" placeholder="Математика" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 							</div>
 							<div>
-								<label class="block mb-1 text-sm font-medium text-gray-700">Класс</label>
+								<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Class() }</label>
 								<input type="number" name="grade" min="1" max="11" value="5" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 							</div>
 						</div>
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Время (мин)</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.TimeMin() }</label>
 							<input type="number" name="time_limit" min="0" value="30" class="py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
 						</div>
 					</div>
 					<div class="flex gap-3 justify-end mt-6">
 						<button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="py-2 px-4 text-gray-600 hover:text-gray-800">
-							Отмена
+							{ t.Cancel() }
 						</button>
 						<button type="submit" class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700">
-							Создать
+							{ t.Create() }
 						</button>
 					</div>
 				</form>
@@ -154,20 +164,6 @@ func getStatusClass(status string) string {
 		return "bg-red-100 text-red-700"
 	}
 	return "bg-gray-100 text-gray-700"
-}
-
-func getStatusText(status string) string {
-	switch status {
-	case "available":
-		return "Доступен"
-	case "assigned":
-		return "Назначен"
-	case "completed":
-		return "Завершён"
-	case "archived":
-		return "Архив"
-	}
-	return status
 }
 
 func getRowClass(status string) string {

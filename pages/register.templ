@@ -1,9 +1,12 @@
 package pages
 
-import "github.com/goquizvibe/types"
+import (
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/types"
+)
 
-templ RegisterPage(err *types.RegisterError) {
-	@Base("Регистрация") {
+templ RegisterPage(err *types.RegisterError, t locales.Translator) {
+	@Base(t.Registration(), t) {
 		<div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
 			<div class="w-full max-w-md">
 				<div class="mb-8 text-center">
@@ -12,7 +15,7 @@ templ RegisterPage(err *types.RegisterError) {
 					</a>
 				</div>
 				<div class="p-8 bg-white rounded-2xl shadow-xl">
-					<h1 class="mb-6 text-2xl font-bold text-center">Регистрация</h1>
+					<h1 class="mb-6 text-2xl font-bold text-center">{ t.Registration() }</h1>
 					if err != nil {
 						<div class="py-3 px-4 mb-4 text-red-700 bg-red-50 rounded-lg border border-red-200">
 							{ err.Message }
@@ -20,7 +23,7 @@ templ RegisterPage(err *types.RegisterError) {
 					}
 					<form action="/register" method="POST" class="space-y-4">
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Имя</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Name() }</label>
 							<input
 								type="text"
 								name="name"
@@ -30,7 +33,7 @@ templ RegisterPage(err *types.RegisterError) {
 							/>
 						</div>
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Email() }</label>
 							<input
 								type="email"
 								name="email"
@@ -40,26 +43,26 @@ templ RegisterPage(err *types.RegisterError) {
 							/>
 						</div>
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Пароль</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Password() }</label>
 							<input
 								type="password"
 								name="password"
 								required
 								minlength="6"
 								class="py-2 px-4 w-full rounded-lg border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
-								placeholder="Минимум 6 символов"
+								placeholder={ t.Minimum6Characters() }
 							/>
 						</div>
 						<button
 							type="submit"
 							class="py-3 w-full font-semibold text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700"
 						>
-							Зарегистрироваться
+							{ t.SignUp() }
 						</button>
 					</form>
 					<p class="mt-6 text-center text-gray-600">
-						Уже есть аккаунт?
-						<a href="/login" class="font-medium text-indigo-600 hover:text-indigo-800">Войти</a>
+						{ t.AlreadyHaveAnAccount() }
+						<a href="/login" class="font-medium text-indigo-600 hover:text-indigo-800">{ t.LogIn() }</a>
 					</p>
 				</div>
 			</div>

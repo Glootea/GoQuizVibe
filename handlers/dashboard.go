@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	ce "github.com/goquizvibe/custom_errors"
+	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 )
@@ -33,7 +34,8 @@ func (h *DashboardHandler) DashboardPage(w http.ResponseWriter, r *http.Request)
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return pages.DashboardPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return pages.DashboardPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *DashboardHandler) getUserIDFromRequest(r *http.Request) (uuid.UUID, error) {

@@ -1,0 +1,539 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Landing page
+
+msgid "Learn Through Play"
+msgstr "Learn Through Play"
+
+msgid "Sign In"
+msgstr "Sign In"
+
+msgid "Sign Up"
+msgstr "Sign Up"
+
+msgid "Start Free"
+msgstr "Start Free"
+
+msgid "Interactive exam preparation platform with gamification. Earn XP, maintain streaks, and compete with friends!"
+msgstr "Interactive exam preparation platform with gamification. Earn XP, maintain streaks, and compete with friends!"
+
+msgid "Log In"
+msgstr "Log In"
+
+msgid "Why GoQuizVibe?"
+msgstr "Why GoQuizVibe?"
+
+msgid "Practice daily to keep your streak. Consistency is the key to success!"
+msgstr "Practice daily to keep your streak. Consistency is the key to success!"
+
+msgid "Compete with classmates. Weekly ratings and bonus rewards!"
+msgstr "Compete with classmates. Weekly ratings and bonus rewards!"
+
+msgid "See correct answers immediately after each question. Learn from your mistakes!"
+msgstr "See correct answers immediately after each question. Learn from your mistakes!"
+
+msgid "Subjects"
+msgstr "Subjects"
+
+msgid "Math: From basic arithmetic to algebra"
+msgstr "Math: From basic arithmetic to algebra"
+
+msgid "Physics: Mechanics, electricity, optics"
+msgstr "Physics: Mechanics, electricity, optics"
+
+msgid "Chemistry: Organic and inorganic"
+msgstr "Chemistry: Organic and inorganic"
+
+msgid "Ready to Start?"
+msgstr "Ready to Start?"
+
+msgid "Join thousands of students who are already learning with joy!"
+msgstr "Join thousands of students who are already learning with joy!"
+
+msgid "Sign Up Free"
+msgstr "Sign Up Free"
+
+msgid "Copyright 2026 GoQuizVibe"
+msgstr "Copyright 2026 GoQuizVibe"
+
+# Login page
+
+msgid "Sign In to Account"
+msgstr "Sign In to Account"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "No account?"
+msgstr "No account?"
+
+msgid "Sign Up"
+msgstr "Sign Up"
+
+# Register page
+
+msgid "Registration"
+msgstr "Registration"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Minimum 6 characters"
+msgstr "Minimum 6 characters"
+
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+msgid "Log In"
+msgstr "Log In"
+
+# Dashboard
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Leaders"
+msgstr "Leaders"
+
+msgid "Mistakes"
+msgstr "Mistakes"
+
+msgid "Streak days in a row"
+msgstr "Streak days in a row"
+
+msgid "Total XP"
+msgstr "Total XP"
+
+msgid "experience points"
+msgstr "experience points"
+
+msgid "Quizzes Completed"
+msgstr "Quizzes Completed"
+
+msgid "completed"
+msgstr "completed"
+
+msgid "Mistakes Made"
+msgstr "Mistakes Made"
+
+msgid "made"
+msgstr "made"
+
+msgid "Available Quizzes"
+msgstr "Available Quizzes"
+
+msgid "No quizzes available yet"
+msgstr "No quizzes available yet"
+
+msgid "grade"
+msgstr "grade"
+
+msgid "questions"
+msgstr "questions"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Leaderboard"
+msgstr "Leaderboard"
+
+msgid "All"
+msgstr "All"
+
+msgid "No participants yet"
+msgstr "No participants yet"
+
+msgid "day streak"
+msgstr "day streak"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+# Quiz pages
+
+msgid "Quiz"
+msgstr "Quiz"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Question %d of %d"
+msgstr "Question %d of %d"
+
+msgid "Enter your answer..."
+msgstr "Enter your answer..."
+
+msgid "Submit"
+msgstr "Submit"
+
+msgid "Correct!"
+msgstr "Correct!"
+
+msgid "Result"
+msgstr "Result"
+
+msgid "Quiz Completed!"
+msgstr "Quiz Completed!"
+
+msgid "Points"
+msgstr "Points"
+
+msgid "Correct"
+msgstr "Correct"
+
+msgid "Mistakes"
+msgstr "Mistakes"
+
+msgid "Result: %d%%"
+msgstr "Result: %d%%"
+
+msgid "Back to Quizzes"
+msgstr "Back to Quizzes"
+
+msgid "Answer Details"
+msgstr "Answer Details"
+
+msgid "Question %d"
+msgstr "Question %d"
+
+msgid "Your answer:"
+msgstr "Your answer:"
+
+msgid "Correct:"
+msgstr "Correct:"
+
+msgid "Mistake Review"
+msgstr "Mistake Review"
+
+msgid "Great job!"
+msgstr "Great job!"
+
+msgid "You have no mistakes yet. Keep it up!"
+msgstr "You have no mistakes yet. Keep it up!"
+
+msgid "Try Again"
+msgstr "Try Again"
+
+msgid "Explanation:"
+msgstr "Explanation:"
+
+# Error page
+
+msgid "Error"
+msgstr "Error"
+
+msgid "An error occurred"
+msgstr "An error occurred"
+
+msgid "Back to %s"
+msgstr "Back to %s"
+
+msgid "Retry"
+msgstr "Retry"
+
+msgid "404 - Page Not Found"
+msgstr "404 - Page Not Found"
+
+msgid "Page Not Found"
+msgstr "Page Not Found"
+
+msgid "Sorry, the requested page does not exist or has been moved."
+msgstr "Sorry, the requested page does not exist or has been moved."
+
+msgid "Back to Home"
+msgstr "Back to Home"
+
+# Admin base
+
+msgid "GoQuizVibe Admin"
+msgstr "GoQuizVibe Admin"
+
+msgid "Overview"
+msgstr "Overview"
+
+msgid "Quizzes"
+msgstr "Quizzes"
+
+msgid "Results"
+msgstr "Results"
+
+msgid "Statistics"
+msgstr "Statistics"
+
+msgid "For Students"
+msgstr "For Students"
+
+# Admin dashboard
+
+msgid "Control Panel"
+msgstr "Control Panel"
+
+msgid "Total Quizzes"
+msgstr "Total Quizzes"
+
+msgid "Total Students"
+msgstr "Total Students"
+
+msgid "Attempts"
+msgstr "Attempts"
+
+msgid "Average Score"
+msgstr "Average Score"
+
+msgid "Quick Actions"
+msgstr "Quick Actions"
+
+msgid "Create Quiz"
+msgstr "Create Quiz"
+
+msgid "New quiz with questions"
+msgstr "New quiz with questions"
+
+msgid "Check Results"
+msgstr "Check Results"
+
+msgid "View student answers"
+msgstr "View student answers"
+
+msgid "Analytics"
+msgstr "Analytics"
+
+msgid "Quiz statistics"
+msgstr "Quiz statistics"
+
+msgid "Recent Activity"
+msgstr "Recent Activity"
+
+msgid "No activity yet"
+msgstr "No activity yet"
+
+# Admin quizzes
+
+msgid "Quiz Management"
+msgstr "Quiz Management"
+
+msgid "Create first quiz"
+msgstr "Create first quiz"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Subject"
+msgstr "Subject"
+
+msgid "Class"
+msgstr "Class"
+
+msgid "Avg Score"
+msgstr "Avg Score"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Available"
+msgstr "Available"
+
+msgid "Assigned"
+msgstr "Assigned"
+
+msgid "Completed"
+msgstr "Completed"
+
+msgid "Archived"
+msgstr "Archived"
+
+msgid "Delete quiz?"
+msgstr "Delete quiz?"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Time (min)"
+msgstr "Time (min)"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Create"
+msgstr "Create"
+
+# Admin quiz edit
+
+msgid "Editing: %s"
+msgstr "Editing: %s"
+
+msgid "Quiz saved"
+msgstr "Quiz saved"
+
+msgid "Save error"
+msgstr "Save error"
+
+msgid "To quiz list"
+msgstr "To quiz list"
+
+msgid "Save All"
+msgstr "Save All"
+
+msgid "Quiz Information"
+msgstr "Quiz Information"
+
+msgid "Questions (%d)"
+msgstr "Questions (%d)"
+
+msgid "No questions yet"
+msgstr "No questions yet"
+
+msgid "Add Question"
+msgstr "Add Question"
+
+msgid "New Question"
+msgstr "New Question"
+
+msgid "Question Text"
+msgstr "Question Text"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Points"
+msgstr "Points"
+
+msgid "Answer Options"
+msgstr "Answer Options"
+
+msgid "Add Option"
+msgstr "Add Option"
+
+msgid "Correct Answer"
+msgstr "Correct Answer"
+
+msgid "Images (up to 3)"
+msgstr "Images (up to 3)"
+
+msgid "JPG, PNG, WebP up to 5MB each"
+msgstr "JPG, PNG, WebP up to 5MB each"
+
+msgid "Upload"
+msgstr "Upload"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Statistics"
+msgstr "Statistics"
+
+msgid "Questions"
+msgstr "Questions"
+
+msgid "Total Points"
+msgstr "Total Points"
+
+msgid "Time"
+msgstr "Time"
+
+msgid "min"
+msgstr "min"
+
+msgid "Danger Zone"
+msgstr "Danger Zone"
+
+msgid "Move to Archive"
+msgstr "Move to Archive"
+
+msgid "Are you sure? This action is reversible."
+msgstr "Are you sure? This action is reversible."
+
+msgid "Delete image?"
+msgstr "Delete image?"
+
+msgid "Delete question?"
+msgstr "Delete question?"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Answer:"
+msgstr "Answer:"
+
+msgid "Choice"
+msgstr "Choice"
+
+msgid "Open"
+msgstr "Open"
+
+msgid "Fill"
+msgstr "Fill"
+
+msgid "Options:"
+msgstr "Options:"
+
+# Admin results
+
+msgid "Quiz Results"
+msgstr "Quiz Results"
+
+msgid "Filter by Quiz"
+msgstr "Filter by Quiz"
+
+msgid "All Quizzes"
+msgstr "All Quizzes"
+
+msgid "Total Attempts"
+msgstr "Total Attempts"
+
+msgid "Student"
+msgstr "Student"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "No results yet"
+msgstr "No results yet"
+
+msgid "Results will appear after students complete quizzes"
+msgstr "Results will appear after students complete quizzes"
+
+msgid "Excellent"
+msgstr "Excellent"
+
+msgid "Good"
+msgstr "Good"
+
+msgid "Satisfactory"
+msgstr "Satisfactory"
+
+msgid "Unsatisfactory"
+msgstr "Unsatisfactory"
+
+# Admin statistics
+
+msgid "Summary Statistics"
+msgstr "Summary Statistics"
+
+msgid "Students by Grade"
+msgstr "Students by Grade"
+
+msgid "Loading..."
+msgstr "Loading..."
+
+msgid "No data yet"
+msgstr "No data yet"
+
+msgid "Success Rate"
+msgstr "Success Rate"
+
+msgid "quizzes"
+msgstr "quizzes"

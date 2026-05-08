@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	ce "github.com/goquizvibe/custom_errors"
+	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/types"
 )
@@ -24,13 +25,15 @@ func ErrorHandler(f HandlerFunc) http.HandlerFunc {
 
 			if isHTMX {
 				w.WriteHeader(status)
-				pages.ErrorAlert(ce.UserMessage(err), redirectTo).Render(r.Context(), w)
+				t := middleware.GetTranslator(r.Context())
+				pages.ErrorAlert(ce.UserMessage(err), redirectTo, t).Render(r.Context(), w)
 			} else {
 				w.WriteHeader(status)
+				t := middleware.GetTranslator(r.Context())
 				pages.ErrorPage(types.ErrorData{
 					Message:    ce.UserMessage(err),
 					RedirectTo: redirectTo,
-				}).Render(r.Context(), w)
+				}, t).Render(r.Context(), w)
 			}
 		}
 	}

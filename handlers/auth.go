@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
@@ -14,19 +16,21 @@ import (
 type AuthHandler struct {
 	pool        *db.Queries
 	authService *services.AuthService
+	localeSvc   *locales.Service
 }
 
-func NewAuth(pool *db.Queries, a *services.AuthService) *AuthHandler {
-	return &AuthHandler{pool: pool, authService: a}
+func NewAuth(pool *db.Queries, a *services.AuthService, svc *locales.Service) *AuthHandler {
+	return &AuthHandler{pool: pool, authService: a, localeSvc: svc}
 }
 
 func (h *AuthHandler) LandingPage(w http.ResponseWriter, r *http.Request) error {
-	return pages.LandingPage().Render(r.Context(), w)
-
+	t := middleware.GetTranslator(r.Context())
+	return pages.LandingPage(t).Render(r.Context(), w)
 }
 
 func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) error {
-	return pages.LoginPage(nil).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return pages.LoginPage(nil, t).Render(r.Context(), w)
 }
 
 func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) error {
@@ -35,7 +39,8 @@ func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) error 
 
 	user, err := h.authService.Login(r.Context(), email, password)
 	if err != nil {
-		return pages.LoginPage(&types.LoginError{Message: "Неверный email или пароль"}).Render(r.Context(), w)
+		t := middleware.GetTranslator(r.Context())
+		return pages.LoginPage(&types.LoginError{Message: "Invalid email or password"}, t).Render(r.Context(), w)
 	}
 
 	token, _ := h.authService.GenerateToken(user)
@@ -57,7 +62,8 @@ func (h *AuthHandler) LoginSubmit(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (h *AuthHandler) RegisterPage(w http.ResponseWriter, r *http.Request) error {
-	return pages.RegisterPage(nil).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return pages.RegisterPage(nil, t).Render(r.Context(), w)
 }
 
 func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) error {
@@ -66,12 +72,14 @@ func (h *AuthHandler) RegisterSubmit(w http.ResponseWriter, r *http.Request) err
 	password := r.FormValue("password")
 
 	if len(password) < 6 {
-		return pages.RegisterPage(&types.RegisterError{Message: "Пароль должен быть минимум 6 символов"}).Render(r.Context(), w)
+		t := middleware.GetTranslator(r.Context())
+		return pages.RegisterPage(&types.RegisterError{Message: "Password must be at least 6 characters"}, t).Render(r.Context(), w)
 	}
 
 	user, err := h.authService.Register(r.Context(), name, email, password, models.RoleStudent)
 	if err != nil {
-		return pages.RegisterPage(&types.RegisterError{Message: "Email уже зарегистрирован"}).Render(r.Context(), w)
+		t := middleware.GetTranslator(r.Context())
+		return pages.RegisterPage(&types.RegisterError{Message: "Email already registered"}, t).Render(r.Context(), w)
 	}
 
 	token, _ := h.authService.GenerateToken(user)

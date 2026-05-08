@@ -3,17 +3,18 @@ package admin
 import (
 	"fmt"
 
+	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/types"
 )
 
-templ DashboardPage(data types.AdminDashboardData) {
-	@BaseAdmin("Обзор", data.User) {
-		<h1 class="mb-8 text-3xl font-bold">Панель управления</h1>
+templ DashboardPage(data types.AdminDashboardData, t locales.Translator) {
+	@BaseAdmin(t.Overview(), data.User, t) {
+		<h1 class="mb-8 text-3xl font-bold">{ t.ControlPanel() }</h1>
 		<div class="grid gap-6 mb-8 md:grid-cols-4">
 			<div class="p-6 bg-white rounded-xl shadow-sm">
 				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-sm text-gray-500">Всего тестов</p>
+						<p class="text-sm text-gray-500">{ t.TotalQuizzes() }</p>
 						<p class="text-3xl font-bold text-indigo-600">{ data.QuizCount }</p>
 					</div>
 					<i class="text-4xl text-indigo-200 fas fa-file-alt"></i>
@@ -22,7 +23,7 @@ templ DashboardPage(data types.AdminDashboardData) {
 			<div class="p-6 bg-white rounded-xl shadow-sm">
 				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-sm text-gray-500">Всего учеников</p>
+						<p class="text-sm text-gray-500">{ t.TotalStudents() }</p>
 						<p class="text-3xl font-bold text-green-600">{ data.StudentCount }</p>
 					</div>
 					<i class="text-4xl text-green-200 fas fa-users"></i>
@@ -31,7 +32,7 @@ templ DashboardPage(data types.AdminDashboardData) {
 			<div class="p-6 bg-white rounded-xl shadow-sm">
 				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-sm text-gray-500">Прохождений</p>
+						<p class="text-sm text-gray-500">{ t.Attempts() }</p>
 						<p class="text-3xl font-bold text-orange-600">{ data.AttemptCount }</p>
 					</div>
 					<i class="text-4xl text-orange-200 fas fa-play-circle"></i>
@@ -40,7 +41,7 @@ templ DashboardPage(data types.AdminDashboardData) {
 			<div class="p-6 bg-white rounded-xl shadow-sm">
 				<div class="flex justify-between items-center">
 					<div>
-						<p class="text-sm text-gray-500">Средний балл</p>
+						<p class="text-sm text-gray-500">{ t.AverageScore() }</p>
 						<p class="text-3xl font-bold text-purple-600">{ fmt.Sprintf("%.1f", data.AvgScore) }%</p>
 					</div>
 					<i class="text-4xl text-purple-200 fas fa-percentage"></i>
@@ -49,37 +50,37 @@ templ DashboardPage(data types.AdminDashboardData) {
 		</div>
 		<div class="grid gap-8 md:grid-cols-2">
 			<div class="p-6 bg-white rounded-xl shadow-sm">
-				<h2 class="mb-4 text-xl font-bold">Быстрые действия</h2>
+				<h2 class="mb-4 text-xl font-bold">{ t.QuickActions() }</h2>
 				<div class="space-y-3">
 					<a href="/admin/quizzes" class="flex gap-3 items-center p-4 bg-indigo-50 rounded-lg transition hover:bg-indigo-100">
 						<i class="text-xl text-indigo-600 fas fa-plus-circle"></i>
 						<div>
-							<p class="font-medium text-gray-900">Создать тест</p>
-							<p class="text-sm text-gray-500">Новый тест с вопросами</p>
+							<p class="font-medium text-gray-900">{ t.CreateQuiz() }</p>
+							<p class="text-sm text-gray-500">{ t.NewQuizWithQuestions() }</p>
 						</div>
 					</a>
 					<a href="/admin/results" class="flex gap-3 items-center p-4 bg-green-50 rounded-lg transition hover:bg-green-100">
 						<i class="text-xl text-green-600 fas fa-check-circle"></i>
 						<div>
-							<p class="font-medium text-gray-900">Проверить результаты</p>
-							<p class="text-sm text-gray-500">Посмотреть ответы учеников</p>
+							<p class="font-medium text-gray-900">{ t.CheckResults() }</p>
+							<p class="text-sm text-gray-500">{ t.ViewStudentAnswers() }</p>
 						</div>
 					</a>
 					<a href="/admin/statistics" class="flex gap-3 items-center p-4 bg-purple-50 rounded-lg transition hover:bg-purple-100">
 						<i class="text-xl text-purple-600 fas fa-chart-line"></i>
 						<div>
-							<p class="font-medium text-gray-900">Аналитика</p>
-							<p class="text-sm text-gray-500">Статистика по тестам</p>
+							<p class="font-medium text-gray-900">{ t.Analytics() }</p>
+							<p class="text-sm text-gray-500">{ t.QuizStatistics() }</p>
 						</div>
 					</a>
 				</div>
 			</div>
 			<div class="p-6 bg-white rounded-xl shadow-sm">
-				<h2 class="mb-4 text-xl font-bold">Последние активности</h2>
+				<h2 class="mb-4 text-xl font-bold">{ t.RecentActivity() }</h2>
 				if len(data.RecentActivity) == 0 {
 					<div class="py-8 text-center text-gray-500">
 						<i class="mb-4 text-4xl fas fa-inbox"></i>
-						<p>Пока нет активности</p>
+						<p>{ t.NoActivityYet() }</p>
 					</div>
 				} else {
 					<div class="space-y-3">

@@ -117,12 +117,58 @@ if r.Header.Get("hx-request") == "true" {
     return admin.QuestionsSection(quizWithQuestions, questions).Render(r.Context(), w)
 }
 ```
+## Локализация
+Используется **gettextgocodegen** для генерации type-safe функций перевода из `.po` файлов.
+
+### Структура
+```
+locales/
+├── locales.go              # Сгенерированный (НЕ редактировать вручную)
+├── service.go              # Service для создания Translator
+├── en/LC_MESSAGES/
+│   └── default.po         # Английские переводы
+└── ru/LC_MESSAGES/
+    └── default.po          # Русские переводы
+```
+
+### Принцип работы
+1. `.po` файлы содержат `msgid` (ключ) и `msgstr` (перевод)
+2. `go tool gettextgocodegen -dir=locales -lang=ru` генерирует `locales/locales.go`
+3. Интерфейс `Translator` содержит методы для каждой строки
+4. `locales.Service` создаёт Translator при старте приложения
+5. Выбор языка по `Accept-Language` header (en/ru)
+
+### Использование в шаблонах
+```templ
+templ DashboardPage(data types.DashboardData, t locales.Translator) {
+    <h1>{ t.Welcome() }</h1>
+    <p>{ t.YouHaveNoMistakesYetKeepItUp() }</p>
+}
+```
+
+### Генерация переводов
+```bash
+# После изменения .po файлов
+go tool gettextgocodegen -dir=locales -lang=ru
+go tool templ generate
+```
+
+**Важно:** `locales/locales.go` генерируется автоматически и будет перезаписан. Все переводы добавляются только в `.po` файлы.
+
 ## Запуск
 ```bash
-# Генерация кода/html шаблонов
+# Генерация templ шаблонов
 go tool templ generate
+
+# Генерация переводов (после изменения .po)
+go tool gettextgocodegen -dir=locales -lang=ru
+
 # Запуск
 go run .
 ```
 
-Также Makefile содержит полезные dev команды
+Makefile содержит полезные dev команды:
+```bash
+make generate    # templ + gettextgocodegen
+make run          # запуск
+```

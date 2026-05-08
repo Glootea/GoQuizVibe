@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	ce "github.com/goquizvibe/custom_errors"
 	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/pages"
 	"github.com/goquizvibe/services"
 	"github.com/goquizvibe/types"
@@ -101,7 +102,8 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 			SessionID: sessionIDStr,
 			Index:     index,
 		}
-		return pages.QuizPage(data).Render(r.Context(), w)
+		t := middleware.GetTranslator(r.Context())
+		return pages.QuizPage(data, t).Render(r.Context(), w)
 	}
 
 	return pages.QuestionCard(quiz, index, sessionIDStr).Render(r.Context(), w)
@@ -190,7 +192,8 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return pages.QuizResultPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return pages.QuizResultPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
@@ -205,7 +208,8 @@ func (h *QuizHandler) ErrorsPage(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return pages.ErrorsPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return pages.ErrorsPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) LeaderboardPage(w http.ResponseWriter, r *http.Request) error {
@@ -220,7 +224,8 @@ func (h *QuizHandler) LeaderboardPage(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return pages.LeaderboardPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return pages.LeaderboardPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) getUserIDFromRequest(r *http.Request) (uuid.UUID, error) {

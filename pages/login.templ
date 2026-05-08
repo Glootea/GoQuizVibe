@@ -1,9 +1,12 @@
 package pages
 
-import "github.com/goquizvibe/types"
+import (
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/types"
+)
 
-templ LoginPage(err *types.LoginError) {
-	@Base("Вход") {
+templ LoginPage(err *types.LoginError, t locales.Translator) {
+	@Base(t.SignInToAccount(), t) {
 		<div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
 			<div class="w-full max-w-md">
 				<div class="mb-8 text-center">
@@ -12,7 +15,7 @@ templ LoginPage(err *types.LoginError) {
 					</a>
 				</div>
 				<div class="p-8 bg-white rounded-2xl shadow-xl">
-					<h1 class="mb-6 text-2xl font-bold text-center">Вход в аккаунт</h1>
+					<h1 class="mb-6 text-2xl font-bold text-center">{ t.SignInToAccount() }</h1>
 					if err != nil {
 						<div class="py-3 px-4 mb-4 text-red-700 bg-red-50 rounded-lg border border-red-200">
 							{ err.Message }
@@ -20,7 +23,7 @@ templ LoginPage(err *types.LoginError) {
 					}
 					<form action="/login" method="POST" class="space-y-4">
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Email() }</label>
 							<input
 								type="email"
 								name="email"
@@ -30,7 +33,7 @@ templ LoginPage(err *types.LoginError) {
 							/>
 						</div>
 						<div>
-							<label class="block mb-1 text-sm font-medium text-gray-700">Пароль</label>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Password() }</label>
 							<input
 								type="password"
 								name="password"
@@ -43,12 +46,12 @@ templ LoginPage(err *types.LoginError) {
 							type="submit"
 							class="py-3 w-full font-semibold text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700"
 						>
-							Войти
+							{ t.LogIn() }
 						</button>
 					</form>
 					<p class="mt-6 text-center text-gray-600">
-						Нет аккаунта?
-						<a href="/register" class="font-medium text-indigo-600 hover:text-indigo-800">Зарегистрироваться</a>
+						{ t.NoAccount() }
+						<a href="/register" class="font-medium text-indigo-600 hover:text-indigo-800">{ t.SignUp() }</a>
 					</p>
 				</div>
 			</div>

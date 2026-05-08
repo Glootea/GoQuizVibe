@@ -8,9 +8,12 @@ package pages
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/goquizvibe/types"
+import (
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/types"
+)
 
-func LoginPage(err *types.LoginError) templ.Component {
+func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -43,36 +46,114 @@ func LoginPage(err *types.LoginError) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50\"><div class=\"w-full max-w-md\"><div class=\"mb-8 text-center\"><a href=\"/\" class=\"text-3xl font-bold text-indigo-600\"><i class=\"mr-2 fas fa-graduation-cap\"></i>GoQuizVibe</a></div><div class=\"p-8 bg-white rounded-2xl shadow-xl\"><h1 class=\"mb-6 text-2xl font-bold text-center\">Вход в аккаунт</h1>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50\"><div class=\"w-full max-w-md\"><div class=\"mb-8 text-center\"><a href=\"/\" class=\"text-3xl font-bold text-indigo-600\"><i class=\"mr-2 fas fa-graduation-cap\"></i>GoQuizVibe</a></div><div class=\"p-8 bg-white rounded-2xl shadow-xl\"><h1 class=\"mb-6 text-2xl font-bold text-center\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(t.SignInToAccount())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 18, Col: 74}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</h1>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if err != nil {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"py-3 px-4 mb-4 text-red-700 bg-red-50 rounded-lg border border-red-200\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"py-3 px-4 mb-4 text-red-700 bg-red-50 rounded-lg border border-red-200\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var3 string
-				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(err.Message)
+				var templ_7745c5c3_Var4 string
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(err.Message)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 18, Col: 20}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 21, Col: 20}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<form action=\"/login\" method=\"POST\" class=\"space-y-4\"><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Email</label> <input type=\"email\" name=\"email\" required class=\"py-2 px-4 w-full rounded-lg border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\" placeholder=\"example@mail.ru\"></div><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">Пароль</label> <input type=\"password\" name=\"password\" required class=\"py-2 px-4 w-full rounded-lg border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\" placeholder=\"••••••••\"></div><button type=\"submit\" class=\"py-3 w-full font-semibold text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\">Войти</button></form><p class=\"mt-6 text-center text-gray-600\">Нет аккаунта? <a href=\"/register\" class=\"font-medium text-indigo-600 hover:text-indigo-800\">Зарегистрироваться</a></p></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<form action=\"/login\" method=\"POST\" class=\"space-y-4\"><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var5 string
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(t.Email())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 26, Col: 78}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</label> <input type=\"email\" name=\"email\" required class=\"py-2 px-4 w-full rounded-lg border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\" placeholder=\"example@mail.ru\"></div><div><label class=\"block mb-1 text-sm font-medium text-gray-700\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(t.Password())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 36, Col: 81}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</label> <input type=\"password\" name=\"password\" required class=\"py-2 px-4 w-full rounded-lg border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\" placeholder=\"••••••••\"></div><button type=\"submit\" class=\"py-3 w-full font-semibold text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(t.LogIn())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 49, Col: 18}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</button></form><p class=\"mt-6 text-center text-gray-600\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoAccount())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 53, Col: 21}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " <a href=\"/register\" class=\"font-medium text-indigo-600 hover:text-indigo-800\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 string
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(t.SignUp())
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/login.templ`, Line: 54, Col: 96}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</a></p></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Base("Вход").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base(t.SignInToAccount(), t).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -9,8 +9,15 @@ dev: dc-up
 	@make -j 2 tw-watch templ-watch
 
 # generate: one-time generation of all assets (no watching)
-# runs: templ generation -> rustywind -> tailwind build
-build: templ-generate rustywind tw-build go-run
+# runs: templ generation -> gettextgocodegen -> rustywind -> tailwind build
+generate: templ-generate gettext-generate rustywind tw-build
+
+# gettext-generate: generate locales/locales.go from .po files
+gettext-generate:
+	go tool gettextgocodegen -dir=locales -lang=ru
+
+# build: one-time build without watchers
+build: templ-generate gettext-generate go-run
 
 # dc-up: start docker containers in detached mode
 # podman compose up -d is idempotent - won't restart already running containers

@@ -16,9 +16,12 @@ require (
 	golang.org/x/crypto v0.49.0
 )
 
+require github.com/leonelquinteros/gotext v1.7.2
+
 require (
 	cel.dev/expr v0.25.1 // indirect
 	filippo.io/edwards25519 v1.1.1 // indirect
+	github.com/Glootea/gettextgocodegen v0.0.0-20260508170326-724a175caebc // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -86,6 +89,7 @@ require (
 )
 
 tool (
+	github.com/Glootea/gettextgocodegen
 	github.com/a-h/templ/cmd/templ
 	github.com/sqlc-dev/sqlc/cmd/sqlc
 )

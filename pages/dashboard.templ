@@ -1,22 +1,23 @@
 package pages
 
 import (
+	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
 )
 
-templ DashboardPage(data types.DashboardData) {
-	@Base("Панель") {
-		@Navbar(data.User)
+templ DashboardPage(data types.DashboardData, t locales.Translator) {
+	@Base(t.Dashboard(), t) {
+		@Navbar(data.User, t)
 		<main class="py-8 px-4 mx-auto max-w-6xl">
-			@StatsCards(data.Stats)
-			@QuizGrid(data.Quizzes)
-			@LeaderboardPreview(data.Leaderboard)
+			@StatsCards(data.Stats, t)
+			@QuizGrid(data.Quizzes, t)
+			@LeaderboardPreview(data.Leaderboard, t)
 		</main>
 	}
 }
 
-templ Navbar(user *models.User) {
+templ Navbar(user *models.User, t locales.Translator) {
 	<nav class="sticky top-0 z-50 bg-white shadow-sm">
 		<div class="flex justify-between items-center py-4 px-4 mx-auto max-w-6xl">
 			<a href="/dashboard" class="text-2xl font-bold text-indigo-600">
@@ -25,14 +26,14 @@ templ Navbar(user *models.User) {
 			<div class="flex gap-6 items-center">
 				if user.Role == models.RoleTeacher {
 					<a href="/admin" class="font-medium text-indigo-600 hover:text-indigo-800">
-						<i class="mr-1 fas fa-cog"></i>Админ
+						<i class="mr-1 fas fa-cog"></i>{ t.Admin() }
 					</a>
 				}
 				<a href="/leaderboard" class="font-medium text-gray-600 hover:text-indigo-600">
-					<i class="mr-1 fas fa-trophy"></i>Лидеры
+					<i class="mr-1 fas fa-trophy"></i>{ t.Leaders() }
 				</a>
 				<a href="/errors" class="font-medium text-gray-600 hover:text-indigo-600">
-					<i class="mr-1 fas fa-book"></i>Ошибки
+					<i class="mr-1 fas fa-book"></i>{ t.Mistakes() }
 				</a>
 				<div class="flex gap-3 items-center">
 					<span class="font-medium text-gray-700">{ user.Name }</span>
@@ -45,77 +46,77 @@ templ Navbar(user *models.User) {
 	</nav>
 }
 
-templ StatsCards(stats *models.UserStats) {
+templ StatsCards(stats *models.UserStats, t locales.Translator) {
 	<div class="grid gap-4 mb-8 md:grid-cols-4">
 		<div class="p-5 text-white bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
 			<div class="flex justify-between items-center">
 				<div>
-					<p class="text-sm text-orange-100">Streak</p>
+					<p class="text-sm text-orange-100">{ t.DayStreak() }</p>
 					<p class="text-3xl font-bold">{ stats.Streak }</p>
 				</div>
 				<i class="text-4xl text-orange-300 fas fa-fire"></i>
 			</div>
-			<p class="mt-2 text-sm text-orange-100">дней подряд</p>
+			<p class="mt-2 text-sm text-orange-100">{ t.StreakDaysInARow() }</p>
 		</div>
 		<div class="p-5 text-white bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
 			<div class="flex justify-between items-center">
 				<div>
-					<p class="text-sm text-blue-100">Всего XP</p>
+					<p class="text-sm text-blue-100">{ t.TotalXp() }</p>
 					<p class="text-3xl font-bold">{ stats.XP }</p>
 				</div>
 				<i class="text-4xl text-blue-300 fas fa-star"></i>
 			</div>
-			<p class="mt-2 text-sm text-blue-100">очков опыта</p>
+			<p class="mt-2 text-sm text-blue-100">{ t.ExperiencePoints() }</p>
 		</div>
 		<div class="p-5 text-white bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
 			<div class="flex justify-between items-center">
 				<div>
-					<p class="text-sm text-green-100">Тестов пройдено</p>
+					<p class="text-sm text-green-100">{ t.QuizzesCompleted() }</p>
 					<p class="text-3xl font-bold">{ len(stats.CompletedQuizzes) }</p>
 				</div>
 				<i class="text-4xl text-green-300 fas fa-check-circle"></i>
 			</div>
-			<p class="mt-2 text-sm text-green-100">завершено</p>
+			<p class="mt-2 text-sm text-green-100">{ t.Completed() }</p>
 		</div>
 		<div class="p-5 text-white bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
 			<div class="flex justify-between items-center">
 				<div>
-					<p class="text-sm text-purple-100">Ошибок в работе</p>
+					<p class="text-sm text-purple-100">{ t.MistakesMade() }</p>
 					<p class="text-3xl font-bold">{ stats.WrongCount }</p>
 				</div>
 				<i class="text-4xl text-purple-300 fas fa-times-circle"></i>
 			</div>
-			<p class="mt-2 text-sm text-purple-100">допущено</p>
+			<p class="mt-2 text-sm text-purple-100">{ t.Made() }</p>
 		</div>
 	</div>
 }
 
-templ QuizGrid(quizzes []*models.Quiz) {
+templ QuizGrid(quizzes []*models.Quiz, t locales.Translator) {
 	<div class="mb-8">
-		<h2 class="mb-4 text-2xl font-bold">Доступные тесты</h2>
+		<h2 class="mb-4 text-2xl font-bold">{ t.AvailableQuizzes() }</h2>
 		if len(quizzes) == 0 {
 			<div class="p-8 text-center text-gray-500 bg-white rounded-xl">
 				<i class="mb-4 text-4xl fas fa-inbox"></i>
-				<p>Пока нет доступных тестов</p>
+				<p>{ t.NoQuizzesAvailableYet() }</p>
 			</div>
 		} else {
 			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				for _, quiz := range quizzes {
-					@QuizCard(quiz)
+					@QuizCard(quiz, t)
 				}
 			</div>
 		}
 	</div>
 }
 
-templ QuizCard(quiz *models.Quiz) {
+templ QuizCard(quiz *models.Quiz, t locales.Translator) {
 	<a href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/0") } class="block p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-200 hover:shadow-lg">
 		<div class="flex justify-between items-start mb-3">
 			<span class="py-1 px-3 text-sm text-indigo-700 bg-indigo-100 rounded-full">
 				{ quiz.Subject }
 			</span>
 			<span class="text-sm text-gray-400">
-				{ quiz.Grade } класс
+				{ quiz.Grade } { t.Grade() }
 			</span>
 		</div>
 		<h3 class="mb-2 text-lg font-semibold">{ quiz.Title }</h3>
@@ -123,27 +124,27 @@ templ QuizCard(quiz *models.Quiz) {
 		<div class="flex justify-between items-center text-sm text-gray-500">
 			<span>
 				<i class="mr-1 fas fa-question-circle"></i>
-				{ len(quiz.Questions) } вопросов
+				{ len(quiz.Questions) } { t.Questions(len(quiz.Questions)) }
 			</span>
 			<span class="font-medium text-indigo-600">
-				Начать <i class="ml-1 fas fa-arrow-right"></i>
+				{ t.Start() } <i class="ml-1 fas fa-arrow-right"></i>
 			</span>
 		</div>
 	</a>
 }
 
-templ LeaderboardPreview(entries []*models.LeaderboardEntry) {
+templ LeaderboardPreview(entries []*models.LeaderboardEntry, t locales.Translator) {
 	<div>
 		<div class="flex justify-between items-center mb-4">
-			<h2 class="text-2xl font-bold">Таблица лидеров</h2>
+			<h2 class="text-2xl font-bold">{ t.Leaderboard() }</h2>
 			<a href="/leaderboard" class="font-medium text-indigo-600 hover:text-indigo-800">
-				Все <i class="ml-1 fas fa-arrow-right"></i>
+				{ t.All() } <i class="ml-1 fas fa-arrow-right"></i>
 			</a>
 		</div>
 		<div class="p-5 bg-white rounded-xl shadow-sm">
 			if len(entries) == 0 {
 				<div class="py-8 text-center text-gray-500">
-					<p>Пока нет участников</p>
+					<p>{ t.NoParticipantsYet() }</p>
 				</div>
 			} else {
 				<div class="space-y-3">
@@ -151,7 +152,7 @@ templ LeaderboardPreview(entries []*models.LeaderboardEntry) {
 						if i >= 5 {
 							break
 						}
-						@LeaderboardRow(entry, i+1)
+						@LeaderboardRow(entry, i+1, t)
 					}
 				</div>
 			}
@@ -159,7 +160,7 @@ templ LeaderboardPreview(entries []*models.LeaderboardEntry) {
 	</div>
 }
 
-templ LeaderboardRow(entry *models.LeaderboardEntry, position int) {
+templ LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Translator) {
 	<div class="flex gap-4 items-center p-3 rounded-lg transition hover:bg-gray-50">
 		<div class={ PositionClass(position) }>
 			{ position }

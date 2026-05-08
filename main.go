@@ -11,6 +11,7 @@ import (
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/handlers"
+	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/services"
@@ -52,15 +53,21 @@ func main() {
 	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, gamification)
 	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
 
-	authHandler := handlers.NewAuth(queries, authService)
+	localeService, err := locales.NewService()
+	if err != nil {
+		log.Fatalf("Failed to initialize locale service: %v", err)
+	}
+
+	authHandler := handlers.NewAuth(queries, authService, localeService)
 	dashboardHandler := handlers.NewDashboard(dashboardService)
 	quizHandler := handlers.NewQuiz(queries, quizService, quizSessionService, authService)
-	adminHandler := handlers.NewAdmin(adminService, authService)
+	adminHandler := handlers.NewAdmin(adminService, authService, localeService)
 
 	requireAuthMiddleware := middleware.NewRequireAuthMiddleware(authService).Wrap
 	requiredRoleMiddleware := middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher).Wrap
 	compressionMiddleware := middleware.NewCompressionMiddleware().Wrap
 	commonHeadersMiddleware := middleware.NewCommonHeaders().Wrap
+	localeMiddleware := middleware.NewLocaleMiddleware(localeService).Wrap
 
 	mux := http.NewServeMux()
 
@@ -127,6 +134,8 @@ func main() {
 		}
 		wrapped = compressionMiddleware(wrapped)
 		wrapped = commonHeadersMiddleware(wrapped)
+		wrapped = localeMiddleware(wrapped)
+
 		return wrapped
 	}
 

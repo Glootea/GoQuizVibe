@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 	ce "github.com/goquizvibe/custom_errors"
 	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/pages/admin"
 	"github.com/goquizvibe/services"
@@ -19,12 +21,14 @@ import (
 type AdminHandler struct {
 	adminService *services.AdminService
 	authService  *services.AuthService
+	localeSvc    *locales.Service
 }
 
-func NewAdmin(adminSvc *services.AdminService, auth *services.AuthService) *AdminHandler {
+func NewAdmin(adminSvc *services.AdminService, auth *services.AuthService, svc *locales.Service) *AdminHandler {
 	return &AdminHandler{
 		adminService: adminSvc,
 		authService:  auth,
+		localeSvc:    svc,
 	}
 }
 
@@ -43,7 +47,8 @@ func (h *AdminHandler) Dashboard(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.DashboardPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.DashboardPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
@@ -57,7 +62,8 @@ func (h *AdminHandler) Quizzes(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.QuizzesPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.QuizzesPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) QuizzesNew(w http.ResponseWriter, r *http.Request) error {
@@ -107,7 +113,8 @@ func (h *AdminHandler) QuizView(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	return admin.QuizEditPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.QuizEditPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) QuizUpdate(w http.ResponseWriter, r *http.Request) error {
@@ -186,7 +193,8 @@ func (h *AdminHandler) AddQuestion(w http.ResponseWriter, r *http.Request) error
 			Questions: questions,
 		}
 
-		return admin.QuestionsSection(&quizWithQuestions, questions).Render(r.Context(), w)
+		t := middleware.GetTranslator(r.Context())
+		return admin.QuestionsSection(&quizWithQuestions, questions, t).Render(r.Context(), w)
 	}
 
 	http.Redirect(w, r, "/admin/quizzes/"+quizID.String(), http.StatusFound)
@@ -347,7 +355,8 @@ func (h *AdminHandler) Results(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.ResultsPage(*data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.ResultsPage(*data, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) Statistics(w http.ResponseWriter, r *http.Request) error {
@@ -361,7 +370,8 @@ func (h *AdminHandler) Statistics(w http.ResponseWriter, r *http.Request) error 
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.StatisticsPage(data).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.StatisticsPage(data, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) QuizStatsData(w http.ResponseWriter, r *http.Request) error {
@@ -370,7 +380,8 @@ func (h *AdminHandler) QuizStatsData(w http.ResponseWriter, r *http.Request) err
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.QuizStatsPartial(stats).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.QuizStatsPartial(stats, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) GradeDistData(w http.ResponseWriter, r *http.Request) error {
@@ -379,7 +390,8 @@ func (h *AdminHandler) GradeDistData(w http.ResponseWriter, r *http.Request) err
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.GradeDistPartial(dist).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.GradeDistPartial(dist, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) error {
@@ -388,7 +400,8 @@ func (h *AdminHandler) SubjectDistData(w http.ResponseWriter, r *http.Request) e
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	return admin.SubjectDistPartial(dist).Render(r.Context(), w)
+	t := middleware.GetTranslator(r.Context())
+	return admin.SubjectDistPartial(dist, t).Render(r.Context(), w)
 }
 
 func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error {
