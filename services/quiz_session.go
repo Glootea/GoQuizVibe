@@ -21,6 +21,7 @@ type QuizSessionService struct {
 	quizzes      r.QuizRepository
 	questions    r.QuestionRepository
 	images       r.ImageRepository
+	users        r.UserRepository
 	gamification *GamificationService
 }
 
@@ -30,6 +31,7 @@ func NewQuizSessionService(
 	quizzes r.QuizRepository,
 	questions r.QuestionRepository,
 	images r.ImageRepository,
+	users r.UserRepository,
 	gamification *GamificationService,
 ) *QuizSessionService {
 	return &QuizSessionService{
@@ -38,6 +40,7 @@ func NewQuizSessionService(
 		quizzes:      quizzes,
 		questions:    questions,
 		images:       images,
+		users:        users,
 		gamification: gamification,
 	}
 }
@@ -197,8 +200,7 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid
 }
 
 func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sessionID, userID uuid.UUID) (*types.QuizResultData, error) {
-	user, err := s.attempts.GetAttemptsByUser(ctx, userID)
-	_ = user
+	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
@@ -251,6 +253,7 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sess
 	}
 
 	return &types.QuizResultData{
+		User:         &user,
 		Quiz:         quiz,
 		Stats:        stats,
 		Score:        int(attempt.Score),
@@ -262,6 +265,11 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sess
 }
 
 func (s *QuizSessionService) GetErrorsPageData(ctx context.Context, userID uuid.UUID) (*types.ErrorsPageData, error) {
+	user, err := s.users.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user: %w", err)
+	}
+
 	attempts, err := s.attempts.GetQuizErrors(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get quiz errors: %w", err)
@@ -312,18 +320,25 @@ func (s *QuizSessionService) GetErrorsPageData(ctx context.Context, userID uuid.
 	}
 
 	return &types.ErrorsPageData{
+		User:       &user,
 		QuizErrors: quizErrors,
 		Stats:      stats,
 	}, nil
 }
 
 func (s *QuizSessionService) GetLeaderboardData(ctx context.Context, userID uuid.UUID) (*types.LeaderboardPageData, error) {
+	user, err := s.users.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get user: %w", err)
+	}
+
 	entries, err := s.gamification.GetLeaderboard(ctx, 100)
 	if err != nil {
 		return nil, fmt.Errorf("get leaderboard: %w", err)
 	}
 
 	return &types.LeaderboardPageData{
+		User:    &user,
 		Entries: entries,
 	}, nil
 }

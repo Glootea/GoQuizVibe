@@ -45,7 +45,7 @@ func (m RequireRoleMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		http.Redirect(w, r, "/dashboard", http.StatusFound)
+		http.Redirect(w, r, "/login", http.StatusFound)
 	})
 
 }

@@ -50,7 +50,7 @@ func main() {
 	}
 
 	adminService := services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService)
-	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, gamification)
+	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification)
 	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
 
 	localeService, err := locales.NewService()
@@ -128,9 +128,9 @@ func main() {
 		if r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register" {
 
 		} else if strings.HasPrefix(r.Pattern, "/admin") {
-			wrapped = requireAuthMiddleware(wrapped)
-		} else {
 			wrapped = requiredRoleMiddleware(wrapped)
+		} else {
+			wrapped = requireAuthMiddleware(wrapped)
 		}
 		wrapped = compressionMiddleware(wrapped)
 		wrapped = commonHeadersMiddleware(wrapped)
