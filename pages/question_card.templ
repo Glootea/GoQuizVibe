@@ -1,146 +1,180 @@
 package pages
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
+	"github.com/goquizvibe/types"
 )
 
-templ QuestionCard(quiz *models.Quiz, questionIndex int, sessionID string, t locales.Translator) {
-	<div id="question-content">
-		<div class="mb-6">
-			<span id="question-counter" class="text-sm font-medium text-indigo-600">{ t.QuestionOf(questionIndex + 1 , len(quiz.Questions)) }</span>
-		</div>
-		<form
-			id="quiz-form"
-			hx-post={ "/quiz/" + quiz.ID.String() + "/submit?session=" + sessionID }
-			hx-target="#question-content"
-			hx-swap="innerHTML"
-		>
-			<input type="hidden" name="question_index" value={ strconv.Itoa(questionIndex) }/>
-			<div class="mb-4 text-xl font-medium">
-				{ quiz.Questions[questionIndex].Text }
+templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
+	<div id="question-content" class="flex gap-6">
+		<div class="flex-1">
+			<div class="flex justify-between items-center mb-6">
+				<span id="question-counter" class="text-sm font-medium text-indigo-600">{ t.QuestionOf(data.CurrentIndex + 1, data.TotalQuestions) }</span>
+				<div id="timer-display" class="text-lg font-semibold text-gray-700" data-remaining-seconds={ strconv.Itoa(data.RemainingSeconds) }>
+					<i class="mr-1 fas fa-clock"></i>
+					<span id="timer-text">{ formatTimer(data.RemainingSeconds) }</span>
+				</div>
 			</div>
-			if len(quiz.Questions[questionIndex].Images) > 0 {
-				<div class="flex flex-wrap gap-3 mb-6">
-					for _, img := range quiz.Questions[questionIndex].Images {
-						<img src={ img.Url } class="object-contain max-w-md max-h-64 rounded-lg border"/>
-					}
-				</div>
-			}
-			if quiz.Questions[questionIndex].Type == models.QuestionTypeChoice {
-				<div class="space-y-3">
-					for _, option := range quiz.Questions[questionIndex].GetOptions() {
-						<label class="block p-4 rounded-xl border border-gray-200 transition cursor-pointer hover:bg-indigo-50 hover:border-indigo-300">
-							<input
-								type="radio"
-								name="answer"
-								value={ option }
-								class="mr-3"
-								required
-							/>
-							{ option }
-						</label>
-					}
-				</div>
-			} else {
-				<input
-					type="text"
-					name="answer"
-					class="py-3 px-4 w-full rounded-xl border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
-					placeholder="Введите ответ..."
-					required
-				/>
-			}
-			<button
-				type="submit"
-				class="py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
+			<form
+				id="quiz-form"
+				hx-post={ "/quiz/" + data.Questions[0].QuizID.String() + "/submit?session=" + data.SessionID }
+				hx-target="#question-content"
+				hx-swap="innerHTML"
 			>
-				Ответить
-			</button>
-		</form>
-	</div>
-}
-
-templ QuestionWithFeedback(quiz *models.Quiz, questionIndex int, sessionID string, feedback *QuestionFeedbackData) {
-	<div id="question-content">
-		<div class="p-4 mb-4 bg-green-50 rounded-xl border border-green-200">
-			<div class="flex gap-2 items-center mb-2">
-				<i class="text-green-600 fas fa-check-circle"></i>
-				<span class="font-semibold text-green-700">Правильно!</span>
-			</div>
-			if feedback != nil && feedback.Explanation != "" {
-				<p class="text-sm text-gray-600">{ feedback.Explanation }</p>
-			}
+				<input type="hidden" name="question_index" value={ strconv.Itoa(data.CurrentIndex) }/>
+				<div class="mb-4 text-xl font-medium">
+					{ data.Questions[data.CurrentIndex].Text }
+				</div>
+				if len(data.Questions[data.CurrentIndex].Images) > 0 {
+					<div class="flex flex-wrap gap-3 mb-6">
+						for _, img := range data.Questions[data.CurrentIndex].Images {
+							<img src={ img.Url } class="object-contain max-w-md max-h-64 rounded-lg border"/>
+						}
+					</div>
+				}
+				if data.Questions[data.CurrentIndex].Type == models.QuestionTypeChoice {
+					<div class="space-y-3">
+						for _, option := range data.Questions[data.CurrentIndex].GetOptions() {
+							<label class="block p-4 rounded-xl border border-gray-200 transition cursor-pointer hover:bg-indigo-50 hover:border-indigo-300">
+								<input
+									type="radio"
+									name="answer"
+									value={ option }
+									class="mr-3"
+									if data.Answers[data.CurrentIndex] == option {
+										checked
+									}
+								/>
+								{ option }
+							</label>
+						}
+					</div>
+				} else {
+					<input
+						type="text"
+						name="answer"
+						class="py-3 px-4 w-full rounded-xl border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
+						placeholder={ t.EnterYourAnswer() }
+						value={ data.Answers[data.CurrentIndex] }
+						required
+					/>
+				}
+				if data.IsLastQuestion {
+					<button
+						type="button"
+						id="submit-btn"
+						class="py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
+						onclick="showSubmitConfirm()"
+					>
+						{ t.Submit() }
+					</button>
+				} else {
+					<button
+						type="submit"
+						class="py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
+					>
+						{ t.Submit() }
+					</button>
+				}
+			</form>
 		</div>
-		if !feedback.IsLast {
-			<div class="mt-4">
-				<a
-					href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID) }
-					class="block py-3 w-full font-semibold text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
-					hx-get={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID }
-					hx-target="#question-content"
-					hx-swap="innerHTML"
-					hx-push-url={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) }
-				>
-					Следующий вопрос
-				</a>
+		<div class="w-64 flex-shrink-0">
+			<div class="sticky top-6 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+				<h3 class="mb-3 text-sm font-semibold text-gray-700">{ t.Questions() }</h3>
+				<div class="grid grid-cols-5 gap-2">
+					for i := 0; i < data.TotalQuestions; i++ {
+						<button
+							type="button"
+							class={ getQuestionNavClass(i, data.CurrentIndex, data.Answers) }
+							hx-get={ "/quiz/" + data.Questions[0].QuizID.String() + "/q/" + strconv.Itoa(i) + "?session=" + data.SessionID }
+							hx-target="#question-content"
+							hx-swap="innerHTML"
+							title={ t.Question(i + 1) }
+						>
+							if i == data.CurrentIndex {
+								◐
+							} else if _, answered := data.Answers[i]; answered {
+								●
+							} else {
+								○
+							}
+						</button>
+					}
+				</div>
 			</div>
-		} else {
-			<div class="mt-4">
-				<a
-					href={ templ.URL("/quiz/" + quiz.ID.String() + "/result?session=" + sessionID) }
-					class="block py-3 w-full font-semibold text-center text-white bg-green-600 rounded-xl transition hover:bg-green-700"
-				>
-					Завершить тест
-				</a>
-			</div>
-		}
-	</div>
-}
-
-templ QuestionWithWrongFeedback(quiz *models.Quiz, questionIndex int, sessionID string, feedback *QuestionFeedbackData) {
-	<div id="question-content">
-		<div class="p-4 mb-4 bg-red-50 rounded-xl border border-red-200">
-			<div class="flex gap-2 items-center mb-2">
-				<i class="text-red-600 fas fa-times-circle"></i>
-				<span class="font-semibold text-red-700">Неправильно</span>
-			</div>
-			<p class="mb-2 text-sm text-gray-600">Правильный ответ: { feedback.CorrectAnswer }</p>
-			if feedback.Explanation != "" {
-				<p class="text-sm text-gray-600">{ feedback.Explanation }</p>
-			}
 		</div>
-		if !feedback.IsLast {
-			<div class="mt-4">
-				<a
-					href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID) }
-					class="block py-3 w-full font-semibold text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
-					hx-get={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) + "?session=" + sessionID }
-					hx-target="#question-content"
-					hx-swap="innerHTML"
-					hx-push-url={ "/quiz/" + quiz.ID.String() + "/q/" + strconv.Itoa(questionIndex+1) }
-				>
-					Следующий вопрос
-				</a>
-			</div>
-		} else {
-			<div class="mt-4">
-				<a
-					href={ templ.URL("/quiz/" + quiz.ID.String() + "/result?session=" + sessionID) }
-					class="block py-3 w-full font-semibold text-center text-white bg-green-600 rounded-xl transition hover:bg-green-700"
-				>
-					Завершить тест
-				</a>
-			</div>
-		}
 	</div>
+	<script>
+		if (window.timerInterval) clearInterval(window.timerInterval);
+		if (window.syncInterval) clearInterval(window.syncInterval);
+
+		var remainingSeconds = parseInt(document.getElementById('timer-display').dataset.remainingSeconds);
+		var quizID = { data.Questions[0].QuizID.String() };
+		var sessionID = { data.SessionID };
+		
+		function formatTime(seconds) {
+			var mins = Math.floor(seconds / 60);
+			var secs = seconds % 60;
+			return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+		}
+		
+		function updateTimer() {
+			if (remainingSeconds > 0) {
+				remainingSeconds--;
+				document.getElementById('timer-text').textContent = formatTime(remainingSeconds);
+			}
+		}
+		
+		window.timerInterval = setInterval(updateTimer, 1000);
+		
+		window.syncInterval = setInterval(function() {
+			fetch('/quiz/' + quizID + '/sync?session=' + sessionID)
+				.then(response => response.json())
+				.then(function(data) {
+					if (data.remaining_seconds !== undefined) {
+						remainingSeconds = data.remaining_seconds;
+						document.getElementById('timer-text').textContent = formatTime(remainingSeconds);
+					}
+				})
+				.catch(function(err) { console.log('Sync error:', err); });
+		}, 30000);
+		
+		function showSubmitConfirm() {
+			var totalQuestions = { data.TotalQuestions };
+			var answeredCount = { len(data.Answers) };
+			var unanswered = totalQuestions - answeredCount;
+			
+			var message;
+			if (unanswered === 0) {
+				message = { t.AllQuestionsAnsweredEndQuiz() };
+			} else {
+				message = { t.ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(unanswered) };
+			}
+			
+			if (confirm(message)) {
+				window.location.href = '/quiz/' + quizID + '/result?session=' + sessionID;
+			}
+		}
+	</script>
 }
 
-type QuestionFeedbackData struct {
-	IsCorrect     bool
-	CorrectAnswer string
-	Explanation   string
-	IsLast        bool
+func formatTimer(seconds int) string {
+	mins := seconds / 60
+	secs := seconds % 60
+	return fmt.Sprintf("%02d:%02d", mins, secs)
+}
+
+func getQuestionNavClass(index int, currentIndex int, answers map[int]string) string {
+	base := "w-10 h-10 rounded-lg font-medium text-sm transition "
+	if index == currentIndex {
+		return base + "bg-indigo-100 border-2 border-indigo-500 text-indigo-700"
+	}
+	if _, answered := answers[index]; answered {
+		return base + "bg-green-100 border border-green-300 text-green-700 hover:bg-green-200"
+	}
+	return base + "bg-gray-100 border border-gray-300 text-gray-600 hover:bg-gray-200"
 }

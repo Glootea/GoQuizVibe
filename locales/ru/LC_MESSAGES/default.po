@@ -191,8 +191,8 @@ msgstr "Правильных"
 msgid "Mistakes"
 msgstr "Ошибок"
 
-msgid "Result: %d%%"
-msgstr "Результат: %d%%"
+msgid "Result"
+msgstr "Результат"
 
 msgid "Back to Quizzes"
 msgstr "Вернуться к тестам"
@@ -543,3 +543,9 @@ msgstr "Успешность"
 
 msgid "quizzes"
 msgstr "тест(ов)"
+
+msgid "All Questions Answered! End quiz?"
+msgstr "На все вопросы даны ответы! Закончить?"
+
+msgid "There are %d unanswered questions! Are you sure you want to end?"
+msgstr "Есть %d неотвеченных вопросов! Вы точно хотите закончить?"

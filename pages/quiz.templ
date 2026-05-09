@@ -2,7 +2,6 @@ package pages
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
@@ -19,97 +18,29 @@ func plural(count int, one, few, many string) string {
 	return many
 }
 
-templ QuizPage(data types.QuizPageData, t locales.Translator) {
+templ QuizPage(data *types.QuizPageData, t locales.Translator) {
 	@Base(t.Quiz(), t) {
 		<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
-			<div class="py-8 px-4 mx-auto max-w-2xl">
+			<div class="py-8 px-4 mx-auto max-w-6xl">
 				<div class="flex justify-between items-center mb-6">
 					<a href="/dashboard" class="text-gray-600 hover:text-gray-900">
 						<i class="mr-2 fas fa-arrow-left"></i>{ t.Back() }
 					</a>
 					<div class="text-right">
-						<p class="text-lg font-bold">{ data.Quiz.Title }</p>
-						<p class="text-sm text-gray-500">{ len(data.Quiz.Questions) } { t.Question(len(data.Quiz.Questions)) }</p>
+						<p class="text-lg font-bold">Quiz</p>
+						<p class="text-sm text-gray-500">{ data.TotalQuestions } { t.Questions() }</p>
 					</div>
 				</div>
 				<div id="quiz-container" hx-ext="json-enc">
-					<div class="p-8 bg-white rounded-2xl shadow-xl">
-						<div id="question-content">
-							<div class="mb-6">
-								<span id="question-counter" class="text-sm font-medium text-indigo-600">
-									{ t.QuestionOf(data.Index + 1, len(data.Quiz.Questions)) }
-								</span>
-							</div>
-							<form
-								id="quiz-form"
-								hx-post={ "/quiz/" + data.Quiz.ID.String() + "/submit?session=" + data.SessionID }
-								hx-target="#question-content"
-								hx-swap="innerHTML"
-							>
-								<input type="hidden" name="question_index" id="question-index" value={ strconv.Itoa(data.Index) }/>
-								<div id="question-text" class="mb-6 text-xl font-medium">
-									{ data.Quiz.Questions[data.Index].Text }
-								</div>
-								if len(data.Quiz.Questions[data.Index].Images) > 0 {
-									for _, img := range data.Quiz.Questions[data.Index].Images {
-										<img src={ img.Url } class="object-contain max-w-md max-h-64 rounded-lg border"/>
-									}
-								}
-								if data.Quiz.Questions[data.Index].Type == models.QuestionTypeChoice {
-									<div id="options-container" class="space-y-3">
-										for _, option := range data.Quiz.Questions[data.Index].GetOptions() {
-											<label class="block p-4 rounded-xl border border-gray-200 transition cursor-pointer hover:bg-indigo-50 hover:border-indigo-300">
-												<input
-													type="radio"
-													name="answer"
-													value={ option }
-													class="mr-3"
-													required
-												/>
-												{ option }
-											</label>
-										}
-									</div>
-								} else {
-									<input
-										type="text"
-										name="answer"
-										id="answer-input"
-										class="py-3 px-4 w-full rounded-xl border border-gray-300 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
-										placeholder={ t.EnterYourAnswer() }
-										required
-									/>
-								}
-								<button
-									type="submit"
-									class="py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
-								>
-									{ t.Submit() }
-								</button>
-							</form>
-						</div>
-						<div id="feedback-container" class="hidden p-4 mt-6 rounded-xl"></div>
-					</div>
+					@QuestionCard(data, t)
 				</div>
 			</div>
 		</div>
 	}
 }
 
-templ QuestionFeedback(answer string, isCorrect bool, explanation string, t locales.Translator) {
-	<div class="p-4 bg-green-50 rounded-xl border border-green-200">
-		<div class="flex gap-2 items-center mb-2">
-			<i class="text-green-600 fas fa-check-circle"></i>
-			<span class="font-semibold text-green-700">{ t.Correct() }</span>
-		</div>
-		if explanation != "" {
-			<p class="text-sm text-gray-600">{ explanation }</p>
-		}
-	</div>
-}
-
 templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
-	@Base(t.Result(floatToPercent(data.Score, data.MaxScore)), t) {
+	@Base(t.Result(), t) {
 		<div class="min-h-screen bg-gray-50">
 			@Navbar(data.User, t)
 			<main class="py-8 px-4 mx-auto max-w-3xl">
@@ -137,7 +68,7 @@ templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
 					</div>
 					<div class="mb-4 text-center">
 						<span class="text-lg font-semibold">
-							{ t.Result(floatToPercent(data.Score, data.MaxScore)) }
+							{ t.Result() } ({ floatToPercent(data.Score, data.MaxScore) }%)
 						</span>
 					</div>
 					<a
@@ -170,13 +101,13 @@ templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
 										<span class="text-gray-500">{ t.YourAnswer() } </span>
 										<span class={ "font-medium " + ternary(answer.IsCorrect, "text-green-700", "text-red-700") }>{ answer.UserAnswer }</span>
 									</div>
-									if !answer.IsCorrect {
-										<div>
-											<span class="text-gray-500">{ t.Correct() }: </span>
-											<span class="font-medium text-green-700">{ answer.CorrectAnswer }</span>
-										</div>
-									}
 								</div>
+								if !answer.IsCorrect && answer.Explanation != "" {
+									<div class="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+										<p class="text-sm text-gray-600">{ t.Explanation() }</p>
+										<p class="text-sm text-blue-700">{ answer.Explanation }</p>
+									</div>
+								}
 							</div>
 						}
 					</div>

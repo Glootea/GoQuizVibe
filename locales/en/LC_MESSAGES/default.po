@@ -191,8 +191,11 @@ msgstr "Correct"
 msgid "Mistakes"
 msgstr "Mistakes"
 
-msgid "Result: %d%%"
-msgstr "Result: %d%%"
+msgid "Mistake"
+msgstr "Mistake"
+
+msgid "Result"
+msgstr "Result"
 
 msgid "Back to Quizzes"
 msgstr "Back to Quizzes"
@@ -537,3 +540,9 @@ msgstr "Success Rate"
 
 msgid "quizzes"
 msgstr "quizzes"
+
+msgid "All Questions Answered! End quiz?"
+msgstr "All Questions Answered! End quiz?"
+
+msgid "There are %d unanswered questions! Are you sure you want to end?"
+msgstr "There are %d unanswered questions! Are you sure you want to end?"

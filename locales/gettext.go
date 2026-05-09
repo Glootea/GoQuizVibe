@@ -30,6 +30,8 @@ type Translator interface {
 	Admin() string
 	// "All"
 	All() string
+	// "All Questions Answered! End quiz?"
+	AllQuestionsAnsweredEndQuiz() string
 	// "All Quizzes"
 	AllQuizzes() string
 	// "Already have an account?"
@@ -86,7 +88,7 @@ type Translator interface {
 	ControlPanel() string
 	// "Copyright 2026 GoQuizVibe"
 	Copyright2026Goquizvibe() string
-	// "Correct:"
+	// "Correct"
 	Correct() string
 	// "Correct Answer"
 	CorrectAnswer() string
@@ -238,7 +240,7 @@ type Translator interface {
 	QuizSaved() string
 	// "Quiz statistics"
 	QuizStatistics() string
-	// "quizzes"
+	// "Quizzes"
 	Quizzes() string
 	// "Quizzes Completed"
 	QuizzesCompleted() string
@@ -248,8 +250,8 @@ type Translator interface {
 	RecentActivity() string
 	// "Registration"
 	Registration() string
-	// "Result: %d%%"
-	Result(param1 int) string
+	// "Result"
+	Result() string
 	// "Results"
 	Results() string
 	// "Results will appear after students complete quizzes"
@@ -300,6 +302,8 @@ type Translator interface {
 	SuccessRate() string
 	// "Summary Statistics"
 	SummaryStatistics() string
+	// "There are %d unanswered questions! Are you sure you want to end?"
+	ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(param1 int) string
 	// "Time"
 	Time() string
 	// "Time (min)"
@@ -370,6 +374,10 @@ func (t *translator) Admin() string {
 
 func (t *translator) All() string {
 	return t.locale.Get("All")
+}
+
+func (t *translator) AllQuestionsAnsweredEndQuiz() string {
+	return t.locale.Get("All Questions Answered! End quiz?")
 }
 
 func (t *translator) AllQuizzes() string {
@@ -485,7 +493,7 @@ func (t *translator) Copyright2026Goquizvibe() string {
 }
 
 func (t *translator) Correct() string {
-	return t.locale.Get("Correct:")
+	return t.locale.Get("Correct")
 }
 
 func (t *translator) CorrectAnswer() string {
@@ -789,7 +797,7 @@ func (t *translator) QuizStatistics() string {
 }
 
 func (t *translator) Quizzes() string {
-	return t.locale.Get("quizzes")
+	return t.locale.Get("Quizzes")
 }
 
 func (t *translator) QuizzesCompleted() string {
@@ -808,8 +816,8 @@ func (t *translator) Registration() string {
 	return t.locale.Get("Registration")
 }
 
-func (t *translator) Result(param1 int) string {
-	return t.locale.Get("Result: %d%%", param1)
+func (t *translator) Result() string {
+	return t.locale.Get("Result")
 }
 
 func (t *translator) Results() string {
@@ -910,6 +918,10 @@ func (t *translator) SuccessRate() string {
 
 func (t *translator) SummaryStatistics() string {
 	return t.locale.Get("Summary Statistics")
+}
+
+func (t *translator) ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(param1 int) string {
+	return t.locale.Get("There are %d unanswered questions! Are you sure you want to end?", param1)
 }
 
 func (t *translator) Time() string {

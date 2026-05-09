@@ -31,12 +31,16 @@ func (s *CacheService) Get(ctx context.Context, key string, dest any) bool {
 	return true
 }
 
-func (s *CacheService) Set(ctx context.Context, key string, value any) error {
+func (s *CacheService) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
-	return s.client.Set(ctx, key, data, s.defaultTTL).Err()
+	return s.client.Set(ctx, key, data, ttl).Err()
+}
+
+func (s *CacheService) SetDefault(ctx context.Context, key string, value any) error {
+	return s.Set(ctx, key, value, s.defaultTTL)
 }
 
 func (s *CacheService) Delete(ctx context.Context, key string) error {
@@ -57,6 +61,6 @@ func Get[T any](ctx context.Context, s *CacheService, key string) (T, bool) {
 	return zero, false
 }
 
-func Set[T any](ctx context.Context, s *CacheService, key string, value T) error {
-	return s.Set(ctx, key, value)
+func Set[T any](ctx context.Context, s *CacheService, key string, value T, ttl time.Duration) error {
+	return s.Set(ctx, key, value, ttl)
 }

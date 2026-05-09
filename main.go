@@ -43,7 +43,7 @@ func main() {
 		DB:       0,
 	})
 	defer rdb.Close()
-	_ = services.NewCacheService(rdb, cfg.Redis.CacheTTL)
+	cacheService := services.NewCacheService(rdb, cfg.Redis.CacheTTL)
 
 	jwtExp := 24 * time.Hour * 7
 	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
@@ -58,7 +58,7 @@ func main() {
 	}
 
 	adminService := services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService)
-	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification)
+	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification, cacheService)
 	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
 
 	localeService, err := locales.NewService()

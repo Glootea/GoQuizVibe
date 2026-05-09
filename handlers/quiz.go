@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	ce "github.com/goquizvibe/custom_errors"
@@ -59,29 +60,59 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 	}
 
 	ctx := r.Context()
-	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
-	}
 
 	sessionIDStr := r.URL.Query().Get("session")
+	var sessionID uuid.UUID
 	if sessionIDStr == "" {
 		session, err := h.sessionService.CreateSession(ctx, userID, quizID)
 		if err != nil {
 			return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 		}
-		sessionIDStr = session.ID.String()
+		sessionID = session.ID
+		sessionIDStr = sessionID.String()
 	} else {
-		_, err = uuid.Parse(sessionIDStr)
+		sessionID, err = uuid.Parse(sessionIDStr)
 		if err != nil {
 			return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 		}
 	}
 
-	if index >= len(quiz.Questions) {
+	questions, err := h.sessionService.GetSessionQuestions(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if index >= len(questions) {
 		http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
 		return nil
 	}
+
+	answers, err := h.sessionService.GetAnswers(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
+	}
+
+	session, err := h.pool.GetSession(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	attempt, err := h.pool.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
+	if remainingSeconds < 0 {
+		remainingSeconds = 0
+	}
+
+	isLast := index >= len(questions)-1
 
 	t := middleware.GetTranslator(r.Context())
 
@@ -92,23 +123,33 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 			return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 		}
 
-		stats, err := h.sessionService.GetUserStats(ctx, userID)
-		if err != nil {
-			return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
-		}
-
 		data := types.QuizPageData{
-			User:      &user,
-			Quiz:      quiz,
-			Stats:     stats,
-			SessionID: sessionIDStr,
-			Index:     index,
+			User:             &user,
+			Questions:        questions,
+			SessionID:        sessionIDStr,
+			CurrentIndex:     index,
+			Answers:          answers,
+			TotalQuestions:   len(questions),
+			RemainingSeconds: remainingSeconds,
+			TimeLimitMinutes: quiz.TimeLimit / 60,
+			IsLastQuestion:   isLast,
 		}
 
-		return pages.QuizPage(data, t).Render(r.Context(), w)
+		return pages.QuizPage(&data, t).Render(r.Context(), w)
 	}
 
-	return pages.QuestionCard(quiz, index, sessionIDStr, t).Render(r.Context(), w)
+	data := &types.QuizPageData{
+		Questions:        questions,
+		SessionID:        sessionIDStr,
+		CurrentIndex:     index,
+		Answers:          answers,
+		TotalQuestions:   len(questions),
+		RemainingSeconds: remainingSeconds,
+		TimeLimitMinutes: quiz.TimeLimit / 60,
+		IsLastQuestion:   isLast,
+	}
+
+	return pages.QuestionCard(data, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) error {
@@ -140,31 +181,65 @@ func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) err
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
+	questions, err := h.sessionService.GetSessionQuestions(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if questionIndex >= len(questions) {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("question index %d out of range", questionIndex)), http.StatusNotFound)
+	}
+
+	session, err := h.pool.GetSession(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	attempt, err := h.pool.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
 	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	if questionIndex >= len(quiz.Questions) {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, fmt.Errorf("question index %d out of range", questionIndex)), http.StatusNotFound)
-	}
-
-	feedback, err := h.sessionService.SubmitAnswer(ctx, sessionID, quizID, questionIndex, answer)
+	nextIndex, isLast, err := h.sessionService.SubmitAnswer(ctx, sessionID, quizID, questionIndex, answer)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	feedbackData := &pages.QuestionFeedbackData{
-		IsCorrect:     feedback.IsCorrect,
-		CorrectAnswer: feedback.CorrectAnswer,
-		Explanation:   feedback.Explanation,
-		IsLast:        feedback.IsLast,
+	if isLast {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, `<div id="quiz-content" hx-swap-oob="true"><script>if(confirm('Вы уверены, что хотите завершить тест?')) { window.location.href = '/quiz/%s/result?session=%s'; } else { window.location.href = '/quiz/%s/q/%d?session=%s'; }</script></div>`,
+			quizID.String(), sessionIDStr, quizID.String(), nextIndex, sessionIDStr)
+		return nil
 	}
 
-	if feedback.IsCorrect {
-		return pages.QuestionWithFeedback(quiz, questionIndex, sessionIDStr, feedbackData).Render(r.Context(), w)
+	remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
+	if remainingSeconds < 0 {
+		remainingSeconds = 0
 	}
-	return pages.QuestionWithWrongFeedback(quiz, questionIndex, sessionIDStr, feedbackData).Render(r.Context(), w)
+
+	updatedAnswers, err := h.sessionService.GetAnswers(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	data := &types.QuizPageData{
+		Questions:        questions,
+		SessionID:        sessionIDStr,
+		CurrentIndex:     nextIndex,
+		Answers:          updatedAnswers,
+		TotalQuestions:   len(questions),
+		RemainingSeconds: remainingSeconds,
+		TimeLimitMinutes: quiz.TimeLimit / 60,
+		IsLastQuestion:   isLast,
+	}
+
+	t := middleware.GetTranslator(ctx)
+	return pages.QuestionCard(data, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
@@ -232,4 +307,43 @@ func (h *QuizHandler) LeaderboardPage(w http.ResponseWriter, r *http.Request) er
 
 func (h *QuizHandler) getUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
 	return h.sessionService.GetUserIDFromRequest(r, h.authService)
+}
+
+func (h *QuizHandler) SyncTime(w http.ResponseWriter, r *http.Request) error {
+	quizID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	sessionIDStr := r.URL.Query().Get("session")
+	sessionID, err := uuid.Parse(sessionIDStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	ctx := r.Context()
+
+	session, err := h.pool.GetSession(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	attempt, err := h.pool.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	quiz, err := h.quizService.GetQuizByID(ctx, quizID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
+	}
+
+	remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
+	if remainingSeconds < 0 {
+		remainingSeconds = 0
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"remaining_seconds": %d}`, remainingSeconds)
+	return nil
 }

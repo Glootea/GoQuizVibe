@@ -16,11 +16,16 @@ type DashboardData struct {
 }
 
 type QuizPageData struct {
-	User      *models.User
-	Quiz      *models.Quiz
-	Stats     *models.UserStats
-	SessionID string
-	Index     int
+	User             *models.User
+	Questions        []models.QuestionWithImages
+	QuestionOrder    []int
+	SessionID        string
+	CurrentIndex     int
+	Answers          map[int]string
+	TotalQuestions   int
+	RemainingSeconds int
+	TimeLimitMinutes int
+	IsLastQuestion   bool
 }
 
 type QuizResultData struct {
@@ -39,6 +44,7 @@ type AnswerDetail struct {
 	UserAnswer    string
 	CorrectAnswer string
 	IsCorrect     bool
+	Explanation   string
 }
 
 type ErrorsPageData struct {
