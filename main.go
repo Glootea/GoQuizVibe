@@ -15,6 +15,7 @@ import (
 	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/services"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -36,6 +37,13 @@ func main() {
 	if err := database.LoadInitialDataFromFolder(ctx, pool, "initial_data"); err != nil {
 		log.Fatalf("Failed to load initial data: %v", err)
 	}
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: cfg.Redis.Password,
+		DB:       0,
+	})
+	defer rdb.Close()
+	_ = services.NewCacheService(rdb, cfg.Redis.CacheTTL)
 
 	jwtExp := 24 * time.Hour * 7
 	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)

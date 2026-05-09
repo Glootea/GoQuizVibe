@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -30,11 +31,17 @@ type MinioConfig struct {
 	Bucket    string
 }
 
+type RedisConfig struct {
+	Password string
+	CacheTTL time.Duration
+}
+
 type Config struct {
 	ServerPort string
 	JWTSecret  string
 	Database   DatabaseConfig
 	Minio      MinioConfig
+	Redis      RedisConfig
 }
 
 func Load() *Config {
@@ -76,6 +83,19 @@ func Load() *Config {
 	if dbName == "" {
 		panic("Failed to get env for db")
 	}
+	redis_pass := os.Getenv("REDIS_PASSWORD")
+	if redis_pass == "" {
+		panic("Failed to get env for redis")
+	}
+
+	redisCacheTTL := 5 * time.Minute
+	if ttl := os.Getenv("REDIS_CACHE_TTL"); ttl != "" {
+		if parsed, err := time.ParseDuration(ttl); err == nil {
+			redisCacheTTL = parsed
+		} else {
+			panic("Failed to parse REDIS_CACHE_TTL")
+		}
+	}
 
 	return &Config{
 		ServerPort: port,
@@ -93,5 +113,6 @@ func Load() *Config {
 			SecretKey: os.Getenv("MINIO_ROOT_PASSWORD"),
 			Bucket:    os.Getenv("MINIO_BUCKET"),
 		},
+		Redis: RedisConfig{Password: redis_pass, CacheTTL: redisCacheTTL},
 	}
 }

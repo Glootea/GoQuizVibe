@@ -17,7 +17,7 @@ services:
       retries: 5
 
   minio:
-    image:  quay.io/minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: goquizvibe_minio
     ports:
       - "9000:9000"
@@ -34,6 +34,16 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: docker.io/library/redis:8.6.3-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+
   adminer:
     image: adminer
     restart: always
@@ -42,3 +52,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  redis_data:
