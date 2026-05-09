@@ -8,12 +8,14 @@ import (
 
 templ DashboardPage(data types.DashboardData, t locales.Translator) {
 	@Base(t.Dashboard(), t) {
-		@Navbar(data.User, t)
-		<main class="py-8 px-4 mx-auto max-w-6xl">
-			@StatsCards(data.Stats, t)
-			@QuizGrid(data.Quizzes, t)
-			@LeaderboardPreview(data.Leaderboard, t)
-		</main>
+		<div class="min-h-screen bg-gray-50">
+			@Navbar(data.User, t)
+			<main class="py-8 px-4 mx-auto max-w-6xl">
+				@StatsCards(data.Stats, t)
+				@QuizGrid(data.Quizzes, t)
+				@LeaderboardPreview(data.Leaderboard, t)
+			</main>
+		</div>
 	}
 }
 
@@ -124,7 +126,7 @@ templ QuizCard(quiz *models.Quiz, t locales.Translator) {
 		<div class="flex justify-between items-center text-sm text-gray-500">
 			<span>
 				<i class="mr-1 fas fa-question-circle"></i>
-				{ len(quiz.Questions) } { t.Questions(len(quiz.Questions)) }
+				{ len(quiz.Questions) } { t.Question(len(quiz.Questions)) }
 			</span>
 			<span class="font-medium text-indigo-600">
 				{ t.Start() } <i class="ml-1 fas fa-arrow-right"></i>

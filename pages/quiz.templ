@@ -29,7 +29,7 @@ templ QuizPage(data types.QuizPageData, t locales.Translator) {
 					</a>
 					<div class="text-right">
 						<p class="text-lg font-bold">{ data.Quiz.Title }</p>
-						<p class="text-sm text-gray-500">{ len(data.Quiz.Questions) } { t.Questions(len(data.Quiz.Questions)) }</p>
+						<p class="text-sm text-gray-500">{ len(data.Quiz.Questions) } { t.Question(len(data.Quiz.Questions)) }</p>
 					</div>
 				</div>
 				<div id="quiz-container" hx-ext="json-enc">
@@ -37,7 +37,7 @@ templ QuizPage(data types.QuizPageData, t locales.Translator) {
 						<div id="question-content">
 							<div class="mb-6">
 								<span id="question-counter" class="text-sm font-medium text-indigo-600">
-									{ t.Question(data.Index + 1) } { data.Index + 1 } / { len(data.Quiz.Questions) }
+									{ t.QuestionOf(data.Index + 1, len(data.Quiz.Questions)) }
 								</span>
 							</div>
 							<form
@@ -109,8 +109,9 @@ templ QuestionFeedback(answer string, isCorrect bool, explanation string, t loca
 }
 
 templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
-	@Base(t.Result(), t) {
-		@Navbar(data.User, t) {
+	@Base(t.Result(floatToPercent(data.Score, data.MaxScore)), t) {
+		<div class="min-h-screen bg-gray-50">
+			@Navbar(data.User, t)
 			<main class="py-8 px-4 mx-auto max-w-3xl">
 				<div class="mb-8 text-center">
 					<div class="flex justify-center items-center mx-auto mb-4 w-20 h-20 bg-green-500 rounded-full">
@@ -136,7 +137,7 @@ templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
 					</div>
 					<div class="mb-4 text-center">
 						<span class="text-lg font-semibold">
-							{ t.Result() }: { floatToPercent(data.Score, data.MaxScore) }%
+							{ t.Result(floatToPercent(data.Score, data.MaxScore)) }
 						</span>
 					</div>
 					<a
@@ -181,16 +182,16 @@ templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
 					</div>
 				</div>
 			</main>
-		}
+		</div>
 	}
 }
 
-func floatToPercent(score int, maxScore int) string {
+func floatToPercent(score int, maxScore int) int {
 	if maxScore == 0 {
-		return "0"
+		return 0
 	}
 	percent := (score * 100) / maxScore
-	return fmt.Sprintf("%d", percent)
+	return percent
 }
 
 func ternary(condition bool, trueVal string, falseVal string) string {
@@ -202,7 +203,8 @@ func ternary(condition bool, trueVal string, falseVal string) string {
 
 templ ErrorsPage(data types.ErrorsPageData, t locales.Translator) {
 	@Base(t.MistakeReview(), t) {
-		@Navbar(data.User, t) {
+		<div class="min-h-screen bg-gray-50">
+			@Navbar(data.User, t)
 			<main class="py-8 px-4 mx-auto max-w-4xl">
 				<h1 class="mb-6 text-2xl font-bold">{ t.MistakeReview() }</h1>
 				if len(data.QuizErrors) == 0 {
@@ -214,22 +216,69 @@ templ ErrorsPage(data types.ErrorsPageData, t locales.Translator) {
 				} else {
 					<div class="space-y-4">
 						for _, qe := range data.QuizErrors {
-							<div class="p-5 bg-white rounded-xl shadow-sm">
-								<h3 class="text-lg font-semibold mb-3">{ qe.Quiz.Title }</h3>
-								<p class="text-gray-500 mb-4">{ len(qe.WrongAnswers) } { t.Mistakes() }</p>
-								<a href={ templ.URL("/quiz/" + qe.Quiz.ID.String() + "/q/0") } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg inline-block">{ t.TryAgain() }</a>
+							<div class="overflow-hidden bg-white rounded-xl shadow-sm quiz-card" data-quiz-id={ qe.Quiz.ID.String() }>
+								<div class="flex justify-between items-center p-5 cursor-pointer hover:bg-gray-50" data-action="toggle">
+									<div>
+										<h3 class="text-lg font-semibold">{ qe.Quiz.Title }</h3>
+										<p class="text-sm text-gray-500">{ len(qe.WrongAnswers) } { t.Mistakes() }</p>
+									</div>
+									<div class="flex gap-3 items-center">
+										<a href={ templ.URL("/quiz/" + qe.Quiz.ID.String() + "/q/0") } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+											{ t.TryAgain() }
+										</a>
+										<i class="text-gray-400 transition-transform fas fa-chevron-down"></i>
+									</div>
+								</div>
+								<div class="hidden px-5 pb-5 border-t errors-content" id={ fmt.Sprintf("errors-%s", qe.Quiz.ID.String()) }>
+									for _, wa := range qe.WrongAnswers {
+										<div class="py-4 border-b last:border-b-0">
+											if !wa.Timestamp.IsZero() {
+												<div class="flex justify-between items-start mb-2">
+													<span class="text-sm text-gray-500">{ wa.Timestamp.Format("02.01.2006 15:04") }</span>
+												</div>
+											}
+											<div class="mb-2">
+												<p class="text-sm text-gray-500">{ t.YourAnswer() }</p>
+												<p class="font-medium text-red-600">{ wa.UserAnswer }</p>
+											</div>
+											<div class="mb-2">
+												<p class="text-sm text-gray-500">{ t.CorrectAnswer() }</p>
+												<p class="font-medium text-green-600">{ wa.CorrectAnswer }</p>
+											</div>
+											if wa.Explanation != "" {
+												<div>
+													<p class="text-sm text-gray-500">{ t.Explanation() }</p>
+													<p class="text-sm text-blue-600">{ wa.Explanation }</p>
+												</div>
+											}
+										</div>
+									}
+								</div>
 							</div>
 						}
 					</div>
+					<script>
+					document.querySelectorAll('.quiz-card [data-action="toggle"]').forEach(function(el) {
+						el.addEventListener('click', function(e) {
+							if (e.target.tagName === 'A' || e.target.closest('a')) return;
+							var card = el.closest('.quiz-card');
+							var content = card.querySelector('.errors-content');
+							var icon = card.querySelector('.fa-chevron-down');
+							content.classList.toggle('hidden');
+							icon.classList.toggle('rotate-180');
+						});
+					});
+					</script>
 				}
 			</main>
-		}
+		</div>
 	}
 }
 
 templ LeaderboardPage(data types.LeaderboardPageData, t locales.Translator) {
 	@Base(t.Leaderboard(), t) {
-		@Navbar(data.User, t) {
+		<div class="min-h-screen bg-gray-50">
+			@Navbar(data.User, t)
 			<main class="py-8 px-4 mx-auto max-w-4xl">
 				<h1 class="mb-6 text-2xl font-bold">{ t.Leaderboard() }</h1>
 				<div class="p-5 bg-white rounded-xl shadow-sm">
@@ -246,7 +295,7 @@ templ LeaderboardPage(data types.LeaderboardPageData, t locales.Translator) {
 					}
 				</div>
 			</main>
-		}
+		</div>
 	}
 }
 

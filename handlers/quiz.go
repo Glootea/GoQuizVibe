@@ -83,6 +83,8 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 		return nil
 	}
 
+	t := middleware.GetTranslator(r.Context())
+
 	isHtmx := r.Header.Get("HX-Request") == "true"
 	if !isHtmx {
 		user, err := h.pool.GetUserByID(ctx, userID)
@@ -102,11 +104,11 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 			SessionID: sessionIDStr,
 			Index:     index,
 		}
-		t := middleware.GetTranslator(r.Context())
+
 		return pages.QuizPage(data, t).Render(r.Context(), w)
 	}
 
-	return pages.QuestionCard(quiz, index, sessionIDStr).Render(r.Context(), w)
+	return pages.QuestionCard(quiz, index, sessionIDStr, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) QuizSubmitHTMX(w http.ResponseWriter, r *http.Request) error {

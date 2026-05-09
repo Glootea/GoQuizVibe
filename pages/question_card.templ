@@ -3,13 +3,14 @@ package pages
 import (
 	"strconv"
 
+	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
 )
 
-templ QuestionCard(quiz *models.Quiz, questionIndex int, sessionID string) {
+templ QuestionCard(quiz *models.Quiz, questionIndex int, sessionID string, t locales.Translator) {
 	<div id="question-content">
 		<div class="mb-6">
-			<span id="question-counter" class="text-sm font-medium text-indigo-600">Вопрос { questionIndex + 1 } из { len(quiz.Questions) }</span>
+			<span id="question-counter" class="text-sm font-medium text-indigo-600">{ t.QuestionOf(questionIndex + 1 , len(quiz.Questions)) }</span>
 		</div>
 		<form
 			id="quiz-form"

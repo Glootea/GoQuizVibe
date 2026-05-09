@@ -155,9 +155,9 @@ func QuizzesPage(data types.AdminQuizListData, t locales.Translator) templ.Compo
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(t.Questions(0))
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(t.Question(0))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 35, Col: 83}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quizzes.templ`, Line: 35, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {

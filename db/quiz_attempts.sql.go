@@ -324,6 +324,7 @@ func (q *Queries) GetLastActiveDate(ctx context.Context, userID uuid.UUID) (inte
 const getQuizErrors = `-- name: GetQuizErrors :many
 SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at FROM quiz_attempts a
 WHERE a.user_id = $1 AND a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC
 `
 
 func (q *Queries) GetQuizErrors(ctx context.Context, userID uuid.UUID) ([]QuizAttempt, error) {

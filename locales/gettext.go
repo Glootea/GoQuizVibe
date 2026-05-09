@@ -86,7 +86,7 @@ type Translator interface {
 	ControlPanel() string
 	// "Copyright 2026 GoQuizVibe"
 	Copyright2026Goquizvibe() string
-	// "Correct"
+	// "Correct:"
 	Correct() string
 	// "Correct Answer"
 	CorrectAnswer() string
@@ -220,8 +220,8 @@ type Translator interface {
 	QuestionOf(param1 int, param2 int) string
 	// "Question Text"
 	QuestionText() string
-	// "Questions (%d)"
-	Questions(param1 int) string
+	// "Questions"
+	Questions() string
 	// "Quick Actions"
 	QuickActions() string
 	// "Quiz"
@@ -238,7 +238,7 @@ type Translator interface {
 	QuizSaved() string
 	// "Quiz statistics"
 	QuizStatistics() string
-	// "Quizzes"
+	// "quizzes"
 	Quizzes() string
 	// "Quizzes Completed"
 	QuizzesCompleted() string
@@ -248,8 +248,8 @@ type Translator interface {
 	RecentActivity() string
 	// "Registration"
 	Registration() string
-	// "Result"
-	Result() string
+	// "Result: %d%%"
+	Result(param1 int) string
 	// "Results"
 	Results() string
 	// "Results will appear after students complete quizzes"
@@ -485,7 +485,7 @@ func (t *translator) Copyright2026Goquizvibe() string {
 }
 
 func (t *translator) Correct() string {
-	return t.locale.Get("Correct")
+	return t.locale.Get("Correct:")
 }
 
 func (t *translator) CorrectAnswer() string {
@@ -752,8 +752,8 @@ func (t *translator) QuestionText() string {
 	return t.locale.Get("Question Text")
 }
 
-func (t *translator) Questions(param1 int) string {
-	return t.locale.Get("Questions (%d)", param1)
+func (t *translator) Questions() string {
+	return t.locale.Get("Questions")
 }
 
 func (t *translator) QuickActions() string {
@@ -789,7 +789,7 @@ func (t *translator) QuizStatistics() string {
 }
 
 func (t *translator) Quizzes() string {
-	return t.locale.Get("Quizzes")
+	return t.locale.Get("quizzes")
 }
 
 func (t *translator) QuizzesCompleted() string {
@@ -808,8 +808,8 @@ func (t *translator) Registration() string {
 	return t.locale.Get("Registration")
 }
 
-func (t *translator) Result() string {
-	return t.locale.Get("Result")
+func (t *translator) Result(param1 int) string {
+	return t.locale.Get("Result: %d%%", param1)
 }
 
 func (t *translator) Results() string {

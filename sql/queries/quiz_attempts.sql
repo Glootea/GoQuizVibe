@@ -43,7 +43,8 @@ WHERE user_id = $1 AND completed_at IS NOT NULL;
 
 -- name: GetQuizErrors :many
 SELECT a.* FROM quiz_attempts a
-WHERE a.user_id = $1 AND a.completed_at IS NOT NULL;
+WHERE a.user_id = $1 AND a.completed_at IS NOT NULL
+ORDER BY a.completed_at DESC;
 
 -- name: GetWrongAnswersByAttempt :many
 SELECT ua.* FROM user_answers ua

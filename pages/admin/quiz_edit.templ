@@ -89,7 +89,7 @@ templ QuizEditPage(data types.AdminQuizEditData, t locales.Translator) {
 			function submitQuizForm() {
 				var form = document.getElementById('quizEditForm');
 				if (!form) return;
-				
+
 				var formData = new FormData(form);
 				fetch(form.action || form.getAttribute('hx-put'), {
 					method: 'PUT',
@@ -117,9 +117,9 @@ templ QuizEditPage(data types.AdminQuizEditData, t locales.Translator) {
 				var quizID = button.getAttribute('data-quiz-id');
 				var questionID = button.getAttribute('data-question-id');
 				var container = button.closest('div[id^="editForm_"]');
-				
+
 				console.log('Submit clicked', { quizID, questionID, container });
-				
+
 				if (!container || !quizID || !questionID) {
 					console.error('Missing data', { container: !!container, quizID: !!quizID, questionID: !!questionID });
 					return;
@@ -127,16 +127,16 @@ templ QuizEditPage(data types.AdminQuizEditData, t locales.Translator) {
 
 				var url = '/admin/quizzes/' + quizID + '/question/' + questionID;
 				var formData = new FormData();
-				
+
 				var inputs = container.querySelectorAll('input, select, textarea');
 				inputs.forEach(function(input) {
 					if (input.name) {
 						formData.append(input.name, input.value);
 					}
 				});
-				
+
 				console.log('Submitting to', url, 'with', Array.from(formData.entries()));
-				
+
 				fetch(url, {
 					method: 'PUT',
 					body: formData,
@@ -378,7 +378,7 @@ templ QuizEditPage(data types.AdminQuizEditData, t locales.Translator) {
 
 templ QuestionsSection(quiz *models.Quiz, questions []models.Question, t locales.Translator) {
 	<div id="questions-section" class="p-6 bg-white rounded-xl shadow-sm">
-		<h2 class="mb-4 text-xl font-bold">{ t.Questions(len(questions)) }</h2>
+		<h2 class="mb-4 text-xl font-bold">{ t.Question(len(questions)) }</h2>
 		if len(questions) == 0 {
 			<div class="py-8 text-center text-gray-500">
 				<i class="mb-4 text-4xl text-gray-300 fas fa-question-circle"></i>
@@ -594,7 +594,7 @@ templ QuizStats(questions []models.Question, timeLimit int, t locales.Translator
 		<h3 class="mb-4 font-bold">{ t.Statistics() }</h3>
 		<div class="space-y-3">
 			<div class="flex justify-between">
-				<span class="text-gray-600">{ t.Questions(0) }</span>
+				<span class="text-gray-600">{ t.Question(0) }</span>
 				<span class="font-semibold">{ len(questions) }</span>
 			</div>
 			<div class="flex justify-between">
