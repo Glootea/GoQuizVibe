@@ -170,9 +170,9 @@ type Quiz struct {
 	Grade            int        `json:"grade"`
 	Status           QuizStatus `json:"status"`
 	TimeLimit        int        `json:"time_limit"`
-	QuestionPoolSize int        `json:"question_pool_size"`
 	CreatedBy        uuid.UUID  `json:"created_by"`
 	CreatedAt        time.Time  `json:"created_at"`
+	QuestionPoolSize int        `json:"question_pool_size"`
 }
 
 type QuizAttempt struct {

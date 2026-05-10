@@ -21,11 +21,12 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 			</div>
 			<form
 				id="quiz-form"
-				hx-post={ "/quiz/" + data.Questions[0].QuizID.String() + "/submit?session=" + data.SessionID }
+				hx-post={ "/quiz/" + data.Questions[0].QuizID.String() + "/navigate" }
 				hx-target="#question-content"
 				hx-swap="innerHTML"
 			>
-				<input type="hidden" name="question_index" value={ strconv.Itoa(data.CurrentIndex) }/>
+				<input type="hidden" name="current_index" value={ strconv.Itoa(data.CurrentIndex) } id="current-index"/>
+				<input type="hidden" name="target_index" value={ strconv.Itoa(data.CurrentIndex + 1) } id="target-index"/>
 				<div class="mb-4 text-xl font-medium">
 					{ data.Questions[data.CurrentIndex].Text }
 				</div>
@@ -90,9 +91,11 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 						<button
 							type="button"
 							class={ getQuestionNavClass(i, data.CurrentIndex, data.Answers) }
-							hx-get={ "/quiz/" + data.Questions[0].QuizID.String() + "/q/" + strconv.Itoa(i) + "?session=" + data.SessionID }
+							hx-post={ "/quiz/" + data.Questions[0].QuizID.String() + "/navigate" }
 							hx-target="#question-content"
 							hx-swap="innerHTML"
+							hx-include="#quiz-form"
+							hx-vars={ fmt.Sprintf("'current_index':'%d','target_index':'%d'", data.CurrentIndex, i) }
 							title={ t.Question(i + 1) }
 						>
 							if i == data.CurrentIndex {

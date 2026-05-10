@@ -196,45 +196,52 @@ func (s *QuizSessionService) GetAnswers(ctx context.Context, sessionID uuid.UUID
 	return map[int]string{}, nil
 }
 
-func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, questionIndex int, answer string) (nextIndex int, isLast bool, err error) {
+func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, currentIndex, targetIndex int, answer string, user *db.User) (*types.QuizPageData, error) {
 	questions, err := s.GetSessionQuestions(ctx, sessionID)
 	if err != nil {
-		return 0, false, fmt.Errorf("get session questions: %w", err)
+		return nil, fmt.Errorf("get session questions: %w", err)
 	}
 
-	if questionIndex >= len(questions) {
-		return 0, false, fmt.Errorf("question index out of range")
+	if len(questions) == 0 {
+		return nil, fmt.Errorf("no questions in session")
+	}
+
+	if targetIndex < 0 {
+		targetIndex = len(questions) - 1
+	}
+	if targetIndex >= len(questions) {
+		targetIndex = 0
 	}
 
 	session, err := s.sessions.GetSession(ctx, sessionID)
 	if err != nil {
-		return 0, false, fmt.Errorf("get session: %w", err)
+		return nil, fmt.Errorf("get session: %w", err)
 	}
-
-	question := questions[questionIndex]
-	isCorrect := NormalizeAnswer(answer) == NormalizeAnswer(question.CorrectAnswer)
 
 	answers := make(map[int]string)
 	if session.Answers != nil {
 		if err := json.Unmarshal(session.Answers, &answers); err != nil {
-			return 0, false, fmt.Errorf("unmarshal answers: %w", err)
+			return nil, fmt.Errorf("unmarshal answers: %w", err)
 		}
 	}
-	answers[questionIndex] = answer
+	answers[currentIndex] = answer
 
 	answersJSON, err := json.Marshal(answers)
 	if err != nil {
-		return 0, false, fmt.Errorf("marshal answers: %w", err)
+		return nil, fmt.Errorf("marshal answers: %w", err)
 	}
 
 	_, err = s.sessions.UpdateSession(ctx, db.UpdateSessionParams{
 		ID:           session.ID,
-		CurrentIndex: questionIndex + 1,
+		CurrentIndex: targetIndex,
 		Answers:      answersJSON,
 	})
 	if err != nil {
-		return 0, false, fmt.Errorf("update session: %w", err)
+		return nil, fmt.Errorf("update session: %w", err)
 	}
+
+	question := questions[currentIndex]
+	isCorrect := NormalizeAnswer(answer) == NormalizeAnswer(question.CorrectAnswer)
 
 	_, err = s.attempts.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
 		ID:         uuid.New(),
@@ -244,16 +251,39 @@ func (s *QuizSessionService) SubmitAnswer(ctx context.Context, sessionID uuid.UU
 		IsCorrect:  isCorrect,
 	})
 	if err != nil {
-		return 0, false, fmt.Errorf("create user answer: %w", err)
+		return nil, fmt.Errorf("create user answer: %w", err)
 	}
 
 	if s.cache != nil {
 		_ = s.cache.Set(ctx, cacheKeyAnswers(sessionID), answers, time.Minute)
 	}
 
-	nextIndex = questionIndex + 1
-	isLast = questionIndex >= len(questions)-1
-	return nextIndex, isLast, nil
+	quiz, err := s.getQuizWithQuestions(ctx, quizID)
+	if err != nil {
+		return nil, fmt.Errorf("get quiz: %w", err)
+	}
+
+	attempt, err := s.attempts.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return nil, fmt.Errorf("get attempt: %w", err)
+	}
+
+	remainingSeconds := max(int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit)*time.Second)).Seconds()), 0)
+
+	newIndex := targetIndex
+	isLast := newIndex >= len(questions)-1
+
+	return &types.QuizPageData{
+		User:             user,
+		Questions:        questions,
+		SessionID:        sessionID.String(),
+		CurrentIndex:     newIndex,
+		Answers:          answers,
+		TotalQuestions:   len(questions),
+		RemainingSeconds: remainingSeconds,
+		TimeLimitMinutes: quiz.TimeLimit / 60,
+		IsLastQuestion:   isLast,
+	}, nil
 }
 
 func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid.UUID) (*db.QuizAttempt, error) {
@@ -461,6 +491,55 @@ func (s *QuizSessionService) GetUserIDFromRequest(r *http.Request, auth Authenti
 
 func (s *QuizSessionService) GetUserStats(ctx context.Context, userID uuid.UUID) (*models.UserStats, error) {
 	return s.gamification.GetUserStats(ctx, userID)
+}
+
+func (s *QuizSessionService) GetQuizQuestionData(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, index int) (*types.QuizPageData, error) {
+	questions, err := s.GetSessionQuestions(ctx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("get session questions: %w", err)
+	}
+
+	if index >= len(questions) {
+		index = 0
+	}
+
+	session, err := s.sessions.GetSession(ctx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("get session: %w", err)
+	}
+
+	attempt, err := s.attempts.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return nil, fmt.Errorf("get attempt: %w", err)
+	}
+
+	quiz, err := s.getQuizWithQuestions(ctx, quizID)
+	if err != nil {
+		return nil, fmt.Errorf("get quiz: %w", err)
+	}
+
+	answers, err := s.GetAnswers(ctx, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("get answers: %w", err)
+	}
+
+	remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
+	if remainingSeconds < 0 {
+		remainingSeconds = 0
+	}
+
+	isLast := index >= len(questions)-1
+
+	return &types.QuizPageData{
+		Questions:        questions,
+		SessionID:        sessionID.String(),
+		CurrentIndex:     index,
+		Answers:          answers,
+		TotalQuestions:   len(questions),
+		RemainingSeconds: remainingSeconds,
+		TimeLimitMinutes: quiz.TimeLimit / 60,
+		IsLastQuestion:   isLast,
+	}, nil
 }
 
 func (s *QuizSessionService) getQuizWithQuestions(ctx context.Context, quizID uuid.UUID) (*models.QuizWithQuestionsAndImages, error) {

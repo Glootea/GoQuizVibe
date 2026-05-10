@@ -25,7 +25,7 @@ type QuizPageData struct {
 	TotalQuestions   int
 	RemainingSeconds int
 	TimeLimitMinutes int
-	IsLastQuestion   bool
+	IsLastQuestion    bool
 }
 
 type QuizResultData struct {

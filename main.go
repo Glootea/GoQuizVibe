@@ -108,7 +108,7 @@ func main() {
 		{"GET", "/dashboard", dashboardHandler.DashboardPage},
 		{"GET", "/quiz/{id}", quizHandler.QuizStart},
 		{"GET", "/quiz/{id}/q/{index}", quizHandler.QuizQuestion},
-		{"POST", "/quiz/{id}/submit", quizHandler.QuizSubmitHTMX},
+		{"POST", "/quiz/{id}/navigate", quizHandler.QuizNavigate},
 		{"GET", "/quiz/{id}/result", quizHandler.QuizResult},
 		{"GET", "/errors", quizHandler.ErrorsPage},
 		{"GET", "/leaderboard", quizHandler.LeaderboardPage},
