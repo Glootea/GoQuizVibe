@@ -5,30 +5,25 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/goquizvibe/config"
 	"github.com/goquizvibe/database"
-	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/di"
 	"github.com/goquizvibe/handlers"
-	"github.com/goquizvibe/locales"
-	"github.com/goquizvibe/middleware"
-	"github.com/goquizvibe/models"
-	"github.com/goquizvibe/services"
-	"github.com/redis/go-redis/v9"
 )
 
 func main() {
-	cfg := config.Load()
 	ctx := context.Background()
 
-	pool, err := database.Connect(ctx, *cfg)
+	app, err := di.InitializeApp(ctx)
+	if err != nil {
+		log.Fatalf("Failed to initialize app: %v", err)
+	}
+
+	pool, err := database.Connect(ctx, *app.Config)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer pool.Close()
-
-	queries := db.New(pool)
 
 	if err := database.SeedData(ctx, pool); err != nil {
 		log.Fatalf("Failed to seed data: %v", err)
@@ -37,45 +32,10 @@ func main() {
 	if err := database.LoadInitialDataFromFolder(ctx, pool, "initial_data"); err != nil {
 		log.Fatalf("Failed to load initial data: %v", err)
 	}
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: cfg.Redis.Password,
-		DB:       0,
-	})
-	defer rdb.Close()
-	cacheService := services.NewCacheService(rdb, cfg.Redis.CacheTTL)
 
-	jwtExp := 24 * time.Hour * 7
-	authService := services.NewAuthService(queries, cfg.JWTSecret, jwtExp)
-	quizService := services.NewQuizService(queries, queries, queries, queries)
-	gamification := services.NewGamificationService(queries, queries, services.RealTimeProvider{})
-	storageService, err := services.NewStorageServiceFromConfig(cfg.Minio)
-	if err != nil {
-		log.Fatalf("Failed to initialize storage service: %v", err)
-	}
-	if err := storageService.EnsureBucket(ctx); err != nil {
+	if err := app.StorageService.EnsureBucket(ctx); err != nil {
 		log.Printf("Warning: Failed to ensure bucket exists: %v", err)
 	}
-
-	adminService := services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService)
-	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification, cacheService)
-	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
-
-	localeService, err := locales.NewService()
-	if err != nil {
-		log.Fatalf("Failed to initialize locale service: %v", err)
-	}
-
-	authHandler := handlers.NewAuth(queries, authService, localeService)
-	dashboardHandler := handlers.NewDashboard(dashboardService)
-	quizHandler := handlers.NewQuiz(queries, quizService, quizSessionService, authService)
-	adminHandler := handlers.NewAdmin(adminService, authService, localeService)
-
-	requireAuthMiddleware := middleware.NewRequireAuthMiddleware(authService).Wrap
-	requiredRoleMiddleware := middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher).Wrap
-	compressionMiddleware := middleware.NewCompressionMiddleware().Wrap
-	commonHeadersMiddleware := middleware.NewCommonHeaders().Wrap
-	localeMiddleware := middleware.NewLocaleMiddleware(localeService).Wrap
 
 	mux := http.NewServeMux()
 
@@ -99,38 +59,43 @@ func main() {
 	}
 
 	routes := []Route{
-		{"GET", "/", authHandler.LandingPage},
-		{"GET", "/login", authHandler.LoginPage},
-		{"GET", "/register", authHandler.RegisterPage},
-		{"POST", "/login", authHandler.LoginSubmit},
-		{"POST", "/register", authHandler.RegisterSubmit},
-		{"GET", "/logout", authHandler.Logout},
-		{"GET", "/dashboard", dashboardHandler.DashboardPage},
-		{"GET", "/quiz/{id}", quizHandler.QuizStart},
-		{"GET", "/quiz/{id}/q/{index}", quizHandler.QuizQuestion},
-		{"POST", "/quiz/{id}/navigate", quizHandler.QuizNavigate},
-		{"POST", "/quiz/{id}/finish", quizHandler.QuizFinish},
-		{"GET", "/quiz/{id}/result", quizHandler.QuizResult},
-		{"GET", "/errors", quizHandler.ErrorsPage},
-		{"GET", "/leaderboard", quizHandler.LeaderboardPage},
-		{"GET", "/admin", adminHandler.Dashboard},
-		{"GET", "/admin/quizzes", adminHandler.Quizzes},
-		{"GET", "/admin/quizzes/new", adminHandler.QuizzesNew},
-		{"GET", "/admin/quizzes/{id}", adminHandler.QuizView},
-		{"PUT", "/admin/quizzes/{id}", adminHandler.QuizUpdate},
-		{"DELETE", "/admin/quizzes/{id}", adminHandler.QuizDelete},
-		{"POST", "/admin/quizzes/{id}/question", adminHandler.AddQuestion},
-		{"PUT", "/admin/quizzes/{id}/question/{qid}", adminHandler.UpdateQuestion},
-		{"DELETE", "/admin/quizzes/{id}/question/{qid}", adminHandler.DeleteQuestion},
-		{"POST", "/admin/quizzes/{id}/question/{qid}/image", adminHandler.UploadQuestionImage},
-		{"DELETE", "/admin/quizzes/{id}/question/{qid}/image/{imgid}", adminHandler.DeleteQuestionImage},
-		{"POST", "/admin/quizzes/{id}/restore", adminHandler.RestoreQuiz},
-		{"GET", "/admin/results", adminHandler.Results},
-		{"GET", "/admin/statistics", adminHandler.Statistics},
-		{"GET", "/admin/api/quiz-stats", adminHandler.QuizStatsData},
-		{"GET", "/admin/api/grade-dist", adminHandler.GradeDistData},
-		{"GET", "/admin/api/subject-dist", adminHandler.SubjectDistData},
+		{"GET", "/", app.AuthHandler.LandingPage},
+		{"GET", "/login", app.AuthHandler.LoginPage},
+		{"GET", "/register", app.AuthHandler.RegisterPage},
+		{"POST", "/login", app.AuthHandler.LoginSubmit},
+		{"POST", "/register", app.AuthHandler.RegisterSubmit},
+		{"GET", "/logout", app.AuthHandler.Logout},
+		{"GET", "/dashboard", app.DashboardHandler.DashboardPage},
+		{"GET", "/quiz/{id}", app.QuizHandler.QuizStart},
+		{"GET", "/quiz/{id}/q/{index}", app.QuizHandler.QuizQuestion},
+		{"POST", "/quiz/{id}/navigate", app.QuizHandler.QuizNavigate},
+		{"GET", "/quiz/{id}/result", app.QuizHandler.QuizResult},
+		{"GET", "/errors", app.QuizHandler.ErrorsPage},
+		{"GET", "/leaderboard", app.QuizHandler.LeaderboardPage},
+		{"GET", "/admin", app.AdminHandler.Dashboard},
+		{"GET", "/admin/quizzes", app.AdminHandler.Quizzes},
+		{"GET", "/admin/quizzes/new", app.AdminHandler.QuizzesNew},
+		{"GET", "/admin/quizzes/{id}", app.AdminHandler.QuizView},
+		{"PUT", "/admin/quizzes/{id}", app.AdminHandler.QuizUpdate},
+		{"DELETE", "/admin/quizzes/{id}", app.AdminHandler.QuizDelete},
+		{"POST", "/admin/quizzes/{id}/question", app.AdminHandler.AddQuestion},
+		{"PUT", "/admin/quizzes/{id}/question/{qid}", app.AdminHandler.UpdateQuestion},
+		{"DELETE", "/admin/quizzes/{id}/question/{qid}", app.AdminHandler.DeleteQuestion},
+		{"POST", "/admin/quizzes/{id}/question/{qid}/image", app.AdminHandler.UploadQuestionImage},
+		{"DELETE", "/admin/quizzes/{id}/question/{qid}/image/{imgid}", app.AdminHandler.DeleteQuestionImage},
+		{"POST", "/admin/quizzes/{id}/restore", app.AdminHandler.RestoreQuiz},
+		{"GET", "/admin/results", app.AdminHandler.Results},
+		{"GET", "/admin/statistics", app.AdminHandler.Statistics},
+		{"GET", "/admin/api/quiz-stats", app.AdminHandler.QuizStatsData},
+		{"GET", "/admin/api/grade-dist", app.AdminHandler.GradeDistData},
+		{"GET", "/admin/api/subject-dist", app.AdminHandler.SubjectDistData},
 	}
+
+	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap
+	requiredRoleMiddleware := app.RequireRoleMiddleware.Wrap
+	compressionMiddleware := app.CompressionMiddleware.Wrap
+	commonHeadersMiddleware := app.CommonHeadersMiddleware.Wrap
+	localeMiddleware := app.LocaleMiddleware.Wrap
 
 	wrapRoute := func(r Route) http.HandlerFunc {
 		wrapped := wrapHandler(r.Handler)
@@ -154,6 +119,6 @@ func main() {
 		mux.HandleFunc(r.Method+" "+r.Pattern, wrapRoute(r))
 	}
 
-	log.Printf("Server starting on http://localhost:%s", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
+	log.Printf("Server starting on http://localhost:%s", app.Config.ServerPort)
+	log.Fatal(http.ListenAndServe(":"+app.Config.ServerPort, mux))
 }
