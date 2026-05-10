@@ -408,7 +408,7 @@ func QuizEditPage(data types.AdminQuizEditData, t locales.Translator) templ.Comp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></div><script>\n\t\t\tvar confirmDeleteQuestion = { t.DeleteQuestion() };\n\t\t\tvar confirmDeleteImage = { t.DeleteImage() };\n\t\t\tvar answerOptionsLabel = { t.AnswerOptions() };\n\t\t\tvar correctAnswerLabel = { t.CorrectAnswer() };\n\t\t\tvar addOptionText = { t.AddOption() };\n\t\t\tvar optionPlaceholder = { t.Choice() } + ' 1';\n\n\t\t\tfunction submitQuizForm() {\n\t\t\t\tvar form = document.getElementById('quizEditForm');\n\t\t\t\tif (!form) return;\n\n\t\t\t\tvar formData = new FormData(form);\n\t\t\t\tfetch(form.action || form.getAttribute('hx-put'), {\n\t\t\t\t\tmethod: 'PUT',\n\t\t\t\t\tbody: formData,\n\t\t\t\t\theaders: {\n\t\t\t\t\t\t'HX-Request': 'true'\n\t\t\t\t\t}\n\t\t\t\t}).then(function(response) {\n\t\t\t\t\tif (response.ok || response.status === 200) {\n\t\t\t\t\t\tshowSaveAlert();\n\t\t\t\t\t\tsetTimeout(function() {\n\t\t\t\t\t\t\tlocation.reload();\n\t\t\t\t\t\t}, 1000);\n\t\t\t\t\t} else {\n\t\t\t\t\t\tshowErrorAlert();\n\t\t\t\t\t}\n\t\t\t\t}).catch(function() {\n\t\t\t\t\tshowErrorAlert();\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tfunction handleQuestionEditSubmit(event) {\n\t\t\t\tevent.preventDefault();\n\t\t\t\tvar button = event.target;\n\t\t\t\tvar quizID = button.getAttribute('data-quiz-id');\n\t\t\t\tvar questionID = button.getAttribute('data-question-id');\n\t\t\t\tvar container = button.closest('div[id^=\"editForm_\"]');\n\n\t\t\t\tconsole.log('Submit clicked', { quizID, questionID, container });\n\n\t\t\t\tif (!container || !quizID || !questionID) {\n\t\t\t\t\tconsole.error('Missing data', { container: !!container, quizID: !!quizID, questionID: !!questionID });\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\tvar url = '/admin/quizzes/' + quizID + '/question/' + questionID;\n\t\t\t\tvar formData = new FormData();\n\n\t\t\t\tvar inputs = container.querySelectorAll('input, select, textarea');\n\t\t\t\tinputs.forEach(function(input) {\n\t\t\t\t\tif (input.name) {\n\t\t\t\t\t\tformData.append(input.name, input.value);\n\t\t\t\t\t}\n\t\t\t\t});\n\n\t\t\t\tconsole.log('Submitting to', url, 'with', Array.from(formData.entries()));\n\n\t\t\t\tfetch(url, {\n\t\t\t\t\tmethod: 'PUT',\n\t\t\t\t\tbody: formData,\n\t\t\t\t\theaders: {\n\t\t\t\t\t\t'HX-Request': 'true'\n\t\t\t\t\t}\n\t\t\t\t}).then(function(response) {\n\t\t\t\t\tconsole.log('Response status', response.status);\n\t\t\t\t\tif (response.ok || response.status === 200) {\n\t\t\t\t\t\tshowSaveAlert();\n\t\t\t\t\t\tcontainer.classList.add('hidden');\n\t\t\t\t\t} else {\n\t\t\t\t\t\tshowErrorAlert();\n\t\t\t\t\t}\n\t\t\t\t}).catch(function(error) {\n\t\t\t\t\tconsole.error('Error:', error);\n\t\t\t\t\tshowErrorAlert();\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tfunction uploadQuestionImage(input) {\n\t\t\t\tvar url = input.getAttribute('data-upload-url');\n\t\t\t\tvar file = input.files[0];\n\t\t\t\tif (!file || !url) return;\n\n\t\t\t\tvar formData = new FormData();\n\t\t\t\tformData.append('image', file);\n\n\t\t\t\tfetch(url, {\n\t\t\t\t\tmethod: 'POST',\n\t\t\t\t\tbody: formData,\n\t\t\t\t\theaders: {\n\t\t\t\t\t\t'HX-Request': 'true'\n\t\t\t\t\t}\n\t\t\t\t}).then(function(response) {\n\t\t\t\t\tif (response.ok || response.status === 200) {\n\t\t\t\t\t\tshowSaveAlert();\n\t\t\t\t\t\tsetTimeout(function() {\n\t\t\t\t\t\t\tlocation.reload();\n\t\t\t\t\t\t}, 1000);\n\t\t\t\t\t} else {\n\t\t\t\t\t\tshowErrorAlert();\n\t\t\t\t\t}\n\t\t\t\t}).catch(function() {\n\t\t\t\t\tshowErrorAlert();\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tfunction deleteQuestionImage(button) {\n\t\t\t\tvar url = button.getAttribute('data-delete-url');\n\t\t\t\tif (!url) return;\n\t\t\t\tif (!confirm(confirmDeleteImage)) return;\n\n\t\t\t\tfetch(url, {\n\t\t\t\t\tmethod: 'DELETE',\n\t\t\t\t\theaders: {\n\t\t\t\t\t\t'HX-Request': 'true'\n\t\t\t\t\t}\n\t\t\t\t}).then(function(response) {\n\t\t\t\t\tif (response.ok || response.status === 200) {\n\t\t\t\t\t\tvar container = button.closest('.relative.group');\n\t\t\t\t\t\tif (container) {\n\t\t\t\t\t\t\tcontainer.remove();\n\t\t\t\t\t\t}\n\t\t\t\t\t} else {\n\t\t\t\t\t\tshowErrorAlert();\n\t\t\t\t\t}\n\t\t\t\t}).catch(function() {\n\t\t\t\t\tshowErrorAlert();\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tvar isDirty = false;\n\t\t\tvar initialData = {};\n\n\t\t\tfunction markDirty() {\n\t\t\t\tisDirty = true;\n\t\t\t}\n\n\t\t\tfunction setupDirtyTracking() {\n\t\t\t\tvar form = document.getElementById('quizEditForm');\n\t\t\t\tif (!form) return;\n\n\t\t\t\tinitialData = getFormData(form);\n\n\t\t\t\tvar inputs = form.querySelectorAll('input, select, textarea');\n\t\t\t\tinputs.forEach(function(input) {\n\t\t\t\t\tinput.addEventListener('change', markDirty);\n\t\t\t\t\tinput.addEventListener('input', markDirty);\n\t\t\t\t});\n\t\t\t}\n\n\t\t\tfunction getFormData(form) {\n\t\t\t\tvar data = {};\n\t\t\t\tvar inputs = form.querySelectorAll('input, select, textarea');\n\t\t\t\tinputs.forEach(function(input) {\n\t\t\t\t\tif (input.name) {\n\t\t\t\t\t\tdata[input.name] = input.value;\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t\treturn data;\n\t\t\t}\n\n\t\t\twindow.addEventListener('beforeunload', function(e) {\n\t\t\t\tif (isDirty) {\n\t\t\t\t\te.preventDefault();\n\t\t\t\t\te.returnValue = '';\n\t\t\t\t}\n\t\t\t});\n\n\t\t\tfunction showSaveAlert() {\n\t\t\t\tvar alert = document.getElementById('saveAlert');\n\t\t\t\talert.classList.remove('hidden');\n\t\t\t\tsetTimeout(function() {\n\t\t\t\t\talert.classList.add('hidden');\n\t\t\t\t}, 2000);\n\t\t\t}\n\n\t\t\tfunction showErrorAlert() {\n\t\t\t\tvar alert = document.getElementById('errorAlert');\n\t\t\t\talert.classList.remove('hidden');\n\t\t\t\tsetTimeout(function() {\n\t\t\t\t\talert.classList.add('hidden');\n\t\t\t\t}, 2000);\n\t\t\t}\n\n\t\t\tfunction toggleEditForm(quizId, index) {\n\t\t\t\tvar formId = 'editForm_' + quizId + '_' + index;\n\t\t\t\tvar form = document.getElementById(formId);\n\t\t\t\tif (form) {\n\t\t\t\t\tform.classList.toggle('hidden');\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction updateAnswerOptions(select) {\n\t\t\t\tvar container = select.closest('.space-y-3').querySelector('.answer-options-container');\n\t\t\t\tif (!container) return;\n\n\t\t\t\tif (select.value === 'choice') {\n\t\t\t\t\tcontainer.innerHTML = `\n\t\t\t\t\t\t<label class=\"block mb-1 text-sm font-medium text-gray-700\">` + answerOptionsLabel + `</label>\n\t\t\t\t\t\t<div class=\"space-y-2 options-list\">\n\t\t\t\t\t\t\t<div class=\"flex gap-2 items-center option-row\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"correct_answer\" value=\"option_0\" class=\"w-4 h-4 text-indigo-600\"/>\n\t\t\t\t\t\t\t\t<input type=\"text\" name=\"option_0\" placeholder=\"` + optionPlaceholder + `\" class=\"flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t\t\t\t<button type=\"button\" onclick=\"removeOption(this)\" class=\"text-red-500 hover:text-red-700\"><i class=\"fas fa-times\"></i></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"flex gap-2 items-center option-row\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"correct_answer\" value=\"option_1\" class=\"w-4 h-4 text-indigo-600\"/>\n\t\t\t\t\t\t\t\t<input type=\"text\" name=\"option_1\" placeholder=\"` + optionPlaceholder + `\" class=\"flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t\t\t\t<button type=\"button\" onclick=\"removeOption(this)\" class=\"text-red-500 hover:text-red-700\"><i class=\"fas fa-times\"></i></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<button type=\"button\" onclick=\"addOption(this)\" class=\"mt-2 text-sm text-indigo-600 hover:text-indigo-800\">\n\t\t\t\t\t\t\t<i class=\"mr-1 fas fa-plus\"></i>` + addOptionText + `\n\t\t\t\t\t\t</button>\n\t\t\t\t\t`;\n\t\t\t\t} else {\n\t\t\t\t\tcontainer.innerHTML = `\n\t\t\t\t\t\t<label class=\"block mb-1 text-sm font-medium text-gray-700\">` + correctAnswerLabel + `</label>\n\t\t\t\t\t\t<input type=\"text\" name=\"correct_answer\" class=\"py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t`;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction updateAddFormAnswerOptions(select) {\n\t\t\t\tvar container = select.closest('div[hx-post]').querySelector('#addFormAnswerOptions');\n\t\t\t\tif (!container) return;\n\n\t\t\t\tif (select.value === 'choice') {\n\t\t\t\t\tcontainer.innerHTML = `\n\t\t\t\t\t\t<label class=\"block mb-1 text-sm font-medium text-gray-700\">` + answerOptionsLabel + `</label>\n\t\t\t\t\t\t<div id=\"addFormOptionsList\" class=\"space-y-2\">\n\t\t\t\t\t\t\t<div class=\"flex gap-2 items-center option-row\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"correct_answer\" value=\"option_0\" class=\"w-4 h-4 text-indigo-600\"/>\n\t\t\t\t\t\t\t\t<input type=\"text\" name=\"option_0\" placeholder=\"` + optionPlaceholder + `\" class=\"flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t\t\t\t<button type=\"button\" onclick=\"removeOption(this)\" class=\"text-red-500 hover:text-red-700\"><i class=\"fas fa-times\"></i></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"flex gap-2 items-center option-row\">\n\t\t\t\t\t\t\t\t<input type=\"radio\" name=\"correct_answer\" value=\"option_1\" class=\"w-4 h-4 text-indigo-600\"/>\n\t\t\t\t\t\t\t\t<input type=\"text\" name=\"option_1\" placeholder=\"` + optionPlaceholder + `\" class=\"flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t\t\t\t<button type=\"button\" onclick=\"removeOption(this)\" class=\"text-red-500 hover:text-red-700\"><i class=\"fas fa-times\"></i></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<button type=\"button\" onclick=\"addOptionToForm()\" class=\"mt-2 text-sm text-indigo-600 hover:text-indigo-800\">\n\t\t\t\t\t\t\t<i class=\"mr-1 fas fa-plus\"></i>` + addOptionText + `\n\t\t\t\t\t\t</button>\n\t\t\t\t\t`;\n\t\t\t\t} else {\n\t\t\t\t\tcontainer.innerHTML = `\n\t\t\t\t\t\t<label class=\"block mb-1 text-sm font-medium text-gray-700\">` + correctAnswerLabel + `</label>\n\t\t\t\t\t\t<input type=\"text\" name=\"correct_answer\" class=\"py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t`;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction addOption(button) {\n\t\t\t\tvar container = button.closest('.answer-options-container');\n\t\t\t\tvar optionsList = container.querySelector('.options-list');\n\t\t\t\tif (!optionsList) return;\n\t\t\t\tvar count = optionsList.querySelectorAll('.option-row').length;\n\t\t\t\tvar newRow = document.createElement('div');\n\t\t\t\tnewRow.className = 'flex gap-2 items-center option-row';\n\t\t\t\tnewRow.innerHTML = `\n\t\t\t\t\t<input type=\"radio\" name=\"correct_answer\" value=\"option_${count}\" class=\"w-4 h-4 text-indigo-600\"/>\n\t\t\t\t\t<input type=\"text\" name=\"option_${count}\" placeholder=\"` + optionPlaceholder + `\" class=\"flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t<button type=\"button\" onclick=\"removeOption(this)\" class=\"text-red-500 hover:text-red-700\"><i class=\"fas fa-times\"></i></button>\n\t\t\t\t`;\n\t\t\t\toptionsList.appendChild(newRow);\n\t\t\t}\n\n\t\t\tfunction addOptionToForm() {\n\t\t\t\tvar optionsList = document.getElementById('addFormOptionsList');\n\t\t\t\tif (!optionsList) return;\n\t\t\t\tvar count = optionsList.querySelectorAll('.option-row').length;\n\t\t\t\tvar newRow = document.createElement('div');\n\t\t\t\tnewRow.className = 'flex gap-2 items-center option-row';\n\t\t\t\tnewRow.innerHTML = `\n\t\t\t\t\t<input type=\"radio\" name=\"correct_answer\" value=\"option_${count}\" class=\"w-4 h-4 text-indigo-600\"/>\n\t\t\t\t\t<input type=\"text\" name=\"option_${count}\" placeholder=\"` + optionPlaceholder + `\" class=\"flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500\"/>\n\t\t\t\t\t<button type=\"button\" onclick=\"removeOption(this)\" class=\"text-red-500 hover:text-red-700\"><i class=\"fas fa-times\"></i></button>\n\t\t\t\t`;\n\t\t\t\toptionsList.appendChild(newRow);\n\t\t\t}\n\n\t\t\tfunction removeOption(btn) {\n\t\t\t\tvar row = btn.closest('.option-row');\n\t\t\t\tif (row && row.parentElement.querySelectorAll('.option-row').length > 2) {\n\t\t\t\t\trow.remove();\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tdocument.addEventListener('DOMContentLoaded', function() {\n\t\t\t\tsetupDirtyTracking();\n\t\t\t});\n\t\t</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></div><script src=\"/static/scripts/admin.js\"></script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -450,7 +450,7 @@ func QuestionsSection(quiz *models.Quiz, questions []models.Question, t locales.
 		var templ_7745c5c3_Var27 string
 		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(t.Question(len(questions)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 381, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 87, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 		if templ_7745c5c3_Err != nil {
@@ -468,7 +468,7 @@ func QuestionsSection(quiz *models.Quiz, questions []models.Question, t locales.
 			var templ_7745c5c3_Var28 string
 			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoQuestionsYet())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 385, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 91, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
@@ -538,7 +538,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var30 string
 		templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs("question-card-" + q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 400, Col: 43}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 106, Col: 43}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 		if templ_7745c5c3_Err != nil {
@@ -551,7 +551,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var31 string
 		templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(index + 1)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 403, Col: 93}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 109, Col: 93}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 		if templ_7745c5c3_Err != nil {
@@ -564,7 +564,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var32 string
 		templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(q.Type)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 404, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 110, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 		if templ_7745c5c3_Err != nil {
@@ -577,7 +577,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var33 string
 		templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(q.Points)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 405, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 111, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 		if templ_7745c5c3_Err != nil {
@@ -590,7 +590,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var34 string
 		templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(t.Points())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 405, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 111, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 		if templ_7745c5c3_Err != nil {
@@ -603,7 +603,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var35 string
 		templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quizID + "/question/" + q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 408, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 114, Col: 73}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 		if templ_7745c5c3_Err != nil {
@@ -616,7 +616,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var36 string
 		templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs("#question-card-" + q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 409, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 115, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 		if templ_7745c5c3_Err != nil {
@@ -629,7 +629,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var37 string
 		templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(t.DeleteQuestion())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 411, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 117, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 		if templ_7745c5c3_Err != nil {
@@ -642,7 +642,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var38 string
 		templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 414, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 120, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 		if templ_7745c5c3_Err != nil {
@@ -655,7 +655,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var39 string
 		templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(q.Text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 420, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 126, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 		if templ_7745c5c3_Err != nil {
@@ -677,7 +677,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 			var templ_7745c5c3_Var40 string
 			templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(t.Options())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 424, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 130, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 			if templ_7745c5c3_Err != nil {
@@ -695,7 +695,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 				var templ_7745c5c3_Var41 string
 				templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(opt)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 426, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 132, Col: 77}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 				if templ_7745c5c3_Err != nil {
@@ -718,7 +718,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var42 string
 		templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(t.Answer())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 431, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 137, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 		if templ_7745c5c3_Err != nil {
@@ -731,7 +731,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var43 string
 		templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(q.CorrectAnswer)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 431, Col: 94}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 137, Col: 94}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 		if templ_7745c5c3_Err != nil {
@@ -749,7 +749,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 			var templ_7745c5c3_Var44 string
 			templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(q.Explanation)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 433, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 139, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 			if templ_7745c5c3_Err != nil {
@@ -767,7 +767,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var45 string
 		templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs("editForm_" + quizID + "_" + fmt.Sprintf("%d", index))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 436, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 142, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 		if templ_7745c5c3_Err != nil {
@@ -780,7 +780,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var46 string
 		templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 438, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 144, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 		if templ_7745c5c3_Err != nil {
@@ -801,7 +801,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var47 string
 		templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(quizID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 444, Col: 26}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 150, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 		if templ_7745c5c3_Err != nil {
@@ -814,7 +814,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var48 string
 		templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 445, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 151, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 		if templ_7745c5c3_Err != nil {
@@ -827,7 +827,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var49 string
 		templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(t.Save())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 448, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 154, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 		if templ_7745c5c3_Err != nil {
@@ -840,7 +840,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var50 string
 		templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(quizID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 454, Col: 25}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 160, Col: 25}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 		if templ_7745c5c3_Err != nil {
@@ -853,7 +853,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var51 string
 		templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", index))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 455, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 161, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 		if templ_7745c5c3_Err != nil {
@@ -866,7 +866,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var52 string
 		templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(q.ID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 456, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 162, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 		if templ_7745c5c3_Err != nil {
@@ -879,7 +879,7 @@ func QuestionCard(q models.Question, index int, quizID string, t locales.Transla
 		var templ_7745c5c3_Var53 string
 		templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(t.Edit())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 460, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 166, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 		if templ_7745c5c3_Err != nil {
@@ -921,7 +921,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var55 string
 		templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(t.QuestionText())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 469, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 175, Col: 81}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 		if templ_7745c5c3_Err != nil {
@@ -934,7 +934,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var56 string
 		templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(q.Text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 470, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 176, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 		if templ_7745c5c3_Err != nil {
@@ -947,7 +947,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var57 string
 		templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(t.Type())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 474, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 180, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var57))
 		if templ_7745c5c3_Err != nil {
@@ -970,7 +970,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var58 string
 		templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.JoinStringErrs(t.Choice())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 481, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 187, Col: 73}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var58))
 		if templ_7745c5c3_Err != nil {
@@ -993,7 +993,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var59 string
 		templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs(t.Open())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 482, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 188, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 		if templ_7745c5c3_Err != nil {
@@ -1016,7 +1016,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var60 string
 		templ_7745c5c3_Var60, templ_7745c5c3_Err = templ.JoinStringErrs(t.Fill())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 483, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 189, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var60))
 		if templ_7745c5c3_Err != nil {
@@ -1029,7 +1029,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var61 string
 		templ_7745c5c3_Var61, templ_7745c5c3_Err = templ.JoinStringErrs(t.Points())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 487, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 193, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var61))
 		if templ_7745c5c3_Err != nil {
@@ -1042,7 +1042,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var62 string
 		templ_7745c5c3_Var62, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", q.Points))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 488, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 194, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var62))
 		if templ_7745c5c3_Err != nil {
@@ -1063,7 +1063,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var63 string
 		templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(t.Explanation())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 495, Col: 80}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 201, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 		if templ_7745c5c3_Err != nil {
@@ -1076,7 +1076,7 @@ func QuestionEditFields(q models.Question, t locales.Translator) templ.Component
 		var templ_7745c5c3_Var64 string
 		templ_7745c5c3_Var64, templ_7745c5c3_Err = templ.JoinStringErrs(q.Explanation)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 496, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 202, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var64))
 		if templ_7745c5c3_Err != nil {
@@ -1120,7 +1120,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			var templ_7745c5c3_Var66 string
 			templ_7745c5c3_Var66, templ_7745c5c3_Err = templ.JoinStringErrs(t.CorrectAnswer())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 504, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 210, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var66))
 			if templ_7745c5c3_Err != nil {
@@ -1133,7 +1133,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			var templ_7745c5c3_Var67 string
 			templ_7745c5c3_Var67, templ_7745c5c3_Err = templ.JoinStringErrs(q.CorrectAnswer)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 505, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 211, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var67))
 			if templ_7745c5c3_Err != nil {
@@ -1151,7 +1151,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			var templ_7745c5c3_Var68 string
 			templ_7745c5c3_Var68, templ_7745c5c3_Err = templ.JoinStringErrs(t.CorrectAnswer())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 507, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 213, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var68))
 			if templ_7745c5c3_Err != nil {
@@ -1164,7 +1164,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			var templ_7745c5c3_Var69 string
 			templ_7745c5c3_Var69, templ_7745c5c3_Err = templ.JoinStringErrs(q.CorrectAnswer)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 508, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 214, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var69))
 			if templ_7745c5c3_Err != nil {
@@ -1182,7 +1182,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			var templ_7745c5c3_Var70 string
 			templ_7745c5c3_Var70, templ_7745c5c3_Err = templ.JoinStringErrs(t.AnswerOptions())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 510, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 216, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var70))
 			if templ_7745c5c3_Err != nil {
@@ -1200,7 +1200,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 				var templ_7745c5c3_Var71 string
 				templ_7745c5c3_Var71, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("option_%d", i))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 514, Col: 83}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 220, Col: 83}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var71))
 				if templ_7745c5c3_Err != nil {
@@ -1223,7 +1223,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 				var templ_7745c5c3_Var72 string
 				templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs("option_" + fmt.Sprintf("%d", i))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 515, Col: 64}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 221, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 				if templ_7745c5c3_Err != nil {
@@ -1236,7 +1236,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 				var templ_7745c5c3_Var73 string
 				templ_7745c5c3_Var73, templ_7745c5c3_Err = templ.JoinStringErrs(opt)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 515, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 221, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var73))
 				if templ_7745c5c3_Err != nil {
@@ -1254,7 +1254,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			var templ_7745c5c3_Var74 string
 			templ_7745c5c3_Var74, templ_7745c5c3_Err = templ.JoinStringErrs(t.AddOption())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 523, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 229, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var74))
 			if templ_7745c5c3_Err != nil {
@@ -1297,7 +1297,7 @@ func AddQuestionButton(t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var76 string
 		templ_7745c5c3_Var76, templ_7745c5c3_Err = templ.JoinStringErrs(t.AddQuestion())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 530, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 236, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var76))
 		if templ_7745c5c3_Err != nil {
@@ -1339,7 +1339,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var78 string
 		templ_7745c5c3_Var78, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quizID + "/question")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 537, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 243, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var78))
 		if templ_7745c5c3_Err != nil {
@@ -1352,7 +1352,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var79 string
 		templ_7745c5c3_Var79, templ_7745c5c3_Err = templ.JoinStringErrs(t.NewQuestion())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 542, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 248, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var79))
 		if templ_7745c5c3_Err != nil {
@@ -1365,7 +1365,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var80 string
 		templ_7745c5c3_Var80, templ_7745c5c3_Err = templ.JoinStringErrs(t.QuestionText())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 545, Col: 83}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 251, Col: 83}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var80))
 		if templ_7745c5c3_Err != nil {
@@ -1378,7 +1378,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var81 string
 		templ_7745c5c3_Var81, templ_7745c5c3_Err = templ.JoinStringErrs(t.Type())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 550, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 256, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var81))
 		if templ_7745c5c3_Err != nil {
@@ -1391,7 +1391,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var82 string
 		templ_7745c5c3_Var82, templ_7745c5c3_Err = templ.JoinStringErrs(t.Choice())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 552, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 258, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var82))
 		if templ_7745c5c3_Err != nil {
@@ -1404,7 +1404,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var83 string
 		templ_7745c5c3_Var83, templ_7745c5c3_Err = templ.JoinStringErrs(t.Open())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 553, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 259, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var83))
 		if templ_7745c5c3_Err != nil {
@@ -1417,7 +1417,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var84 string
 		templ_7745c5c3_Var84, templ_7745c5c3_Err = templ.JoinStringErrs(t.Fill())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 554, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 260, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var84))
 		if templ_7745c5c3_Err != nil {
@@ -1430,7 +1430,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var85 string
 		templ_7745c5c3_Var85, templ_7745c5c3_Err = templ.JoinStringErrs(t.Points())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 558, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 264, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var85))
 		if templ_7745c5c3_Err != nil {
@@ -1443,7 +1443,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var86 string
 		templ_7745c5c3_Var86, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", questionCount))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 563, Col: 94}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 269, Col: 94}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var86))
 		if templ_7745c5c3_Err != nil {
@@ -1456,7 +1456,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var87 string
 		templ_7745c5c3_Var87, templ_7745c5c3_Err = templ.JoinStringErrs(t.CorrectAnswer())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 567, Col: 84}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 273, Col: 84}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var87))
 		if templ_7745c5c3_Err != nil {
@@ -1469,7 +1469,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var88 string
 		templ_7745c5c3_Var88, templ_7745c5c3_Err = templ.JoinStringErrs(t.Explanation())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 571, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 277, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var88))
 		if templ_7745c5c3_Err != nil {
@@ -1482,7 +1482,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var89 string
 		templ_7745c5c3_Var89, templ_7745c5c3_Err = templ.JoinStringErrs(t.ImagesUpTo3())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 575, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 281, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var89))
 		if templ_7745c5c3_Err != nil {
@@ -1495,7 +1495,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var90 string
 		templ_7745c5c3_Var90, templ_7745c5c3_Err = templ.JoinStringErrs(t.JpgPngWebpUpTo5mbEach())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 577, Col: 70}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 283, Col: 70}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var90))
 		if templ_7745c5c3_Err != nil {
@@ -1508,7 +1508,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var91 string
 		templ_7745c5c3_Var91, templ_7745c5c3_Err = templ.JoinStringErrs(t.Cancel())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 582, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 288, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var91))
 		if templ_7745c5c3_Err != nil {
@@ -1521,7 +1521,7 @@ func AddQuestionForm(quizID string, questionCount int, t locales.Translator) tem
 		var templ_7745c5c3_Var92 string
 		templ_7745c5c3_Var92, templ_7745c5c3_Err = templ.JoinStringErrs(t.Add())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 585, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 291, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var92))
 		if templ_7745c5c3_Err != nil {
@@ -1563,7 +1563,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var94 string
 		templ_7745c5c3_Var94, templ_7745c5c3_Err = templ.JoinStringErrs(t.Statistics())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 594, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 300, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var94))
 		if templ_7745c5c3_Err != nil {
@@ -1576,7 +1576,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var95 string
 		templ_7745c5c3_Var95, templ_7745c5c3_Err = templ.JoinStringErrs(t.Question(0))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 597, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 303, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var95))
 		if templ_7745c5c3_Err != nil {
@@ -1589,7 +1589,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var96 string
 		templ_7745c5c3_Var96, templ_7745c5c3_Err = templ.JoinStringErrs(len(questions))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 598, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 304, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var96))
 		if templ_7745c5c3_Err != nil {
@@ -1602,7 +1602,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var97 string
 		templ_7745c5c3_Var97, templ_7745c5c3_Err = templ.JoinStringErrs(t.TotalPoints())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 601, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 307, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var97))
 		if templ_7745c5c3_Err != nil {
@@ -1615,7 +1615,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var98 string
 		templ_7745c5c3_Var98, templ_7745c5c3_Err = templ.JoinStringErrs(getTotalPoints(questions))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 602, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 308, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var98))
 		if templ_7745c5c3_Err != nil {
@@ -1628,7 +1628,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var99 string
 		templ_7745c5c3_Var99, templ_7745c5c3_Err = templ.JoinStringErrs(t.Time())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 605, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 311, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var99))
 		if templ_7745c5c3_Err != nil {
@@ -1641,7 +1641,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var100 string
 		templ_7745c5c3_Var100, templ_7745c5c3_Err = templ.JoinStringErrs(timeLimit)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 606, Col: 43}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 312, Col: 43}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var100))
 		if templ_7745c5c3_Err != nil {
@@ -1654,7 +1654,7 @@ func QuizStats(questions []models.Question, timeLimit int, t locales.Translator)
 		var templ_7745c5c3_Var101 string
 		templ_7745c5c3_Var101, templ_7745c5c3_Err = templ.JoinStringErrs(t.Min())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 606, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 312, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var101))
 		if templ_7745c5c3_Err != nil {
@@ -1696,7 +1696,7 @@ func QuizDangerZone(quizID string, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var103 string
 		templ_7745c5c3_Var103, templ_7745c5c3_Err = templ.JoinStringErrs(t.DangerZone())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 614, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 320, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var103))
 		if templ_7745c5c3_Err != nil {
@@ -1709,7 +1709,7 @@ func QuizDangerZone(quizID string, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var104 string
 		templ_7745c5c3_Var104, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quizID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 616, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 322, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var104))
 		if templ_7745c5c3_Err != nil {
@@ -1722,7 +1722,7 @@ func QuizDangerZone(quizID string, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var105 string
 		templ_7745c5c3_Var105, templ_7745c5c3_Err = templ.JoinStringErrs(t.AreYouSureThisActionIsReversible())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 617, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 323, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var105))
 		if templ_7745c5c3_Err != nil {
@@ -1735,7 +1735,7 @@ func QuizDangerZone(quizID string, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var106 string
 		templ_7745c5c3_Var106, templ_7745c5c3_Err = templ.JoinStringErrs(t.MoveToArchive())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 621, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 327, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var106))
 		if templ_7745c5c3_Err != nil {
@@ -1785,7 +1785,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 		var templ_7745c5c3_Var108 string
 		templ_7745c5c3_Var108, templ_7745c5c3_Err = templ.JoinStringErrs(t.ImagesUpTo3())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 638, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 344, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var108))
 		if templ_7745c5c3_Err != nil {
@@ -1798,7 +1798,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 		var templ_7745c5c3_Var109 string
 		templ_7745c5c3_Var109, templ_7745c5c3_Err = templ.JoinStringErrs(len(q.Images))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 638, Col: 87}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 344, Col: 87}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var109))
 		if templ_7745c5c3_Err != nil {
@@ -1821,7 +1821,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 				var templ_7745c5c3_Var110 string
 				templ_7745c5c3_Var110, templ_7745c5c3_Err = templ.JoinStringErrs(img.Url)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 644, Col: 24}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 350, Col: 24}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var110))
 				if templ_7745c5c3_Err != nil {
@@ -1834,7 +1834,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 				var templ_7745c5c3_Var111 string
 				templ_7745c5c3_Var111, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quizID + "/question/" + q.ID.String() + "/image/" + img.ID.String())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 648, Col: 112}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 354, Col: 112}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var111))
 				if templ_7745c5c3_Err != nil {
@@ -1858,7 +1858,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 			var templ_7745c5c3_Var112 string
 			templ_7745c5c3_Var112, templ_7745c5c3_Err = templ.JoinStringErrs(q.ID.String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 659, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 365, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var112))
 			if templ_7745c5c3_Err != nil {
@@ -1871,7 +1871,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 			var templ_7745c5c3_Var113 string
 			templ_7745c5c3_Var113, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/quizzes/" + quizID + "/question/" + q.ID.String() + "/image")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 665, Col: 91}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 371, Col: 91}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var113))
 			if templ_7745c5c3_Err != nil {
@@ -1884,7 +1884,7 @@ func QuestionImagesSection(q models.Question, quizID string, t locales.Translato
 			var templ_7745c5c3_Var114 string
 			templ_7745c5c3_Var114, templ_7745c5c3_Err = templ.JoinStringErrs(t.Upload())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 669, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/admin/quiz_edit.templ`, Line: 375, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var114))
 			if templ_7745c5c3_Err != nil {

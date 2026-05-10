@@ -546,3 +546,6 @@ msgstr "All Questions Answered! End quiz?"
 
 msgid "There are %d unanswered questions! Are you sure you want to end?"
 msgstr "There are %d unanswered questions! Are you sure you want to end?"
+
+msgid "End quiz? This action cannot be undone."
+msgstr "End quiz? This action cannot be undone."

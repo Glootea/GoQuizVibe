@@ -120,6 +120,8 @@ type Translator interface {
 	Editing(param1 string) string
 	// "Email"
 	Email() string
+	// "End quiz? This action cannot be undone."
+	EndQuizThisActionCannotBeUndone() string
 	// "Enter your answer..."
 	EnterYourAnswer() string
 	// "Error"
@@ -554,6 +556,10 @@ func (t *translator) Editing(param1 string) string {
 
 func (t *translator) Email() string {
 	return t.locale.Get("Email")
+}
+
+func (t *translator) EndQuizThisActionCannotBeUndone() string {
+	return t.locale.Get("End quiz? This action cannot be undone.")
 }
 
 func (t *translator) EnterYourAnswer() string {

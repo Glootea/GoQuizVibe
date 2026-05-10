@@ -175,6 +175,21 @@ func (h *QuizHandler) QuizNavigate(w http.ResponseWriter, r *http.Request) error
 	return pages.QuestionCard(navData, t).Render(r.Context(), w)
 }
 
+func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
+	quizID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	sessionIDStr := r.URL.Query().Get("session")
+	if sessionIDStr == "" {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("session ID missing")), http.StatusBadRequest)
+	}
+
+	http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
+	return nil
+}
+
 func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (uuid.UUID, string, bool) {
 	cookie, err := r.Cookie("quiz_session_id")
 	if err == nil && cookie.Value != "" {

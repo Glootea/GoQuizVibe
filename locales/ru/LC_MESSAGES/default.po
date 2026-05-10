@@ -549,3 +549,6 @@ msgstr "На все вопросы даны ответы! Закончить?"
 
 msgid "There are %d unanswered questions! Are you sure you want to end?"
 msgstr "Есть %d неотвеченных вопросов! Вы точно хотите закончить?"
+
+msgid "End quiz? This action cannot be undone."
+msgstr "Завершить тест? Это действие невозможно отменить!"

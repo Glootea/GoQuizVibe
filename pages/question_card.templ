@@ -14,7 +14,7 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 		<div class="flex-1">
 			<div class="flex justify-between items-center mb-6">
 				<span id="question-counter" class="text-sm font-medium text-indigo-600">{ t.QuestionOf(data.CurrentIndex + 1, data.TotalQuestions) }</span>
-				<div id="timer-display" class="text-lg font-semibold text-gray-700" data-remaining-seconds={ strconv.Itoa(data.RemainingSeconds) }>
+				<div id="timer-display" class="text-lg font-semibold text-gray-700" data-remaining-seconds={ strconv.Itoa(data.RemainingSeconds) } data-quiz-id={ data.Questions[0].QuizID.String() } data-session-id={ data.SessionID }>
 					<i class="mr-1 fas fa-clock"></i>
 					<span id="timer-text">{ formatTimer(data.RemainingSeconds) }</span>
 				</div>
@@ -69,7 +69,11 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 						type="button"
 						id="submit-btn"
 						class="py-3 mt-6 w-full font-semibold text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700"
-						onclick="showSubmitConfirm()"
+						hx-post={ "/quiz/" + data.Questions[0].QuizID.String() + "/finish?session=" + data.SessionID }
+						hx-confirm={ t.EndQuizThisActionCannotBeUndone() }
+						hx-target="body"
+						hx-swap="none"
+						hx-include="#quiz-form"
 					>
 						{ t.Submit() }
 					</button>
@@ -111,58 +115,7 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 			</div>
 		</div>
 	</div>
-	<script>
-		if (window.timerInterval) clearInterval(window.timerInterval);
-		if (window.syncInterval) clearInterval(window.syncInterval);
-
-		var remainingSeconds = parseInt(document.getElementById('timer-display').dataset.remainingSeconds);
-		var quizID = { data.Questions[0].QuizID.String() };
-		var sessionID = { data.SessionID };
-		
-		function formatTime(seconds) {
-			var mins = Math.floor(seconds / 60);
-			var secs = seconds % 60;
-			return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
-		}
-		
-		function updateTimer() {
-			if (remainingSeconds > 0) {
-				remainingSeconds--;
-				document.getElementById('timer-text').textContent = formatTime(remainingSeconds);
-			}
-		}
-		
-		window.timerInterval = setInterval(updateTimer, 1000);
-		
-		window.syncInterval = setInterval(function() {
-			fetch('/quiz/' + quizID + '/sync?session=' + sessionID)
-				.then(response => response.json())
-				.then(function(data) {
-					if (data.remaining_seconds !== undefined) {
-						remainingSeconds = data.remaining_seconds;
-						document.getElementById('timer-text').textContent = formatTime(remainingSeconds);
-					}
-				})
-				.catch(function(err) { console.log('Sync error:', err); });
-		}, 30000);
-		
-		function showSubmitConfirm() {
-			var totalQuestions = { data.TotalQuestions };
-			var answeredCount = { len(data.Answers) };
-			var unanswered = totalQuestions - answeredCount;
-			
-			var message;
-			if (unanswered === 0) {
-				message = { t.AllQuestionsAnsweredEndQuiz() };
-			} else {
-				message = { t.ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(unanswered) };
-			}
-			
-			if (confirm(message)) {
-				window.location.href = '/quiz/' + quizID + '/result?session=' + sessionID;
-			}
-		}
-	</script>
+	<script src="/static/scripts/quiz.js"></script>
 }
 
 func formatTimer(seconds int) string {
