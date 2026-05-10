@@ -1,4 +1,4 @@
-(function() {
+(function () {
     let timerInterval = null;
     let syncInterval = null;
 
@@ -24,26 +24,14 @@
 
         if (data.remainingSeconds > 0) {
             data.remainingSeconds--;
+            const timerDisplay = document.getElementById('timer-display');
+            if (timerDisplay) timerDisplay.dataset.remainingSeconds = data.remainingSeconds;
             const timerText = document.getElementById('timer-text');
             if (timerText) timerText.textContent = formatTime(data.remainingSeconds);
         }
     }
 
-    function syncRemainingSeconds() {
-        const data = getTimerData();
-        if (!data) return;
 
-        fetch('/quiz/' + data.quizId + '/sync?session=' + data.sessionId)
-            .then(r => r.json())
-            .then(d => {
-                if (d.remaining_seconds !== undefined) {
-                    const timerDisplay = document.getElementById('timer-display');
-                    if (timerDisplay) timerDisplay.dataset.remainingSeconds = d.remaining_seconds;
-                    const timerText = document.getElementById('timer-text');
-                    if (timerText) timerText.textContent = formatTime(d.remaining_seconds);
-                }
-            }).catch(function() {});
-    }
 
     function initTimer() {
         clearInterval(timerInterval);
@@ -53,19 +41,31 @@
         if (!data) return;
 
         timerInterval = setInterval(updateTimer, 1000);
-        syncInterval = setInterval(syncRemainingSeconds, 30000);
     }
 
-    document.body.addEventListener('htmx:beforeSwap', function() {
-        clearInterval(timerInterval);
-        clearInterval(syncInterval);
-    });
+    function setupHTMXHandlers() {
+        if (document.body) {
+            document.body.addEventListener('htmx:beforeSwap', function () {
+                clearInterval(timerInterval);
+                clearInterval(syncInterval);
+            });
 
-    document.body.addEventListener('htmx:afterSwap', function(evt) {
-        if (document.getElementById('timer-display')) {
-            initTimer();
+            document.body.addEventListener('htmx:afterSwap', function (evt) {
+                if (document.getElementById('timer-display')) {
+                    initTimer();
+                }
+            });
         }
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', initTimer);
+    function init() {
+        initTimer();
+        setupHTMXHandlers();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();

@@ -1,4 +1,4 @@
-(function() {
+(function () {
     var isDirty = false;
     var initialData = {};
     var confirmDeleteQuestion = "Delete question?";
@@ -19,16 +19,16 @@
             headers: {
                 'HX-Request': 'true'
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response.ok || response.status === 200) {
                 showSaveAlert();
-                setTimeout(function() {
+                setTimeout(function () {
                     location.reload();
                 }, 1000);
             } else {
                 showErrorAlert();
             }
-        }).catch(function() {
+        }).catch(function () {
             showErrorAlert();
         });
     }
@@ -48,7 +48,7 @@
         var formData = new FormData();
 
         var inputs = container.querySelectorAll('input, select, textarea');
-        inputs.forEach(function(input) {
+        inputs.forEach(function (input) {
             if (input.name) {
                 formData.append(input.name, input.value);
             }
@@ -60,14 +60,14 @@
             headers: {
                 'HX-Request': 'true'
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response.ok || response.status === 200) {
                 showSaveAlert();
                 container.classList.add('hidden');
             } else {
                 showErrorAlert();
             }
-        }).catch(function(error) {
+        }).catch(function (error) {
             showErrorAlert();
         });
     }
@@ -86,16 +86,16 @@
             headers: {
                 'HX-Request': 'true'
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response.ok || response.status === 200) {
                 showSaveAlert();
-                setTimeout(function() {
+                setTimeout(function () {
                     location.reload();
                 }, 1000);
             } else {
                 showErrorAlert();
             }
-        }).catch(function() {
+        }).catch(function () {
             showErrorAlert();
         });
     }
@@ -110,7 +110,7 @@
             headers: {
                 'HX-Request': 'true'
             }
-        }).then(function(response) {
+        }).then(function (response) {
             if (response.ok || response.status === 200) {
                 var container = button.closest('.relative.group');
                 if (container) {
@@ -119,7 +119,7 @@
             } else {
                 showErrorAlert();
             }
-        }).catch(function() {
+        }).catch(function () {
             showErrorAlert();
         });
     }
@@ -135,7 +135,7 @@
         initialData = getFormData(form);
 
         var inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(function(input) {
+        inputs.forEach(function (input) {
             input.addEventListener('change', markDirty);
             input.addEventListener('input', markDirty);
         });
@@ -144,7 +144,7 @@
     function getFormData(form) {
         var data = {};
         var inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(function(input) {
+        inputs.forEach(function (input) {
             if (input.name) {
                 data[input.name] = input.value;
             }
@@ -152,7 +152,7 @@
         return data;
     }
 
-    window.addEventListener('beforeunload', function(e) {
+    window.addEventListener('beforeunload', function (e) {
         if (isDirty) {
             e.preventDefault();
             e.returnValue = '';
@@ -162,7 +162,7 @@
     function showSaveAlert() {
         var alert = document.getElementById('saveAlert');
         alert.classList.remove('hidden');
-        setTimeout(function() {
+        setTimeout(function () {
             alert.classList.add('hidden');
         }, 2000);
     }
@@ -170,7 +170,7 @@
     function showErrorAlert() {
         var alert = document.getElementById('errorAlert');
         alert.classList.remove('hidden');
-        setTimeout(function() {
+        setTimeout(function () {
             alert.classList.add('hidden');
         }, 2000);
     }
@@ -245,7 +245,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         setupDirtyTracking();
     });
 })();

@@ -21,7 +21,7 @@ func (m RequireRoleMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
 		if err != nil {
-			if r.Header.Get("hx-request") == "true" {
+			if r.Header.Get("HX-Request") == "true" {
 				http.NotFound(w, r)
 				return
 			}
@@ -30,7 +30,7 @@ func (m RequireRoleMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 		}
 		claims, err := m.authService.ValidateToken(cookie.Value)
 		if err != nil {
-			if r.Header.Get("hx-request") == "true" {
+			if r.Header.Get("HX-Request") == "true" {
 				http.NotFound(w, r)
 				return
 			}
@@ -41,7 +41,7 @@ func (m RequireRoleMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if r.Header.Get("hx-request") == "true" {
+		if r.Header.Get("HX-Request") == "true" {
 			http.NotFound(w, r)
 			return
 		}

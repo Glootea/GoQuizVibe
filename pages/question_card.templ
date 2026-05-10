@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
@@ -15,7 +14,7 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 		<div class="flex-1">
 			<div class="flex justify-between items-center mb-6">
 				<span id="question-counter" class="text-sm font-medium text-indigo-600">{ t.QuestionOf(data.CurrentIndex + 1, data.TotalQuestions) }</span>
-				@TimerDisplay(data.RemainingSeconds, data.Questions[0].QuizID, data.SessionID)
+				@TimerWidget(data.Questions[0].QuizID, data.SessionID, data.RemainingSeconds)
 			</div>
 			<form
 				id="quiz-form"
@@ -113,7 +112,6 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 			</div>
 		</div>
 	</div>
-	<script src="/static/scripts/quiz.js"></script>
 }
 
 func getQuestionNavClass(index int, currentIndex int, answers map[int]string) string {
@@ -125,15 +123,4 @@ func getQuestionNavClass(index int, currentIndex int, answers map[int]string) st
 		return base + "bg-green-100 border border-green-300 text-green-700 hover:bg-green-200"
 	}
 	return base + "bg-gray-100 border border-gray-300 text-gray-600 hover:bg-gray-200"
-}
-
-templ TimerDisplay(remainingSeconds int, quizID uuid.UUID, sessionID string) {
-	<div id="timer-display" 
-	     class="text-lg font-semibold text-gray-700" 
-	     data-remaining-seconds={ strconv.Itoa(remainingSeconds) } 
-	     data-quiz-id={ quizID.String() } 
-	     data-session-id={ sessionID }>
-		<i class="mr-1 fas fa-clock"></i>
-		<span id="timer-text">{ FormatTimer(remainingSeconds) }</span>
-	</div>
 }

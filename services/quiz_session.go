@@ -585,9 +585,10 @@ func (s *QuizSessionService) GetActiveSessionForUser(ctx context.Context, userID
 			continue
 		}
 
-		remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
-		if remainingSeconds < 0 {
-			remainingSeconds = 0
+		remainingSeconds := max(int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit)*time.Second)).Seconds()), 0)
+
+		if remainingSeconds == 0 {
+			continue
 		}
 
 		return &types.ActiveSessionInfo{

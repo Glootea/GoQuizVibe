@@ -71,6 +71,7 @@ func main() {
 		{"POST", "/quiz/{id}/navigate", app.QuizHandler.QuizNavigate},
 		{"POST", "/quiz/{id}/finish", app.QuizHandler.QuizFinish},
 		{"POST", "/quiz/{id}/cancel-session", app.QuizHandler.CancelSession},
+		{"GET", "/quiz/{id}/sync", app.QuizHandler.SyncTime},
 		{"GET", "/quiz/{id}/result", app.QuizHandler.QuizResult},
 		{"GET", "/errors", app.QuizHandler.ErrorsPage},
 		{"GET", "/leaderboard", app.QuizHandler.LeaderboardPage},

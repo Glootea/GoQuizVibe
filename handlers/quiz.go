@@ -377,6 +377,10 @@ func (h *QuizHandler) SyncTime(w http.ResponseWriter, r *http.Request) error {
 		remainingSeconds = 0
 	}
 
+	if r.Header.Get("HX-Request") == "true" {
+		return pages.TimerWidget(quiz.ID, sessionIDStr, remainingSeconds).Render(ctx, w)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"remaining_seconds": %d}`, remainingSeconds)
 	return nil

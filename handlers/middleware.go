@@ -19,7 +19,7 @@ func ErrorHandler(f HandlerFunc) http.HandlerFunc {
 
 			log.Printf("--- ERROR START ---\n%v\nRequest url: %s\nRequest method: %s\n--- ERROR END ---", err, r.URL.String(), r.Method)
 
-			isHTMX := r.Header.Get("hx-request") == "true"
+			isHTMX := r.Header.Get("HX-Request") == "true"
 			status := ce.HTTPStatus(err)
 			redirectTo := redirectPathForStatus(status)
 

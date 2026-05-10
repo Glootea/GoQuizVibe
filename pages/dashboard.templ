@@ -17,7 +17,10 @@ templ DashboardPage(data types.DashboardData, t locales.Translator) {
 					<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex justify-between items-center">
 						<div>
 							<p class="font-medium text-yellow-800">{ t.TestInProgress() }: { data.ActiveSession.QuizTitle }</p>
-							<p class="text-sm text-yellow-600">{ t.TimeRemaining() }: { FormatTimer(data.ActiveSession.RemainingSeconds) }</p>
+							<div class="text-sm text-yellow-600 flex items-center gap-1">
+								<span>{ t.TimeRemaining() }:</span>
+								@TimerWidget(data.ActiveSession.QuizID, data.ActiveSession.SessionID.String(), data.ActiveSession.RemainingSeconds)
+							</div>
 						</div>
 						<a href={ templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)) } 
 						   class="py-2 px-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-medium">
