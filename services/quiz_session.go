@@ -197,9 +197,9 @@ func (s *QuizSessionService) GetAnswers(ctx context.Context, sessionID uuid.UUID
 }
 
 func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, currentIndex, targetIndex int, answer string, user *db.User) (*types.QuizPageData, error) {
-	questions, err := s.GetSessionQuestions(ctx, sessionID)
+	session, questions, err := s.getSessionWithQuestions(ctx, sessionID)
 	if err != nil {
-		return nil, fmt.Errorf("get session questions: %w", err)
+		return nil, fmt.Errorf("get session with questions: %w", err)
 	}
 
 	if len(questions) == 0 {
@@ -211,11 +211,6 @@ func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uui
 	}
 	if targetIndex >= len(questions) {
 		targetIndex = 0
-	}
-
-	session, err := s.sessions.GetSession(ctx, sessionID)
-	if err != nil {
-		return nil, fmt.Errorf("get session: %w", err)
 	}
 
 	answers := make(map[int]string)
@@ -494,18 +489,13 @@ func (s *QuizSessionService) GetUserStats(ctx context.Context, userID uuid.UUID)
 }
 
 func (s *QuizSessionService) GetQuizQuestionData(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, index int) (*types.QuizPageData, error) {
-	questions, err := s.GetSessionQuestions(ctx, sessionID)
+	session, questions, err := s.getSessionWithQuestions(ctx, sessionID)
 	if err != nil {
-		return nil, fmt.Errorf("get session questions: %w", err)
+		return nil, fmt.Errorf("get session with questions: %w", err)
 	}
 
 	if index >= len(questions) {
 		index = 0
-	}
-
-	session, err := s.sessions.GetSession(ctx, sessionID)
-	if err != nil {
-		return nil, fmt.Errorf("get session: %w", err)
 	}
 
 	attempt, err := s.attempts.GetAttemptByID(ctx, session.AttemptID)
@@ -572,4 +562,18 @@ func (s *QuizSessionService) attachImagesToQuestions(ctx context.Context, questi
 
 func (s *QuizSessionService) SessionExists(ctx context.Context, sessionID uuid.UUID) (bool, error) {
 	return s.sessions.SessionExists(ctx, sessionID)
+}
+
+func (s *QuizSessionService) getSessionWithQuestions(ctx context.Context, sessionID uuid.UUID) (db.QuizSession, []models.QuestionWithImages, error) {
+	session, err := s.sessions.GetSession(ctx, sessionID)
+	if err != nil {
+		return db.QuizSession{}, nil, err
+	}
+
+	quiz, err := s.getQuizWithQuestions(ctx, session.QuizID)
+	if err != nil {
+		return db.QuizSession{}, nil, err
+	}
+
+	return session, quiz.Questions, nil
 }
