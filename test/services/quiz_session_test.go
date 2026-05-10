@@ -32,7 +32,7 @@ func TestQuizSessionService_NewQuizSessionService(t *testing.T) {
 
 	gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: time.Now()})
 
-	svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+	svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 	if svc == nil {
 		t.Error("NewQuizSessionService() returned nil")
 	}
@@ -61,7 +61,7 @@ func TestQuizSessionService_CreateSession(t *testing.T) {
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
 		mockSessions.EXPECT().CreateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		session, err := svc.CreateSession(ctx, userID, quizID)
 		if err != nil {
 			t.Fatalf("CreateSession() error = %v, want nil", err)
@@ -88,7 +88,7 @@ func TestQuizSessionService_CreateSession(t *testing.T) {
 
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, errors.New("attempt error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CreateSession(ctx, userID, quizID)
 		if err == nil {
 			t.Fatal("CreateSession() error = nil, want error")
@@ -113,7 +113,7 @@ func TestQuizSessionService_CreateSession(t *testing.T) {
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
 		mockSessions.EXPECT().CreateSession(ctx, gomock.Any()).Return(db.QuizSession{}, errors.New("session error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CreateSession(ctx, userID, quizID)
 		if err == nil {
 			t.Fatal("CreateSession() error = nil, want error")
@@ -121,12 +121,11 @@ func TestQuizSessionService_CreateSession(t *testing.T) {
 	})
 }
 
-func TestQuizSessionService_SubmitAnswer(t *testing.T) {
+func TestQuizSessionService_NavigateQuestion(t *testing.T) {
 	ctx := context.Background()
 	sessionID := uuid.New()
 	quizID := uuid.New()
 	userID := uuid.New()
-
 	questionID := uuid.New()
 	now := time.Now()
 
@@ -176,26 +175,22 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 
 		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: now})
 
+		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz.Quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return([]db.Question{quiz.Questions[0].Question}, nil)
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(*session, nil)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
+		mockAttempts.EXPECT().GetAttemptByID(ctx, session.AttemptID).Return(db.QuizAttempt{ID: session.AttemptID, StartedAt: now}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		feedback, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		pageData, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err != nil {
-			t.Fatalf("SubmitAnswer() error = %v, want nil", err)
+			t.Fatalf("NavigateQuestion() error = %v, want nil", err)
 		}
-		if feedback == nil {
-			t.Fatal("SubmitAnswer() returned nil feedback")
-		}
-		if !feedback.IsCorrect {
-			t.Error("SubmitAnswer() IsCorrect = false, want true")
-		}
-		if feedback.CorrectAnswer != "4" {
-			t.Errorf("SubmitAnswer() CorrectAnswer = %s, want 4", feedback.CorrectAnswer)
+		if pageData == nil {
+			t.Fatal("NavigateQuestion() returned nil pageData")
 		}
 	})
 
@@ -214,46 +209,19 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 
 		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: now})
 
+		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz.Quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return([]db.Question{quiz.Questions[0].Question}, nil)
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(*session, nil)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
+		mockAttempts.EXPECT().GetAttemptByID(ctx, session.AttemptID).Return(db.QuizAttempt{ID: session.AttemptID, StartedAt: now}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		feedback, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "5")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		_, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "5", testUser)
 		if err != nil {
-			t.Fatalf("SubmitAnswer() error = %v, want nil", err)
-		}
-		if feedback.IsCorrect {
-			t.Error("SubmitAnswer() IsCorrect = true, want false")
-		}
-	})
-
-	t.Run("question index out of range", func(t *testing.T) {
-		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
-		mockSessions := mocks.NewMockSessionRepository(ctrl)
-		mockQuizzes := mocks.NewMockQuizRepository(ctrl)
-		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
-		mockImages := mocks.NewMockImageRepository(ctrl)
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		mockStats := mocks.NewMockStatsRepository(ctrl)
-
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: now})
-
-		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz.Quiz, nil)
-		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return([]db.Question{quiz.Questions[0].Question}, nil)
-		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
-
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		_, err := svc.SubmitAnswer(ctx, sessionID, quizID, 10, "4")
-		if err == nil {
-			t.Fatal("SubmitAnswer() error = nil, want error")
+			t.Fatalf("NavigateQuestion() error = %v, want nil", err)
 		}
 	})
 
@@ -277,10 +245,11 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(db.QuizSession{}, errors.New("session not found"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		_, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		_, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err == nil {
-			t.Fatal("SubmitAnswer() error = nil, want error")
+			t.Fatal("NavigateQuestion() error = nil, want error")
 		}
 	})
 
@@ -314,10 +283,11 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(*invalidSession, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		_, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		_, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err == nil {
-			t.Fatal("SubmitAnswer() error = nil, want error")
+			t.Fatal("NavigateQuestion() error = nil, want error")
 		}
 	})
 
@@ -338,10 +308,11 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(db.Quiz{}, errors.New("quiz not found"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		_, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		_, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err == nil {
-			t.Fatal("SubmitAnswer() error = nil, want error")
+			t.Fatal("NavigateQuestion() error = nil, want error")
 		}
 	})
 
@@ -366,10 +337,11 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(*session, nil)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, errors.New("update error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		_, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		_, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err == nil {
-			t.Fatal("SubmitAnswer() error = nil, want error")
+			t.Fatal("NavigateQuestion() error = nil, want error")
 		}
 	})
 
@@ -395,14 +367,15 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
 		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		_, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		_, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err == nil {
-			t.Fatal("SubmitAnswer() error = nil, want error")
+			t.Fatal("NavigateQuestion() error = nil, want error")
 		}
 	})
 
-	t.Run("is last question", func(t *testing.T) {
+	t.Run("last question", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -417,20 +390,22 @@ func TestQuizSessionService_SubmitAnswer(t *testing.T) {
 
 		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: now})
 
+		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz.Quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return([]db.Question{quiz.Questions[0].Question}, nil)
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(*session, nil)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
+		mockAttempts.EXPECT().GetAttemptByID(ctx, session.AttemptID).Return(db.QuizAttempt{ID: session.AttemptID, StartedAt: now}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
-		feedback, err := svc.SubmitAnswer(ctx, sessionID, quizID, 0, "4")
+		testUser := &db.User{ID: userID, Email: "test@example.com"}
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		pageData, err := svc.NavigateQuestion(ctx, sessionID, quizID, 0, 0, "4", testUser)
 		if err != nil {
-			t.Fatalf("SubmitAnswer() error = %v, want nil", err)
+			t.Fatalf("NavigateQuestion() error = %v, want nil", err)
 		}
-		if !feedback.IsLast {
-			t.Error("SubmitAnswer() IsLast = false, want true")
+		if !pageData.IsLastQuestion {
+			t.Error("NavigateQuestion() IsLastQuestion = false, want true")
 		}
 	})
 }
@@ -500,7 +475,7 @@ func TestQuizSessionService_CompleteSession(t *testing.T) {
 		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{ID: attemptID, Score: 10, MaxScore: 10}, nil)
 		mockSessions.EXPECT().DeleteSession(ctx, sessionID).Return(nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		attempt, err := svc.CompleteSession(ctx, sessionID)
 		if err != nil {
 			t.Fatalf("CompleteSession() error = %v, want nil", err)
@@ -527,7 +502,7 @@ func TestQuizSessionService_CompleteSession(t *testing.T) {
 
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(db.QuizSession{}, errors.New("session not found"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CompleteSession(ctx, sessionID)
 		if err == nil {
 			t.Fatal("CompleteSession() error = nil, want error")
@@ -552,7 +527,7 @@ func TestQuizSessionService_CompleteSession(t *testing.T) {
 		mockSessions.EXPECT().GetSession(ctx, sessionID).Return(*session, nil)
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(db.Quiz{}, errors.New("quiz not found"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CompleteSession(ctx, sessionID)
 		if err == nil {
 			t.Fatal("CompleteSession() error = nil, want error")
@@ -580,7 +555,7 @@ func TestQuizSessionService_CompleteSession(t *testing.T) {
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockAttempts.EXPECT().GetAnswersByAttempt(ctx, attemptID).Return(nil, errors.New("answers error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CompleteSession(ctx, sessionID)
 		if err == nil {
 			t.Fatal("CompleteSession() error = nil, want error")
@@ -609,7 +584,7 @@ func TestQuizSessionService_CompleteSession(t *testing.T) {
 		mockAttempts.EXPECT().GetAnswersByAttempt(ctx, attemptID).Return(answers, nil)
 		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, errors.New("update error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CompleteSession(ctx, sessionID)
 		if err == nil {
 			t.Fatal("CompleteSession() error = nil, want error")
@@ -639,7 +614,7 @@ func TestQuizSessionService_CompleteSession(t *testing.T) {
 		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{ID: attemptID, Score: 10, MaxScore: 10}, nil)
 		mockSessions.EXPECT().DeleteSession(ctx, sessionID).Return(errors.New("delete error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.CompleteSession(ctx, sessionID)
 		if err == nil {
 			t.Fatal("CompleteSession() error = nil, want error")
@@ -729,7 +704,7 @@ func TestQuizSessionService_GetQuizResultData(t *testing.T) {
 		mockSessions.EXPECT().DeleteSession(ctx, sessionID).Return(nil)
 		mockAttempts.EXPECT().GetAnswersByAttempt(ctx, attemptID).Return(answers, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		result, err := svc.GetQuizResultData(ctx, quizID, sessionID, userID)
 		if err != nil {
 			t.Fatalf("GetQuizResultData() error = %v, want nil", err)
@@ -756,7 +731,7 @@ func TestQuizSessionService_GetQuizResultData(t *testing.T) {
 
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{}, errors.New("user error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetQuizResultData(ctx, quizID, sessionID, userID)
 		if err == nil {
 			t.Fatal("GetQuizResultData() error = nil, want error")
@@ -784,7 +759,7 @@ func TestQuizSessionService_GetQuizResultData(t *testing.T) {
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockStats.EXPECT().GetUserStats(ctx, userID).Return(db.GetUserStatsRow{}, errors.New("stats error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetQuizResultData(ctx, quizID, sessionID, userID)
 		if err == nil {
 			t.Fatal("GetQuizResultData() error = nil, want error")
@@ -810,7 +785,7 @@ func TestQuizSessionService_GetQuizResultData(t *testing.T) {
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz.Quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(nil, errors.New("questions error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetQuizResultData(ctx, quizID, sessionID, userID)
 		if err == nil {
 			t.Fatal("GetQuizResultData() error = nil, want error")
@@ -887,7 +862,7 @@ func TestQuizSessionService_GetErrorsPageData(t *testing.T) {
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, quiz.Questions[0].ID).Return(nil, nil)
 		mockAttempts.EXPECT().GetAnswersByAttempt(ctx, attemptID).Return(answers, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		result, err := svc.GetErrorsPageData(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetErrorsPageData() error = %v, want nil", err)
@@ -921,7 +896,7 @@ func TestQuizSessionService_GetErrorsPageData(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{ID: userID, Name: "Test User", Email: "test@example.com"}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		result, err := svc.GetErrorsPageData(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetErrorsPageData() error = %v, want nil", err)
@@ -952,7 +927,7 @@ func TestQuizSessionService_GetErrorsPageData(t *testing.T) {
 		mockAttempts.EXPECT().GetQuizErrors(ctx, userID).Return(nil, errors.New("quiz errors error"))
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetErrorsPageData(ctx, userID)
 		if err == nil {
 			t.Fatal("GetErrorsPageData() error = nil, want error")
@@ -978,7 +953,7 @@ func TestQuizSessionService_GetErrorsPageData(t *testing.T) {
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{}, nil)
 		mockStats.EXPECT().GetUserStats(ctx, userID).Return(db.GetUserStatsRow{}, errors.New("stats error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetErrorsPageData(ctx, userID)
 		if err == nil {
 			t.Fatal("GetErrorsPageData() error = nil, want error")
@@ -1007,7 +982,7 @@ func TestQuizSessionService_GetErrorsPageData(t *testing.T) {
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{}, nil)
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(db.Quiz{}, errors.New("quiz error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		result, err := svc.GetErrorsPageData(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetErrorsPageData() error = %v, want nil", err)
@@ -1043,7 +1018,7 @@ func TestQuizSessionService_GetLeaderboardData(t *testing.T) {
 		}, nil)
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{ID: userID, Name: "Test User", Email: "test@example.com"}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		result, err := svc.GetLeaderboardData(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetLeaderboardData() error = %v, want nil", err)
@@ -1071,7 +1046,7 @@ func TestQuizSessionService_GetLeaderboardData(t *testing.T) {
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return(nil, errors.New("leaderboard error"))
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetLeaderboardData(ctx, userID)
 		if err == nil {
 			t.Fatal("GetLeaderboardData() error = nil, want error")
@@ -1099,7 +1074,7 @@ func TestQuizSessionService_GetUserIDFromRequest(t *testing.T) {
 		userID := uuid.New()
 		auth.EXPECT().ValidateToken("valid-token").Return(&models.AuthClaims{UserID: userID}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.AddCookie(&http.Cookie{Name: "token", Value: "valid-token"})
@@ -1129,7 +1104,7 @@ func TestQuizSessionService_GetUserIDFromRequest(t *testing.T) {
 		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: time.Now()})
 		auth := newMockAuthenticator(ctrl)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
@@ -1157,7 +1132,7 @@ func TestQuizSessionService_GetUserIDFromRequest(t *testing.T) {
 
 		auth.EXPECT().ValidateToken("invalid-token").Return(nil, errors.New("invalid token"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.AddCookie(&http.Cookie{Name: "token", Value: "invalid-token"})
@@ -1199,7 +1174,7 @@ func TestQuizSessionService_GetUserStats(t *testing.T) {
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(nil, nil)
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -1229,7 +1204,7 @@ func TestQuizSessionService_GetUserStats(t *testing.T) {
 
 		mockStats.EXPECT().GetUserStats(ctx, userID).Return(db.GetUserStatsRow{}, errors.New("stats error"))
 
-		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification)
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
 		_, err := svc.GetUserStats(ctx, userID)
 		if err == nil {
 			t.Fatal("GetUserStats() error = nil, want error")
