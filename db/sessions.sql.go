@@ -124,3 +124,9 @@ func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) (Q
 	)
 	return i, err
 }
+
+func (q *Queries) SessionExists(ctx context.Context, id uuid.UUID) (bool, error) {
+	var exists bool
+	err := q.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM quiz_sessions WHERE id = $1)`, id).Scan(&exists)
+	return exists, err
+}

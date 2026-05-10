@@ -569,3 +569,7 @@ func (s *QuizSessionService) attachImagesToQuestions(ctx context.Context, questi
 	}
 	return result
 }
+
+func (s *QuizSessionService) SessionExists(ctx context.Context, sessionID uuid.UUID) (bool, error) {
+	return s.sessions.SessionExists(ctx, sessionID)
+}

@@ -49,6 +49,7 @@ type SessionRepository interface {
 	GetSession(ctx context.Context, id uuid.UUID) (db.QuizSession, error)
 	UpdateSession(ctx context.Context, params db.UpdateSessionParams) (db.QuizSession, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) error
+	SessionExists(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
 type ImageRepository interface {

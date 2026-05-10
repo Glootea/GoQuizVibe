@@ -570,6 +570,21 @@ func (mr *MockSessionRepositoryMockRecorder) UpdateSession(ctx, params any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSession", reflect.TypeOf((*MockSessionRepository)(nil).UpdateSession), ctx, params)
 }
 
+// SessionExists mocks base method.
+func (m *MockSessionRepository) SessionExists(ctx context.Context, id uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SessionExists", ctx, id)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SessionExists indicates an expected call of SessionExists.
+func (mr *MockSessionRepositoryMockRecorder) SessionExists(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SessionExists", reflect.TypeOf((*MockSessionRepository)(nil).SessionExists), ctx, id)
+}
+
 // MockImageRepository is a mock of ImageRepository interface.
 type MockImageRepository struct {
 	ctrl     *gomock.Controller
