@@ -564,6 +564,44 @@ func (s *QuizSessionService) SessionExists(ctx context.Context, sessionID uuid.U
 	return s.sessions.SessionExists(ctx, sessionID)
 }
 
+func (s *QuizSessionService) GetActiveSessionForUser(ctx context.Context, userID uuid.UUID) (*types.ActiveSessionInfo, error) {
+	attempts, err := s.attempts.GetIncompleteAttemptsByUser(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get incomplete attempts: %w", err)
+	}
+
+	if len(attempts) == 0 {
+		return nil, nil
+	}
+
+	for _, attempt := range attempts {
+		session, err := s.sessions.GetSessionByAttemptID(ctx, attempt.ID)
+		if err != nil {
+			continue
+		}
+
+		quiz, err := s.quizzes.GetQuizByID(ctx, attempt.QuizID)
+		if err != nil {
+			continue
+		}
+
+		remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
+		if remainingSeconds < 0 {
+			remainingSeconds = 0
+		}
+
+		return &types.ActiveSessionInfo{
+			SessionID:        session.ID,
+			QuizID:           quiz.ID,
+			QuizTitle:        quiz.Title,
+			CurrentIndex:     session.CurrentIndex,
+			RemainingSeconds: remainingSeconds,
+		}, nil
+	}
+
+	return nil, nil
+}
+
 func (s *QuizSessionService) getSessionWithQuestions(ctx context.Context, sessionID uuid.UUID) (db.QuizSession, []models.QuestionWithImages, error) {
 	session, err := s.sessions.GetSession(ctx, sessionID)
 	if err != nil {

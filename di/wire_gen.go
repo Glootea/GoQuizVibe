@@ -30,7 +30,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 	adminService := ProvideAdminService(queries, authService, storageService)
-	dashboardService := ProvideDashboardService(queries, gamificationService, authService)
+	dashboardService := ProvideDashboardService(queries, gamificationService, authService, quizSessionService)
 	service, err := ProvideLocaleService()
 	if err != nil {
 		return nil, err

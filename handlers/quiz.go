@@ -61,7 +61,18 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 
 	ctx := r.Context()
 
-	sessionID, sessionIDStr, needsCookie := h.getSessionFromRequest(r, quizID)
+	sessionID, sessionIDStr, needsCookie, conflict := h.getSessionFromRequest(r, quizID)
+	if conflict != nil {
+		data := &types.SessionConflictData{
+			ExistingSessionID: conflict.SessionID,
+			ExistingQuizID:    conflict.QuizID,
+			ExistingQuizTitle: conflict.QuizTitle,
+			CurrentIndex:      conflict.CurrentIndex,
+			RequestedQuizID:   quizID,
+		}
+		t := middleware.GetTranslator(r.Context())
+		return pages.SessionConflictPage(data, t).Render(r.Context(), w)
+	}
 	if sessionID == uuid.Nil {
 		http.Redirect(w, r, "/quiz/"+quizID.String()+"/q/0", http.StatusFound)
 		return nil
@@ -73,12 +84,18 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 	}
 
 	if needsCookie {
+		quiz, _ := h.quizService.GetQuizByID(ctx, quizID)
+		maxAge := 0
+		if quiz != nil {
+			maxAge = quiz.TimeLimit
+		}
 		http.SetCookie(w, &http.Cookie{
 			Name:     "quiz_session_id",
 			Value:    sessionIDStr,
 			Path:     "/quiz",
 			HttpOnly: true,
 			SameSite: http.SameSiteLaxMode,
+			MaxAge:   maxAge,
 		})
 	}
 
@@ -126,7 +143,18 @@ func (h *QuizHandler) QuizNavigate(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	sessionID, sessionIDStr, needsCookie := h.getSessionFromRequest(r, quizID)
+	sessionID, sessionIDStr, needsCookie, conflict := h.getSessionFromRequest(r, quizID)
+	if conflict != nil {
+		data := &types.SessionConflictData{
+			ExistingSessionID: conflict.SessionID,
+			ExistingQuizID:    conflict.QuizID,
+			ExistingQuizTitle: conflict.QuizTitle,
+			CurrentIndex:      conflict.CurrentIndex,
+			RequestedQuizID:   quizID,
+		}
+		t := middleware.GetTranslator(r.Context())
+		return pages.SessionConflictPage(data, t).Render(r.Context(), w)
+	}
 	if sessionID == uuid.Nil {
 		http.Redirect(w, r, "/quiz/"+quizID.String()+"/q/0", http.StatusFound)
 		return nil
@@ -159,12 +187,18 @@ func (h *QuizHandler) QuizNavigate(w http.ResponseWriter, r *http.Request) error
 	}
 
 	if needsCookie {
+		quiz, _ := h.quizService.GetQuizByID(ctx, quizID)
+		maxAge := 0
+		if quiz != nil {
+			maxAge = quiz.TimeLimit
+		}
 		http.SetCookie(w, &http.Cookie{
 			Name:     "quiz_session_id",
 			Value:    sessionIDStr,
 			Path:     "/quiz",
 			HttpOnly: true,
 			SameSite: http.SameSiteLaxMode,
+			MaxAge:   maxAge,
 		})
 	}
 
@@ -196,7 +230,7 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (uuid.UUID, string, bool) {
+func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (uuid.UUID, string, bool, *types.ActiveSessionInfo) {
 	ctx := r.Context()
 	cookie, err := r.Cookie("quiz_session_id")
 	if err == nil && cookie.Value != "" {
@@ -204,7 +238,18 @@ func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (
 		if parseErr == nil {
 			exists, _ := h.sessionService.SessionExists(ctx, sessionID)
 			if exists {
-				return sessionID, cookie.Value, false
+				session, err := h.pool.GetSession(ctx, sessionID)
+				if err == nil && session.QuizID != quizID {
+					existingQuiz, _ := h.quizService.GetQuizByID(ctx, session.QuizID)
+					conflict := &types.ActiveSessionInfo{
+						SessionID:    session.ID,
+						QuizID:       session.QuizID,
+						QuizTitle:    existingQuiz.Title,
+						CurrentIndex: session.CurrentIndex,
+					}
+					return uuid.Nil, "", false, conflict
+				}
+				return sessionID, cookie.Value, false, nil
 			}
 		}
 	}
@@ -213,17 +258,17 @@ func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (
 	if sessionIDStr != "" {
 		sessionID, err := uuid.Parse(sessionIDStr)
 		if err == nil {
-			return sessionID, sessionIDStr, false
+			return sessionID, sessionIDStr, false, nil
 		}
 	}
 
 	userID, _ := h.sessionService.GetUserIDFromRequest(r, h.authService)
 	session, err := h.sessionService.CreateSession(r.Context(), userID, quizID)
 	if err != nil {
-		return uuid.Nil, "", true
+		return uuid.Nil, "", true, nil
 	}
 
-	return session.ID, session.ID.String(), true
+	return session.ID, session.ID.String(), true, nil
 }
 
 func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
@@ -334,5 +379,59 @@ func (h *QuizHandler) SyncTime(w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"remaining_seconds": %d}`, remainingSeconds)
+	return nil
+}
+
+func (h *QuizHandler) CancelSession(w http.ResponseWriter, r *http.Request) error {
+	quizID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	if err := r.ParseForm(); err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	sessionIDStr := r.FormValue("session_id")
+	if sessionIDStr == "" {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("session_id missing")), http.StatusBadRequest)
+	}
+
+	sessionID, err := uuid.Parse(sessionIDStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	ctx := r.Context()
+
+	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
+	}
+
+	session, err := h.pool.GetSession(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if session.UserID != userID {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, errors.New("not session owner")), http.StatusUnauthorized)
+	}
+
+	_, err = h.sessionService.CompleteSession(ctx, sessionID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "quiz_session_id",
+		Value:    "",
+		Path:     "/quiz",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+
+	http.Redirect(w, r, "/quiz/"+quizID.String()+"/q/0", http.StatusFound)
 	return nil
 }

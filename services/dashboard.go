@@ -13,12 +13,13 @@ import (
 )
 
 type DashboardService struct {
-	users        r.UserRepository
-	quizzes      r.QuizRepository
-	questions    r.QuestionRepository
-	images       r.ImageRepository
-	gamification *GamificationService
-	auth         Authenticator
+	users          r.UserRepository
+	quizzes        r.QuizRepository
+	questions      r.QuestionRepository
+	images         r.ImageRepository
+	gamification   *GamificationService
+	auth           Authenticator
+	sessionService *QuizSessionService
 }
 
 func NewDashboardService(
@@ -28,14 +29,16 @@ func NewDashboardService(
 	images r.ImageRepository,
 	gamification *GamificationService,
 	auth Authenticator,
+	sessionService *QuizSessionService,
 ) *DashboardService {
 	return &DashboardService{
-		users:        users,
-		quizzes:      quizzes,
-		questions:    questions,
-		images:       images,
-		gamification: gamification,
-		auth:         auth,
+		users:          users,
+		quizzes:        quizzes,
+		questions:      questions,
+		images:         images,
+		gamification:   gamification,
+		auth:           auth,
+		sessionService: sessionService,
 	}
 }
 
@@ -60,11 +63,17 @@ func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUI
 		return nil, fmt.Errorf("get leaderboard: %w", err)
 	}
 
+	var activeSession *types.ActiveSessionInfo
+	if s.sessionService != nil {
+		activeSession, _ = s.sessionService.GetActiveSessionForUser(ctx, userID)
+	}
+
 	return &types.DashboardData{
-		User:        &user,
-		Quizzes:     quizzes,
-		Stats:       stats,
-		Leaderboard: leaderboard,
+		User:          &user,
+		Quizzes:       quizzes,
+		Stats:         stats,
+		Leaderboard:   leaderboard,
+		ActiveSession: activeSession,
 	}, nil
 }
 

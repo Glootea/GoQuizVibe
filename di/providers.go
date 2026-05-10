@@ -105,8 +105,9 @@ func ProvideDashboardService(
 	queries *db.Queries,
 	gamification *services.GamificationService,
 	authService *services.AuthService,
+	quizSessionService *services.QuizSessionService,
 ) *services.DashboardService {
-	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
+	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService)
 }
 
 func ProvideLocaleService() (*locales.Service, error) {

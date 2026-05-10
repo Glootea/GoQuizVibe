@@ -98,6 +98,17 @@ func (q *Queries) GetSessionByAttemptID(ctx context.Context, attemptID uuid.UUID
 	return i, err
 }
 
+const sessionExists = `-- name: SessionExists :one
+SELECT EXISTS(SELECT 1 FROM quiz_sessions WHERE id = $1)
+`
+
+func (q *Queries) SessionExists(ctx context.Context, id uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, sessionExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const updateSession = `-- name: UpdateSession :one
 UPDATE quiz_sessions SET current_index = $2, answers = $3
 WHERE id = $1
@@ -123,10 +134,4 @@ func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) (Q
 		&i.CreatedAt,
 	)
 	return i, err
-}
-
-func (q *Queries) SessionExists(ctx context.Context, id uuid.UUID) (bool, error) {
-	var exists bool
-	err := q.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM quiz_sessions WHERE id = $1)`, id).Scan(&exists)
-	return exists, err
 }

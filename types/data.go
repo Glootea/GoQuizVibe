@@ -9,10 +9,27 @@ import (
 )
 
 type DashboardData struct {
-	User        *models.User
-	Quizzes     []*models.Quiz
-	Stats       *models.UserStats
-	Leaderboard []*models.LeaderboardEntry
+	User          *models.User
+	Quizzes       []*models.Quiz
+	Stats         *models.UserStats
+	Leaderboard   []*models.LeaderboardEntry
+	ActiveSession *ActiveSessionInfo
+}
+
+type ActiveSessionInfo struct {
+	SessionID        uuid.UUID
+	QuizID           uuid.UUID
+	QuizTitle        string
+	CurrentIndex     int
+	RemainingSeconds int
+}
+
+type SessionConflictData struct {
+	ExistingSessionID uuid.UUID
+	ExistingQuizID    uuid.UUID
+	ExistingQuizTitle string
+	CurrentIndex      int
+	RequestedQuizID   uuid.UUID
 }
 
 type QuizPageData struct {
@@ -25,7 +42,7 @@ type QuizPageData struct {
 	TotalQuestions   int
 	RemainingSeconds int
 	TimeLimitMinutes int
-	IsLastQuestion    bool
+	IsLastQuestion   bool
 }
 
 type QuizResultData struct {

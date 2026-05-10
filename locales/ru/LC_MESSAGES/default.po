@@ -552,3 +552,32 @@ msgstr "Есть %d неотвеченных вопросов! Вы точно �
 
 msgid "End quiz? This action cannot be undone."
 msgstr "Завершить тест? Это действие невозможно отменить!"
+
+# Session conflict
+
+msgid "Test conflict"
+msgstr "Конфликт теста"
+
+msgid "Test already active"
+msgstr "Тест уже активен"
+
+msgid "Another test"
+msgstr "Другой тест"
+
+msgid "Cancelling will complete the current test with your current answers. This action cannot be undone."
+msgstr "Отмена завершит текущий тест с вашими текущими ответами. Это действие нельзя отменить."
+
+msgid "Resume test"
+msgstr "Продолжить тест"
+
+msgid "Cancel and start new"
+msgstr "Отменить и начать новый"
+
+msgid "Test in progress"
+msgstr "Тест в процессе"
+
+msgid "Time remaining"
+msgstr "Осталось времени"
+
+msgid "Resume"
+msgstr "Продолжить"

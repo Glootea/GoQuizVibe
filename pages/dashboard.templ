@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"strconv"
+
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
@@ -11,6 +13,18 @@ templ DashboardPage(data types.DashboardData, t locales.Translator) {
 		<div class="min-h-screen bg-gray-50">
 			@Navbar(data.User, t)
 			<main class="py-8 px-4 mx-auto max-w-6xl">
+				if data.ActiveSession != nil {
+					<div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex justify-between items-center">
+						<div>
+							<p class="font-medium text-yellow-800">{ t.TestInProgress() }: { data.ActiveSession.QuizTitle }</p>
+							<p class="text-sm text-yellow-600">{ t.TimeRemaining() }: { FormatTimer(data.ActiveSession.RemainingSeconds) }</p>
+						</div>
+						<a href={ templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)) } 
+						   class="py-2 px-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-medium">
+							{ t.Resume() }
+						</a>
+					</div>
+				}
 				@StatsCards(data.Stats, t)
 				@QuizGrid(data.Quizzes, t)
 				@LeaderboardPreview(data.Leaderboard, t)

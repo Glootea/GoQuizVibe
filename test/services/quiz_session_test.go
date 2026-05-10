@@ -1148,3 +1148,85 @@ func TestQuizSessionService_GetUserStats(t *testing.T) {
 		}
 	})
 }
+
+func TestQuizSessionService_GetActiveSessionForUser(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+	now := time.Now()
+
+	quizID := uuid.New()
+	attemptID := uuid.New()
+	sessionID := uuid.New()
+
+	t.Run("with_active_session", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockSessions := mocks.NewMockSessionRepository(ctrl)
+		mockQuizzes := mocks.NewMockQuizRepository(ctrl)
+		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
+		mockImages := mocks.NewMockImageRepository(ctrl)
+		mockUsers := mocks.NewMockUserRepository(ctrl)
+		mockStats := mocks.NewMockStatsRepository(ctrl)
+
+		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: now})
+
+		startedAt := now.Add(-60 * time.Second)
+		attempts := []db.QuizAttempt{
+			{ID: attemptID, UserID: userID, QuizID: quizID, StartedAt: startedAt},
+		}
+		session := db.QuizSession{ID: sessionID, QuizID: quizID, AttemptID: attemptID, CurrentIndex: 3}
+		quiz := db.Quiz{ID: quizID, Title: "Math Quiz", TimeLimit: 300}
+
+		mockAttempts.EXPECT().GetIncompleteAttemptsByUser(ctx, userID).Return(attempts, nil)
+		mockSessions.EXPECT().GetSessionByAttemptID(ctx, attemptID).Return(session, nil)
+		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
+
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		result, err := svc.GetActiveSessionForUser(ctx, userID)
+		if err != nil {
+			t.Fatalf("GetActiveSessionForUser() error = %v, want nil", err)
+		}
+		if result == nil {
+			t.Fatal("GetActiveSessionForUser() returned nil")
+		}
+		if result.QuizTitle != "Math Quiz" {
+			t.Errorf("QuizTitle = %v, want %v", result.QuizTitle, "Math Quiz")
+		}
+		if result.RemainingSeconds != 240 {
+			t.Errorf("RemainingSeconds = %v, want %v", result.RemainingSeconds, 240)
+		}
+		if result.CurrentIndex != 3 {
+			t.Errorf("CurrentIndex = %v, want %v", result.CurrentIndex, 3)
+		}
+	})
+
+	t.Run("no_incomplete_attempts", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockSessions := mocks.NewMockSessionRepository(ctrl)
+		mockQuizzes := mocks.NewMockQuizRepository(ctrl)
+		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
+		mockImages := mocks.NewMockImageRepository(ctrl)
+		mockUsers := mocks.NewMockUserRepository(ctrl)
+		mockStats := mocks.NewMockStatsRepository(ctrl)
+
+		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: now})
+
+		mockAttempts.EXPECT().GetIncompleteAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
+
+		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
+		result, err := svc.GetActiveSessionForUser(ctx, userID)
+		if err != nil {
+			t.Fatalf("GetActiveSessionForUser() error = %v, want nil", err)
+		}
+		if result != nil {
+			t.Errorf("GetActiveSessionForUser() = %v, want nil", result)
+		}
+	})
+}

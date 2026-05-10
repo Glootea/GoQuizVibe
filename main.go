@@ -70,6 +70,7 @@ func main() {
 		{"GET", "/quiz/{id}/q/{index}", app.QuizHandler.QuizQuestion},
 		{"POST", "/quiz/{id}/navigate", app.QuizHandler.QuizNavigate},
 		{"POST", "/quiz/{id}/finish", app.QuizHandler.QuizFinish},
+		{"POST", "/quiz/{id}/cancel-session", app.QuizHandler.CancelSession},
 		{"GET", "/quiz/{id}/result", app.QuizHandler.QuizResult},
 		{"GET", "/errors", app.QuizHandler.ErrorsPage},
 		{"GET", "/leaderboard", app.QuizHandler.LeaderboardPage},

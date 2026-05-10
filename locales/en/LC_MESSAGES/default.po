@@ -549,3 +549,32 @@ msgstr "There are %d unanswered questions! Are you sure you want to end?"
 
 msgid "End quiz? This action cannot be undone."
 msgstr "End quiz? This action cannot be undone."
+
+# Session conflict
+
+msgid "Test conflict"
+msgstr "Test conflict"
+
+msgid "Test already active"
+msgstr "Test already active"
+
+msgid "Another test"
+msgstr "Another test"
+
+msgid "Cancelling will complete the current test with your current answers. This action cannot be undone."
+msgstr "Cancelling will complete the current test with your current answers. This action cannot be undone."
+
+msgid "Resume test"
+msgstr "Resume test"
+
+msgid "Cancel and start new"
+msgstr "Cancel and start new"
+
+msgid "Test in progress"
+msgstr "Test in progress"
+
+msgid "Time remaining"
+msgstr "Time remaining"
+
+msgid "Resume"
+msgstr "Resume"

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/goquizvibe/config"
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/handlers"
@@ -12,7 +13,6 @@ import (
 	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/services"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/goforj/wire"
@@ -148,8 +148,9 @@ func ProvideTestDashboardService(
 	queries *db.Queries,
 	gamification *services.GamificationService,
 	authService *services.AuthService,
+	sessionService *services.QuizSessionService,
 ) *services.DashboardService {
-	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
+	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService, sessionService)
 }
 
 func ProvideMockAuthenticator() services.Authenticator {
@@ -264,30 +265,32 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 	authService := services.NewAuthService(queries, cfg.JWTSecret, 24*time.Hour)
 	gamification := services.NewGamificationService(queries, queries, mockTime)
 	quizService := services.NewQuizService(queries, queries, queries, queries)
-	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService)
+
+	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification, nil)
+	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService)
 
 	localeSvc, _ := locales.NewService()
 
 	return &TestApp{
-		AuthService:         authService,
-		QuizService:         quizService,
-		QuizSessionService:  nil,
-		AdminService:        nil,
-		DashboardService:    dashboardService,
-		GamificationService: gamification,
-		StorageService:      nil,
-		CacheService:        nil,
-		AuthHandler:         handlers.NewAuth(queries, authService, localeSvc),
-		DashboardHandler:    handlers.NewDashboard(dashboardService),
-		QuizHandler:         handlers.NewQuiz(queries, quizService, nil, authService),
-		AdminHandler:        handlers.NewAdmin(nil, authService, localeSvc),
+		AuthService:             authService,
+		QuizService:             quizService,
+		QuizSessionService:      quizSessionService,
+		AdminService:            nil,
+		DashboardService:        dashboardService,
+		GamificationService:     gamification,
+		StorageService:          nil,
+		CacheService:            nil,
+		AuthHandler:             handlers.NewAuth(queries, authService, localeSvc),
+		DashboardHandler:        handlers.NewDashboard(dashboardService),
+		QuizHandler:             handlers.NewQuiz(queries, quizService, nil, authService),
+		AdminHandler:            handlers.NewAdmin(nil, authService, localeSvc),
 		RequireAuthMiddleware:   middleware.NewRequireAuthMiddleware(authService),
 		RequireRoleMiddleware:   middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher),
-		CompressionMiddleware:    middleware.NewCompressionMiddleware(),
+		CompressionMiddleware:   middleware.NewCompressionMiddleware(),
 		CommonHeadersMiddleware: middleware.NewCommonHeaders(),
-		LocaleMiddleware:         middleware.NewLocaleMiddleware(localeSvc),
-		LocaleService:            localeSvc,
-		MockAuthenticator:        mockAuth,
-		MockTimeProvider:         mockTime,
+		LocaleMiddleware:        middleware.NewLocaleMiddleware(localeSvc),
+		LocaleService:           localeSvc,
+		MockAuthenticator:       mockAuth,
+		MockTimeProvider:        mockTime,
 	}
 }
