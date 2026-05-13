@@ -65,7 +65,7 @@ func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUI
 
 	var activeSession *types.ActiveSessionInfo
 	if s.sessionService != nil {
-		activeSession, _ = s.sessionService.GetActiveSessionForUser(ctx, userID)
+		activeSession = s.sessionService.GetActiveSessionForUser(ctx, userID)
 	}
 
 	return &types.DashboardData{

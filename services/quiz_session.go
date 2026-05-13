@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -23,34 +22,42 @@ func init() {
 
 var ErrTimeExpired = errors.New("time expired")
 
+type QuizSession struct {
+	UserID       uuid.UUID           `json:"user_id"`
+	QuizID       uuid.UUID           `json:"quiz_id"`
+	AttemptID    uuid.UUID           `json:"attempt_id"`
+	CurrentIndex int                 `json:"current_index"`
+	Answers      map[int]AnswerState `json:"answers"`
+	CreatedAt    time.Time           `json:"created_at"`
+}
+
+type AnswerState = types.AnswerState
+
 func (s *QuizSessionService) isTimeExpired(attempt db.QuizAttempt, timeLimit int) bool {
 	return time.Now().After(attempt.StartedAt.Add(time.Duration(timeLimit) * time.Second))
 }
 
 type QuizSessionService struct {
 	attempts     r.AttemptRepository
-	sessions     r.SessionRepository
 	quizzes      r.QuizRepository
 	questions    r.QuestionRepository
 	images       r.ImageRepository
 	users        r.UserRepository
-	gamification *GamificationService
-	cache        *CacheService
+	gamification GamificationService
+	cache        CacheService
 }
 
 func NewQuizSessionService(
 	attempts r.AttemptRepository,
-	sessions r.SessionRepository,
 	quizzes r.QuizRepository,
 	questions r.QuestionRepository,
 	images r.ImageRepository,
 	users r.UserRepository,
-	gamification *GamificationService,
-	cache *CacheService,
+	gamification GamificationService,
+	cache CacheService,
 ) *QuizSessionService {
 	return &QuizSessionService{
 		attempts:     attempts,
-		sessions:     sessions,
 		quizzes:      quizzes,
 		questions:    questions,
 		images:       images,
@@ -60,16 +67,24 @@ func NewQuizSessionService(
 	}
 }
 
-func cacheKeyQuestions(sessionID uuid.UUID) string {
-	return fmt.Sprintf("quiz:session:%s:questions", sessionID.String())
+func userSessionKey(userID uuid.UUID) string {
+	return fmt.Sprintf("quiz:session:user:%s", userID.String())
 }
 
-func cacheKeyOrder(sessionID uuid.UUID) string {
-	return fmt.Sprintf("quiz:session:%s:order", sessionID.String())
+func (s *QuizSessionService) GetSession(ctx context.Context, userID uuid.UUID) *QuizSession {
+	var session QuizSession
+	if s.cache.Get(ctx, userSessionKey(userID), &session) {
+		return &session
+	}
+	return nil
 }
 
-func cacheKeyAnswers(sessionID uuid.UUID) string {
-	return fmt.Sprintf("quiz:session:%s:answers", sessionID.String())
+func (s *QuizSessionService) saveSession(ctx context.Context, session *QuizSession, ttl time.Duration) error {
+	return s.cache.Set(ctx, userSessionKey(session.UserID), session, ttl)
+}
+
+func (s *QuizSessionService) deleteSession(ctx context.Context, userID uuid.UUID) error {
+	return s.cache.Delete(ctx, userSessionKey(userID))
 }
 
 func shuffleOptions(options []string) []string {
@@ -81,7 +96,7 @@ func shuffleOptions(options []string) []string {
 	return shuffled
 }
 
-func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID uuid.UUID) (*db.QuizSession, error) {
+func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID uuid.UUID) (*QuizSession, error) {
 	attemptID := uuid.New()
 	now := time.Now()
 
@@ -121,34 +136,22 @@ func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID u
 
 	ttl := time.Duration(quiz.TimeLimit+60) * time.Second
 
-	session := &db.QuizSession{
-		ID:           uuid.New(),
+	session := &QuizSession{
 		UserID:       userID,
 		QuizID:       quizID,
 		AttemptID:    attemptID,
 		CurrentIndex: 0,
-		Answers:      nil,
+		Answers:      map[int]AnswerState{},
 		CreatedAt:    now,
 	}
 
-	_, err = s.sessions.CreateSession(ctx, db.CreateSessionParams{
-		ID:           session.ID,
-		UserID:       session.UserID,
-		QuizID:       session.QuizID,
-		AttemptID:    session.AttemptID,
-		CurrentIndex: session.CurrentIndex,
-		Answers:      session.Answers,
-		CreatedAt:    session.CreatedAt,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("create session: %w", err)
+	if err := s.saveSession(ctx, session, ttl); err != nil {
+		return nil, fmt.Errorf("save session: %w", err)
 	}
 
-	if s.cache != nil {
-		_ = s.cache.Set(ctx, cacheKeyQuestions(session.ID), selectedQuestions, ttl)
-		_ = s.cache.Set(ctx, cacheKeyOrder(session.ID), order, ttl)
-		_ = s.cache.Set(ctx, cacheKeyAnswers(session.ID), map[int]types.AnswerState{}, ttl)
-	}
+	_ = s.cache.Set(ctx, cacheKeyQuestions(userID), selectedQuestions, ttl)
+	_ = s.cache.Set(ctx, cacheKeyOrder(userID), order, ttl)
+	_ = s.cache.Set(ctx, cacheKeyAnswers(userID), map[int]types.AnswerState{}, ttl)
 
 	return session, nil
 }
@@ -160,31 +163,27 @@ type QuestionFeedback struct {
 	IsLast        bool
 }
 
-func (s *QuizSessionService) GetSessionQuestions(ctx context.Context, sessionID uuid.UUID) ([]models.QuestionWithImages, error) {
-	if s.cache != nil {
-		var questions []models.QuestionWithImages
-		if s.cache.Get(ctx, cacheKeyQuestions(sessionID), &questions) {
-			return questions, nil
-		}
+func (s *QuizSessionService) GetSessionQuestions(ctx context.Context, userID uuid.UUID) ([]models.QuestionWithImages, error) {
+	var questions []models.QuestionWithImages
+	if s.cache.Get(ctx, cacheKeyQuestions(userID), &questions) {
+		return questions, nil
 	}
 
-	questions, err := s.loadQuestionsFromDB(ctx, sessionID)
+	questions, err := s.loadQuestionsFromDB(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	if s.cache != nil {
-		ttl := time.Minute
-		_ = s.cache.Set(ctx, cacheKeyQuestions(sessionID), questions, ttl)
-	}
+	ttl := time.Minute
+	_ = s.cache.Set(ctx, cacheKeyQuestions(userID), questions, ttl)
 
 	return questions, nil
 }
 
-func (s *QuizSessionService) loadQuestionsFromDB(ctx context.Context, sessionID uuid.UUID) ([]models.QuestionWithImages, error) {
-	session, err := s.sessions.GetSession(ctx, sessionID)
-	if err != nil {
-		return nil, err
+func (s *QuizSessionService) loadQuestionsFromDB(ctx context.Context, userID uuid.UUID) ([]models.QuestionWithImages, error) {
+	session := s.GetSession(ctx, userID)
+	if session == nil {
+		return nil, errors.New("session not found")
 	}
 
 	quiz, err := s.getQuizWithQuestions(ctx, session.QuizID)
@@ -192,32 +191,28 @@ func (s *QuizSessionService) loadQuestionsFromDB(ctx context.Context, sessionID 
 		return nil, err
 	}
 
-	if s.cache != nil {
-		var order []int
-		if s.cache.Get(ctx, cacheKeyOrder(sessionID), &order) {
-			selected := make([]models.QuestionWithImages, len(order))
-			for i, idx := range order {
-				selected[i] = quiz.Questions[idx]
-			}
-			return selected, nil
+	var order []int
+	if s.cache.Get(ctx, cacheKeyOrder(userID), &order) {
+		selected := make([]models.QuestionWithImages, len(order))
+		for i, idx := range order {
+			selected[i] = quiz.Questions[idx]
 		}
+		return selected, nil
 	}
 
 	return quiz.Questions, nil
 }
 
-func (s *QuizSessionService) GetAnswers(ctx context.Context, sessionID uuid.UUID) (map[int]types.AnswerState, error) {
-	if s.cache != nil {
-		var answers map[int]types.AnswerState
-		if s.cache.Get(ctx, cacheKeyAnswers(sessionID), &answers) {
-			return answers, nil
-		}
+func (s *QuizSessionService) GetAnswers(ctx context.Context, userID uuid.UUID) (map[int]types.AnswerState, error) {
+	var answers map[int]types.AnswerState
+	if s.cache.Get(ctx, cacheKeyAnswers(userID), &answers) {
+		return answers, nil
 	}
 	return map[int]types.AnswerState{}, nil
 }
 
-func (s *QuizSessionService) SaveAnswer(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, currentIndex int, answer string) (bool, error) {
-	session, questions, err := s.getSessionWithQuestions(ctx, sessionID)
+func (s *QuizSessionService) SaveAnswer(ctx context.Context, userID uuid.UUID, quizID uuid.UUID, currentIndex int, answer string) (bool, error) {
+	session, questions, err := s.getSessionWithQuestions(ctx, userID)
 	if err != nil {
 		return false, fmt.Errorf("get session with questions: %w", err)
 	}
@@ -243,8 +238,8 @@ func (s *QuizSessionService) SaveAnswer(ctx context.Context, sessionID uuid.UUID
 	return isCorrect, nil
 }
 
-func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, currentIndex, targetIndex int, answer string, user *db.User) (*types.QuizPageData, error) {
-	session, questions, err := s.getSessionWithQuestions(ctx, sessionID)
+func (s *QuizSessionService) NavigateQuestion(ctx context.Context, userID uuid.UUID, quizID uuid.UUID, currentIndex, targetIndex int, answer string, user *db.User) (*types.QuizPageData, error) {
+	session, questions, err := s.getSessionWithQuestions(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get session with questions: %w", err)
 	}
@@ -274,36 +269,25 @@ func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uui
 		targetIndex = 0
 	}
 
-	answers := make(map[int]types.AnswerState)
-	if session.Answers != nil {
-		if err := json.Unmarshal(session.Answers, &answers); err != nil {
-			return nil, fmt.Errorf("unmarshal answers: %w", err)
-		}
+	answers := session.Answers
+	if answers == nil {
+		answers = map[int]AnswerState{}
 	}
-	answers[currentIndex] = types.AnswerState{Text: answer, Answered: answer != ""}
+	answers[currentIndex] = AnswerState{Text: answer, Answered: answer != ""}
+	session.Answers = answers
+	session.CurrentIndex = targetIndex
 
-	answersJSON, err := json.Marshal(answers)
-	if err != nil {
-		return nil, fmt.Errorf("marshal answers: %w", err)
-	}
-
-	_, err = s.sessions.UpdateSession(ctx, db.UpdateSessionParams{
-		ID:           session.ID,
-		CurrentIndex: targetIndex,
-		Answers:      answersJSON,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("update session: %w", err)
+	ttl := time.Duration(quiz.TimeLimit+60) * time.Second
+	if err := s.saveSession(ctx, &session, ttl); err != nil {
+		return nil, fmt.Errorf("save session: %w", err)
 	}
 
-	_, err = s.SaveAnswer(ctx, sessionID, quizID, currentIndex, answer)
+	_, err = s.SaveAnswer(ctx, userID, quizID, currentIndex, answer)
 	if err != nil {
 		return nil, fmt.Errorf("save answer: %w", err)
 	}
 
-	if s.cache != nil {
-		_ = s.cache.Set(ctx, cacheKeyAnswers(sessionID), answers, time.Minute)
-	}
+	_ = s.cache.Set(ctx, cacheKeyAnswers(userID), answers, time.Minute)
 
 	remainingSeconds := max(int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit)*time.Second)).Seconds()), 0)
 
@@ -320,7 +304,7 @@ func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uui
 	return &types.QuizPageData{
 		User:             user,
 		Questions:        questions,
-		SessionID:        sessionID.String(),
+		SessionID:        userID.String(),
 		CurrentIndex:     newIndex,
 		Answers:          answers,
 		TotalQuestions:   len(questions),
@@ -331,10 +315,10 @@ func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uui
 	}, nil
 }
 
-func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid.UUID) (*db.QuizAttempt, error) {
-	session, err := s.sessions.GetSession(ctx, sessionID)
-	if err != nil {
-		return nil, fmt.Errorf("get session: %w", err)
+func (s *QuizSessionService) CompleteSession(ctx context.Context, userID uuid.UUID) (*db.QuizAttempt, error) {
+	session := s.GetSession(ctx, userID)
+	if session == nil {
+		return nil, errors.New("session not found")
 	}
 
 	quiz, err := s.getQuizWithQuestions(ctx, session.QuizID)
@@ -369,15 +353,14 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, sessionID uuid
 		return nil, fmt.Errorf("update attempt: %w", err)
 	}
 
-	err = s.sessions.DeleteSession(ctx, sessionID)
-	if err != nil {
+	if err := s.deleteSession(ctx, userID); err != nil {
 		return nil, fmt.Errorf("delete session: %w", err)
 	}
 
 	return &updatedAttempt, nil
 }
 
-func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sessionID, userID uuid.UUID) (*types.QuizResultData, error) {
+func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID uuid.UUID, userID uuid.UUID) (*types.QuizResultData, error) {
 	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
@@ -393,7 +376,7 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID, sess
 		return nil, fmt.Errorf("get user stats: %w", err)
 	}
 
-	attempt, err := s.CompleteSession(ctx, sessionID)
+	attempt, err := s.CompleteSession(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("complete session: %w", err)
 	}
@@ -538,8 +521,8 @@ func (s *QuizSessionService) GetUserStats(ctx context.Context, userID uuid.UUID)
 	return s.gamification.GetUserStats(ctx, userID)
 }
 
-func (s *QuizSessionService) GetQuizQuestionData(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, index int) (*types.QuizPageData, error) {
-	session, questions, err := s.getSessionWithQuestions(ctx, sessionID)
+func (s *QuizSessionService) GetQuizQuestionData(ctx context.Context, userID uuid.UUID, quizID uuid.UUID, index int) (*types.QuizPageData, error) {
+	session, questions, err := s.getSessionWithQuestions(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get session with questions: %w", err)
 	}
@@ -558,7 +541,7 @@ func (s *QuizSessionService) GetQuizQuestionData(ctx context.Context, sessionID 
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}
 
-	answers, err := s.GetAnswers(ctx, sessionID)
+	answers, err := s.GetAnswers(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get answers: %w", err)
 	}
@@ -579,7 +562,7 @@ func (s *QuizSessionService) GetQuizQuestionData(ctx context.Context, sessionID 
 
 	return &types.QuizPageData{
 		Questions:        questions,
-		SessionID:        sessionID.String(),
+		SessionID:        userID.String(),
 		CurrentIndex:     index,
 		Answers:          answers,
 		TotalQuestions:   len(questions),
@@ -637,59 +620,63 @@ func (s *QuizSessionService) attachImagesToQuestions(ctx context.Context, questi
 	return result
 }
 
-func (s *QuizSessionService) SessionExists(ctx context.Context, sessionID uuid.UUID) (bool, error) {
-	return s.sessions.SessionExists(ctx, sessionID)
+func (s *QuizSessionService) SessionExists(ctx context.Context, userID uuid.UUID) bool {
+	return s.GetSession(ctx, userID) != nil
 }
 
-func (s *QuizSessionService) GetActiveSessionForUser(ctx context.Context, userID uuid.UUID) (*types.ActiveSessionInfo, error) {
-	attempts, err := s.attempts.GetIncompleteAttemptsByUser(ctx, userID)
+func (s *QuizSessionService) GetActiveSessionForUser(ctx context.Context, userID uuid.UUID) *types.ActiveSessionInfo {
+	session := s.GetSession(ctx, userID)
+	if session == nil {
+		return nil
+	}
+
+	quiz, err := s.quizzes.GetQuizByID(ctx, session.QuizID)
 	if err != nil {
-		return nil, fmt.Errorf("get incomplete attempts: %w", err)
+		return nil
 	}
 
-	if len(attempts) == 0 {
-		return nil, nil
+	attempt, err := s.attempts.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return nil
 	}
 
-	for _, attempt := range attempts {
-		session, err := s.sessions.GetSessionByAttemptID(ctx, attempt.ID)
-		if err != nil {
-			continue
-		}
+	remainingSeconds := max(int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit)*time.Second)).Seconds()), 0)
 
-		quiz, err := s.quizzes.GetQuizByID(ctx, attempt.QuizID)
-		if err != nil {
-			continue
-		}
-
-		remainingSeconds := max(int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit)*time.Second)).Seconds()), 0)
-
-		if remainingSeconds == 0 {
-			continue
-		}
-
-		return &types.ActiveSessionInfo{
-			SessionID:        session.ID,
-			QuizID:           quiz.ID,
-			QuizTitle:        quiz.Title,
-			CurrentIndex:     session.CurrentIndex,
-			RemainingSeconds: remainingSeconds,
-		}, nil
+	if remainingSeconds == 0 {
+		return nil
 	}
 
-	return nil, nil
+	return &types.ActiveSessionInfo{
+		SessionID:        session.UserID,
+		QuizID:           session.QuizID,
+		QuizTitle:        quiz.Title,
+		CurrentIndex:     session.CurrentIndex,
+		RemainingSeconds: remainingSeconds,
+	}
 }
 
-func (s *QuizSessionService) getSessionWithQuestions(ctx context.Context, sessionID uuid.UUID) (db.QuizSession, []models.QuestionWithImages, error) {
-	session, err := s.sessions.GetSession(ctx, sessionID)
-	if err != nil {
-		return db.QuizSession{}, nil, err
+func (s *QuizSessionService) getSessionWithQuestions(ctx context.Context, userID uuid.UUID) (QuizSession, []models.QuestionWithImages, error) {
+	session := s.GetSession(ctx, userID)
+	if session == nil {
+		return QuizSession{}, nil, errors.New("session not found")
 	}
 
 	quiz, err := s.getQuizWithQuestions(ctx, session.QuizID)
 	if err != nil {
-		return db.QuizSession{}, nil, err
+		return QuizSession{}, nil, err
 	}
 
-	return session, quiz.Questions, nil
+	return *session, quiz.Questions, nil
+}
+
+func cacheKeyQuestions(sessionID uuid.UUID) string {
+	return fmt.Sprintf("quiz:session:%s:questions", sessionID.String())
+}
+
+func cacheKeyOrder(sessionID uuid.UUID) string {
+	return fmt.Sprintf("quiz:session:%s:order", sessionID.String())
+}
+
+func cacheKeyAnswers(sessionID uuid.UUID) string {
+	return fmt.Sprintf("quiz:session:%s:answers", sessionID.String())
 }

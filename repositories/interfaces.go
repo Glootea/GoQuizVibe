@@ -45,15 +45,6 @@ type AttemptRepository interface {
 	GetRecentAttempts(ctx context.Context, limit int32) ([]db.GetRecentAttemptsRow, error)
 }
 
-type SessionRepository interface {
-	CreateSession(ctx context.Context, params db.CreateSessionParams) (db.QuizSession, error)
-	GetSession(ctx context.Context, id uuid.UUID) (db.QuizSession, error)
-	GetSessionByAttemptID(ctx context.Context, attemptID uuid.UUID) (db.QuizSession, error)
-	UpdateSession(ctx context.Context, params db.UpdateSessionParams) (db.QuizSession, error)
-	DeleteSession(ctx context.Context, id uuid.UUID) error
-	SessionExists(ctx context.Context, id uuid.UUID) (bool, error)
-}
-
 type ImageRepository interface {
 	CreateQuestionImage(ctx context.Context, params db.CreateQuestionImageParams) (db.QuestionImage, error)
 	GetQuestionImageByID(ctx context.Context, id uuid.UUID) (db.QuestionImage, error)

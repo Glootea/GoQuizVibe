@@ -98,7 +98,7 @@ func ProvideQuizSessionService(
 	gamification *services.GamificationService,
 	cacheService *services.CacheService,
 ) *services.QuizSessionService {
-	return services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification, cacheService)
+	return services.NewQuizSessionService(queries, queries, queries, queries, queries, *gamification, *cacheService)
 }
 
 func ProvideDashboardService(
