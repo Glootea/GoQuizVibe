@@ -163,15 +163,16 @@ type QuestionImage struct {
 }
 
 type Quiz struct {
-	ID          uuid.UUID  `json:"id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Subject     string     `json:"subject"`
-	Grade       int        `json:"grade"`
-	Status      QuizStatus `json:"status"`
-	TimeLimit   int        `json:"time_limit"`
-	CreatedBy   uuid.UUID  `json:"created_by"`
-	CreatedAt   time.Time  `json:"created_at"`
+	ID               uuid.UUID  `json:"id"`
+	Title            string     `json:"title"`
+	Description      string     `json:"description"`
+	Subject          string     `json:"subject"`
+	Grade            int        `json:"grade"`
+	Status           QuizStatus `json:"status"`
+	TimeLimit        int        `json:"time_limit"`
+	CreatedBy        uuid.UUID  `json:"created_by"`
+	CreatedAt        time.Time  `json:"created_at"`
+	QuestionPoolSize int        `json:"question_pool_size"`
 }
 
 type QuizAttempt struct {

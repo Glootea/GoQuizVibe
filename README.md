@@ -113,7 +113,7 @@ wrapHandler := func(handler any) http.HandlerFunc {
 ### HTMX-ответы
 Админка возвращает partial HTML для HTMX-targets:
 ```go
-if r.Header.Get("hx-request") == "true" {
+if r.Header.Get("HX-Request") == "true" {
     return admin.QuestionsSection(quizWithQuestions, questions).Render(r.Context(), w)
 }
 ```

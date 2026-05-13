@@ -1,0 +1,25 @@
+package pages
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/google/uuid"
+)
+
+templ TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) {
+	<div
+		id="timer-display"
+		class="text-lg font-semibold text-gray-700"
+		data-remaining-seconds={ strconv.Itoa(remainingSeconds) }
+		data-quiz-id={ quizID.String() }
+		data-session-id={ sessionID }
+		hx-get={ fmt.Sprintf("/quiz/%s/sync?session=%s", quizID.String(), sessionID) }
+		hx-trigger="every 30s"
+		hx-target="#timer-display"
+		hx-swap="outerHTML"
+	>
+		<i class="mr-1 fas fa-clock"></i>
+		<span id="timer-text">{ FormatTimer(remainingSeconds) }</span>
+	</div>
+}

@@ -1,0 +1,1 @@
+ALTER TABLE quizzes ADD COLUMN question_pool_size INT NOT NULL DEFAULT 0;

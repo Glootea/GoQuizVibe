@@ -119,7 +119,7 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 			Description: "Тест на знание обыкновенных и десятичных дробей",
 			Subject:     "Математика",
 			Grade:       5,
-			TimeLimit:   30,
+			TimeLimit:   900,
 			Questions: []struct {
 				Text          string
 				Type          db.QuestionType
@@ -144,7 +144,7 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 			Description: "Тест на знание пропорций, координат и действий с отрицательными числами",
 			Subject:     "Математика",
 			Grade:       6,
-			TimeLimit:   30,
+			TimeLimit:   900,
 			Questions: []struct {
 				Text          string
 				Type          db.QuestionType
@@ -169,7 +169,7 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 			Description: "Тест на знание одночленов, многочленов и формул сокращённого умножения",
 			Subject:     "Математика",
 			Grade:       7,
-			TimeLimit:   30,
+			TimeLimit:   900,
 			Questions: []struct {
 				Text          string
 				Type          db.QuestionType

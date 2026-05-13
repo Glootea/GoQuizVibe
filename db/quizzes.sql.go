@@ -15,7 +15,7 @@ import (
 const createQuiz = `-- name: CreateQuiz :one
 INSERT INTO quizzes (id, title, description, subject, grade, status, time_limit, created_by, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at
+RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size
 `
 
 type CreateQuizParams struct {
@@ -53,6 +53,7 @@ func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, e
 		&i.TimeLimit,
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.QuestionPoolSize,
 	)
 	return i, err
 }
@@ -67,7 +68,7 @@ func (q *Queries) DeleteQuiz(ctx context.Context, id uuid.UUID) error {
 }
 
 const getAvailableQuizzes = `-- name: GetAvailableQuizzes :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes WHERE status = 'available' ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE status = 'available' ORDER BY created_at DESC
 `
 
 func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
@@ -89,6 +90,7 @@ func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
 			&i.TimeLimit,
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.QuestionPoolSize,
 		); err != nil {
 			return nil, err
 		}
@@ -101,7 +103,7 @@ func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getNonArchivedQuizzes = `-- name: GetNonArchivedQuizzes :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes WHERE status != 'archived' ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE status != 'archived' ORDER BY created_at DESC
 `
 
 func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
@@ -123,6 +125,7 @@ func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
 			&i.TimeLimit,
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.QuestionPoolSize,
 		); err != nil {
 			return nil, err
 		}
@@ -135,7 +138,7 @@ func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getQuizByID = `-- name: GetQuizByID :one
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes WHERE id = $1
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE id = $1
 `
 
 func (q *Queries) GetQuizByID(ctx context.Context, id uuid.UUID) (Quiz, error) {
@@ -151,12 +154,13 @@ func (q *Queries) GetQuizByID(ctx context.Context, id uuid.UUID) (Quiz, error) {
 		&i.TimeLimit,
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.QuestionPoolSize,
 	)
 	return i, err
 }
 
 const getQuizzes = `-- name: GetQuizzes :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes ORDER BY created_at DESC
 `
 
 func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
@@ -178,6 +182,7 @@ func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
 			&i.TimeLimit,
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.QuestionPoolSize,
 		); err != nil {
 			return nil, err
 		}
@@ -190,7 +195,7 @@ func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getQuizzesForUser = `-- name: GetQuizzesForUser :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at FROM quizzes WHERE status = 'available' OR created_by = $1 ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE status = 'available' OR created_by = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) GetQuizzesForUser(ctx context.Context, createdBy uuid.UUID) ([]Quiz, error) {
@@ -212,6 +217,7 @@ func (q *Queries) GetQuizzesForUser(ctx context.Context, createdBy uuid.UUID) ([
 			&i.TimeLimit,
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.QuestionPoolSize,
 		); err != nil {
 			return nil, err
 		}
@@ -236,7 +242,7 @@ func (q *Queries) QuizTitleExists(ctx context.Context, title string) (bool, erro
 
 const updateQuiz = `-- name: UpdateQuiz :one
 UPDATE quizzes SET title = $2, description = $3, subject = $4, grade = $5, status = $6, time_limit = $7
-WHERE id = $1 RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at
+WHERE id = $1 RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size
 `
 
 type UpdateQuizParams struct {
@@ -270,6 +276,7 @@ func (q *Queries) UpdateQuiz(ctx context.Context, arg UpdateQuizParams) (Quiz, e
 		&i.TimeLimit,
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.QuestionPoolSize,
 	)
 	return i, err
 }

@@ -9,18 +9,41 @@ import (
 )
 
 type DashboardData struct {
-	User        *models.User
-	Quizzes     []*models.Quiz
-	Stats       *models.UserStats
-	Leaderboard []*models.LeaderboardEntry
+	User          *models.User
+	Quizzes       []*models.Quiz
+	Stats         *models.UserStats
+	Leaderboard   []*models.LeaderboardEntry
+	ActiveSession *ActiveSessionInfo
+}
+
+type ActiveSessionInfo struct {
+	SessionID        uuid.UUID
+	QuizID           uuid.UUID
+	QuizTitle        string
+	CurrentIndex     int
+	RemainingSeconds int
+}
+
+type SessionConflictData struct {
+	ExistingSessionID uuid.UUID
+	ExistingQuizID    uuid.UUID
+	ExistingQuizTitle string
+	CurrentIndex      int
+	RequestedQuizID   uuid.UUID
 }
 
 type QuizPageData struct {
-	User      *models.User
-	Quiz      *models.Quiz
-	Stats     *models.UserStats
-	SessionID string
-	Index     int
+	User             *models.User
+	Questions        []models.QuestionWithImages
+	QuestionOrder    []int
+	AnswerOptions    map[int][]string
+	SessionID        string
+	CurrentIndex     int
+	Answers          map[int]string
+	TotalQuestions   int
+	RemainingSeconds int
+	TimeLimitMinutes int
+	IsLastQuestion   bool
 }
 
 type QuizResultData struct {
@@ -39,6 +62,7 @@ type AnswerDetail struct {
 	UserAnswer    string
 	CorrectAnswer string
 	IsCorrect     bool
+	Explanation   string
 }
 
 type ErrorsPageData struct {
@@ -55,6 +79,13 @@ type QuizErrors struct {
 type LeaderboardPageData struct {
 	User    *models.User
 	Entries []*models.LeaderboardEntry
+}
+
+type QuizInfoData struct {
+	User          *models.User
+	Quiz          *models.Quiz
+	QuestionCount int
+	TimeLimitMin  int
 }
 
 type ErrorData struct {

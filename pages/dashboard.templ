@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"strconv"
+
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
 	"github.com/goquizvibe/types"
@@ -11,6 +13,21 @@ templ DashboardPage(data types.DashboardData, t locales.Translator) {
 		<div class="min-h-screen bg-gray-50">
 			@Navbar(data.User, t)
 			<main class="py-8 px-4 mx-auto max-w-6xl">
+				if data.ActiveSession != nil {
+					<div class="flex justify-between items-center p-4 mb-6 bg-yellow-50 rounded-xl border border-yellow-200">
+						<div>
+							<p class="font-medium text-yellow-800">{ t.TestInProgress() }: { data.ActiveSession.QuizTitle }</p>
+							<div class="flex gap-1 items-center text-sm text-yellow-600">
+								<span>{ t.TimeRemaining() }:</span>
+								@TimerWidget(data.ActiveSession.QuizID, data.ActiveSession.SessionID.String(), data.ActiveSession.RemainingSeconds)
+							</div>
+						</div>
+						<a href={ templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)) } 
+						   class="py-2 px-4 font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600">
+							{ t.Resume() }
+						</a>
+					</div>
+				}
 				@StatsCards(data.Stats, t)
 				@QuizGrid(data.Quizzes, t)
 				@LeaderboardPreview(data.Leaderboard, t)
@@ -112,7 +129,7 @@ templ QuizGrid(quizzes []*models.Quiz, t locales.Translator) {
 }
 
 templ QuizCard(quiz *models.Quiz, t locales.Translator) {
-	<a href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/0") } class="block p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-200 hover:shadow-lg">
+	<a href={ templ.URL("/quiz/" + quiz.ID.String() + "/info") } class="block p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-200 hover:shadow-lg">
 		<div class="flex justify-between items-start mb-3">
 			<span class="py-1 px-3 text-sm text-indigo-700 bg-indigo-100 rounded-full">
 				{ quiz.Subject }

@@ -30,6 +30,8 @@ type Translator interface {
 	Admin() string
 	// "All"
 	All() string
+	// "All Questions Answered! End quiz?"
+	AllQuestionsAnsweredEndQuiz() string
 	// "All Quizzes"
 	AllQuizzes() string
 	// "Already have an account?"
@@ -38,6 +40,8 @@ type Translator interface {
 	AnErrorOccurred() string
 	// "Analytics"
 	Analytics() string
+	// "Another test"
+	AnotherTest() string
 	// "Answer:"
 	Answer() string
 	// "Answer Details"
@@ -70,6 +74,10 @@ type Translator interface {
 	BackToQuizzes() string
 	// "Cancel"
 	Cancel() string
+	// "Cancel and start new"
+	CancelAndStartNew() string
+	// "Cancelling will complete the current test with your current answers. This action cannot be undone."
+	CancellingWillCompleteTheCurrentTestWithYourCurrentAnswersThisActionCannotBeUndone() string
 	// "Check Results"
 	CheckResults() string
 	// "Chemistry: Organic and inorganic"
@@ -86,7 +94,7 @@ type Translator interface {
 	ControlPanel() string
 	// "Copyright 2026 GoQuizVibe"
 	Copyright2026Goquizvibe() string
-	// "Correct:"
+	// "Correct"
 	Correct() string
 	// "Correct Answer"
 	CorrectAnswer() string
@@ -118,6 +126,8 @@ type Translator interface {
 	Editing(param1 string) string
 	// "Email"
 	Email() string
+	// "End quiz? This action cannot be undone."
+	EndQuizThisActionCannotBeUndone() string
 	// "Enter your answer..."
 	EnterYourAnswer() string
 	// "Error"
@@ -238,7 +248,7 @@ type Translator interface {
 	QuizSaved() string
 	// "Quiz statistics"
 	QuizStatistics() string
-	// "quizzes"
+	// "Quizzes"
 	Quizzes() string
 	// "Quizzes Completed"
 	QuizzesCompleted() string
@@ -248,12 +258,16 @@ type Translator interface {
 	RecentActivity() string
 	// "Registration"
 	Registration() string
-	// "Result: %d%%"
-	Result(param1 int) string
+	// "Result"
+	Result() string
 	// "Results"
 	Results() string
 	// "Results will appear after students complete quizzes"
 	ResultsWillAppearAfterStudentsCompleteQuizzes() string
+	// "Resume"
+	Resume() string
+	// "Resume test"
+	ResumeTest() string
 	// "Retry"
 	Retry() string
 	// "Satisfactory"
@@ -300,10 +314,20 @@ type Translator interface {
 	SuccessRate() string
 	// "Summary Statistics"
 	SummaryStatistics() string
+	// "Test already active"
+	TestAlreadyActive() string
+	// "Test conflict"
+	TestConflict() string
+	// "Test in progress"
+	TestInProgress() string
+	// "There are %d unanswered questions! Are you sure you want to end?"
+	ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(param1 int) string
 	// "Time"
 	Time() string
 	// "Time (min)"
 	TimeMin() string
+	// "Time remaining"
+	TimeRemaining() string
 	// "Title"
 	Title() string
 	// "To quiz list"
@@ -372,6 +396,10 @@ func (t *translator) All() string {
 	return t.locale.Get("All")
 }
 
+func (t *translator) AllQuestionsAnsweredEndQuiz() string {
+	return t.locale.Get("All Questions Answered! End quiz?")
+}
+
 func (t *translator) AllQuizzes() string {
 	return t.locale.Get("All Quizzes")
 }
@@ -386,6 +414,10 @@ func (t *translator) AnErrorOccurred() string {
 
 func (t *translator) Analytics() string {
 	return t.locale.Get("Analytics")
+}
+
+func (t *translator) AnotherTest() string {
+	return t.locale.Get("Another test")
 }
 
 func (t *translator) Answer() string {
@@ -452,6 +484,14 @@ func (t *translator) Cancel() string {
 	return t.locale.Get("Cancel")
 }
 
+func (t *translator) CancelAndStartNew() string {
+	return t.locale.Get("Cancel and start new")
+}
+
+func (t *translator) CancellingWillCompleteTheCurrentTestWithYourCurrentAnswersThisActionCannotBeUndone() string {
+	return t.locale.Get("Cancelling will complete the current test with your current answers. This action cannot be undone.")
+}
+
 func (t *translator) CheckResults() string {
 	return t.locale.Get("Check Results")
 }
@@ -485,7 +525,7 @@ func (t *translator) Copyright2026Goquizvibe() string {
 }
 
 func (t *translator) Correct() string {
-	return t.locale.Get("Correct:")
+	return t.locale.Get("Correct")
 }
 
 func (t *translator) CorrectAnswer() string {
@@ -546,6 +586,10 @@ func (t *translator) Editing(param1 string) string {
 
 func (t *translator) Email() string {
 	return t.locale.Get("Email")
+}
+
+func (t *translator) EndQuizThisActionCannotBeUndone() string {
+	return t.locale.Get("End quiz? This action cannot be undone.")
 }
 
 func (t *translator) EnterYourAnswer() string {
@@ -789,7 +833,7 @@ func (t *translator) QuizStatistics() string {
 }
 
 func (t *translator) Quizzes() string {
-	return t.locale.Get("quizzes")
+	return t.locale.Get("Quizzes")
 }
 
 func (t *translator) QuizzesCompleted() string {
@@ -808,8 +852,8 @@ func (t *translator) Registration() string {
 	return t.locale.Get("Registration")
 }
 
-func (t *translator) Result(param1 int) string {
-	return t.locale.Get("Result: %d%%", param1)
+func (t *translator) Result() string {
+	return t.locale.Get("Result")
 }
 
 func (t *translator) Results() string {
@@ -818,6 +862,14 @@ func (t *translator) Results() string {
 
 func (t *translator) ResultsWillAppearAfterStudentsCompleteQuizzes() string {
 	return t.locale.Get("Results will appear after students complete quizzes")
+}
+
+func (t *translator) Resume() string {
+	return t.locale.Get("Resume")
+}
+
+func (t *translator) ResumeTest() string {
+	return t.locale.Get("Resume test")
 }
 
 func (t *translator) Retry() string {
@@ -912,12 +964,32 @@ func (t *translator) SummaryStatistics() string {
 	return t.locale.Get("Summary Statistics")
 }
 
+func (t *translator) TestAlreadyActive() string {
+	return t.locale.Get("Test already active")
+}
+
+func (t *translator) TestConflict() string {
+	return t.locale.Get("Test conflict")
+}
+
+func (t *translator) TestInProgress() string {
+	return t.locale.Get("Test in progress")
+}
+
+func (t *translator) ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(param1 int) string {
+	return t.locale.Get("There are %d unanswered questions! Are you sure you want to end?", param1)
+}
+
 func (t *translator) Time() string {
 	return t.locale.Get("Time")
 }
 
 func (t *translator) TimeMin() string {
 	return t.locale.Get("Time (min)")
+}
+
+func (t *translator) TimeRemaining() string {
+	return t.locale.Get("Time remaining")
 }
 
 func (t *translator) Title() string {

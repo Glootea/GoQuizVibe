@@ -191,8 +191,11 @@ msgstr "Correct"
 msgid "Mistakes"
 msgstr "Mistakes"
 
-msgid "Result: %d%%"
-msgstr "Result: %d%%"
+msgid "Mistake"
+msgstr "Mistake"
+
+msgid "Result"
+msgstr "Result"
 
 msgid "Back to Quizzes"
 msgstr "Back to Quizzes"
@@ -537,3 +540,41 @@ msgstr "Success Rate"
 
 msgid "quizzes"
 msgstr "quizzes"
+
+msgid "All Questions Answered! End quiz?"
+msgstr "All Questions Answered! End quiz?"
+
+msgid "There are %d unanswered questions! Are you sure you want to end?"
+msgstr "There are %d unanswered questions! Are you sure you want to end?"
+
+msgid "End quiz? This action cannot be undone."
+msgstr "End quiz? This action cannot be undone."
+
+# Session conflict
+
+msgid "Test conflict"
+msgstr "Test conflict"
+
+msgid "Test already active"
+msgstr "Test already active"
+
+msgid "Another test"
+msgstr "Another test"
+
+msgid "Cancelling will complete the current test with your current answers. This action cannot be undone."
+msgstr "Cancelling will complete the current test with your current answers. This action cannot be undone."
+
+msgid "Resume test"
+msgstr "Resume test"
+
+msgid "Cancel and start new"
+msgstr "Cancel and start new"
+
+msgid "Test in progress"
+msgstr "Test in progress"
+
+msgid "Time remaining"
+msgstr "Time remaining"
+
+msgid "Resume"
+msgstr "Resume"

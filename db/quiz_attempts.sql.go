@@ -309,6 +309,38 @@ func (q *Queries) GetGradeDistribution(ctx context.Context) ([]byte, error) {
 	return grade_dist, err
 }
 
+const getIncompleteAttemptsByUser = `-- name: GetIncompleteAttemptsByUser :many
+SELECT id, user_id, quiz_id, score, max_score, started_at, completed_at FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NULL ORDER BY started_at DESC
+`
+
+func (q *Queries) GetIncompleteAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]QuizAttempt, error) {
+	rows, err := q.db.Query(ctx, getIncompleteAttemptsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []QuizAttempt{}
+	for rows.Next() {
+		var i QuizAttempt
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.QuizID,
+			&i.Score,
+			&i.MaxScore,
+			&i.StartedAt,
+			&i.CompletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLastActiveDate = `-- name: GetLastActiveDate :one
 SELECT MAX(completed_at) FROM quiz_attempts
 WHERE user_id = $1 AND completed_at IS NOT NULL

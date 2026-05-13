@@ -38,6 +38,7 @@ type AttemptRepository interface {
 	UpdateAttempt(ctx context.Context, params db.UpdateAttemptParams) (db.QuizAttempt, error)
 	GetAttemptByID(ctx context.Context, id uuid.UUID) (db.QuizAttempt, error)
 	GetAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
+	GetIncompleteAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
 	GetAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) ([]db.UserAnswer, error)
 	CreateUserAnswer(ctx context.Context, params db.CreateUserAnswerParams) (db.UserAnswer, error)
 	GetQuizErrors(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
@@ -47,8 +48,10 @@ type AttemptRepository interface {
 type SessionRepository interface {
 	CreateSession(ctx context.Context, params db.CreateSessionParams) (db.QuizSession, error)
 	GetSession(ctx context.Context, id uuid.UUID) (db.QuizSession, error)
+	GetSessionByAttemptID(ctx context.Context, attemptID uuid.UUID) (db.QuizSession, error)
 	UpdateSession(ctx context.Context, params db.UpdateSessionParams) (db.QuizSession, error)
 	DeleteSession(ctx context.Context, id uuid.UUID) error
+	SessionExists(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
 type ImageRepository interface {
