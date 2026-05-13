@@ -20,6 +20,8 @@ type QuizTimerService struct {
 	subscribed chan struct{}
 }
 
+const cacheKeyTimer = "quiz:timer:"
+
 func NewQuizTimerService(queries *db.Queries, session *QuizSessionService, cache *CacheService, redisClient *redis.Client) *QuizTimerService {
 	return &QuizTimerService{
 		queries:    queries,
@@ -59,7 +61,7 @@ func (s *QuizTimerService) StartTimerSubscription(ctx context.Context) error {
 					continue
 				}
 				key := msg.Payload
-				if after, ok := strings.CutPrefix(key, "quiz:timer:"); ok {
+				if after, ok := strings.CutPrefix(key, cacheKeyTimer); ok {
 					attemptIDStr := after
 					attemptID, err := uuid.Parse(attemptIDStr)
 					if err != nil {

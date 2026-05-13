@@ -1,15 +1,14 @@
-package handlers
+package services
 
 import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/goquizvibe/services"
 )
 
 const cookieNameToken = "token"
 
-func GetUserIDFromCookie(r *http.Request, auth services.Authenticator) (uuid.UUID, error) {
+func GetUserIDFromRequest(r *http.Request, auth Authenticator) (uuid.UUID, error) {
 	cookie, err := r.Cookie(cookieNameToken)
 	if err != nil {
 		return uuid.Nil, err
@@ -19,8 +18,4 @@ func GetUserIDFromCookie(r *http.Request, auth services.Authenticator) (uuid.UUI
 		return uuid.Nil, err
 	}
 	return claims.UserID, nil
-}
-
-func IsHTMXRequest(r *http.Request) bool {
-	return r.Header.Get("HX-Request") == "true"
 }

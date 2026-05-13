@@ -84,7 +84,7 @@ func (h *AdminHandler) QuizzesNew(w http.ResponseWriter, r *http.Request) error 
 			return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 		}
 
-		if r.Header.Get("HX-Request") == "true" {
+		if IsHTMXRequest(r) {
 			w.Header().Set("HX-Redirect", "/admin/quizzes/"+newQuizID.String())
 			w.WriteHeader(http.StatusOK)
 			return nil
@@ -132,7 +132,7 @@ func (h *AdminHandler) QuizUpdate(w http.ResponseWriter, r *http.Request) error 
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		w.WriteHeader(http.StatusOK)
 		return nil
 	}
@@ -177,7 +177,7 @@ func (h *AdminHandler) AddQuestion(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		questions, err := h.adminService.GetQuestionsByQuizID(r.Context(), quizID)
 		if err != nil {
 			return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
@@ -251,7 +251,7 @@ func (h *AdminHandler) UpdateQuestion(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		w.WriteHeader(http.StatusOK)
 		return nil
 	}
@@ -276,7 +276,7 @@ func (h *AdminHandler) DeleteQuestion(w http.ResponseWriter, r *http.Request) er
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		w.WriteHeader(http.StatusOK)
 		return nil
 	}
@@ -311,7 +311,7 @@ func (h *AdminHandler) UploadQuestionImage(w http.ResponseWriter, r *http.Reques
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		w.WriteHeader(http.StatusOK)
 		return nil
 	}
@@ -336,7 +336,7 @@ func (h *AdminHandler) DeleteQuestionImage(w http.ResponseWriter, r *http.Reques
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		w.WriteHeader(http.StatusOK)
 		return nil
 	}
