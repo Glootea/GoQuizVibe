@@ -24,6 +24,7 @@ type App struct {
 	AuthService         *services.AuthService
 	QuizService         *services.QuizService
 	QuizSessionService  *services.QuizSessionService
+	QuizTimerService    *services.QuizTimerService
 	AdminService        *services.AdminService
 	DashboardService    *services.DashboardService
 	GamificationService *services.GamificationService
@@ -99,6 +100,15 @@ func ProvideQuizSessionService(
 	cacheService *services.CacheService,
 ) *services.QuizSessionService {
 	return services.NewQuizSessionService(queries, queries, queries, queries, queries, *gamification, *cacheService)
+}
+
+func ProvideQuizTimerService(
+	queries *db.Queries,
+	sessionService *services.QuizSessionService,
+	cacheService *services.CacheService,
+	redisClient *redis.Client,
+) *services.QuizTimerService {
+	return services.NewQuizTimerService(queries, sessionService, cacheService, redisClient)
 }
 
 func ProvideDashboardService(
@@ -179,6 +189,7 @@ var ServiceSet = wire.NewSet(
 	ProvideStorageService,
 	ProvideAdminService,
 	ProvideQuizSessionService,
+	ProvideQuizTimerService,
 	ProvideDashboardService,
 	ProvideLocaleService,
 	ProvideAuthenticator,
@@ -204,5 +215,5 @@ var AppSet = wire.NewSet(
 	ServiceSet,
 	HandlerSet,
 	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
+	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
 )

@@ -4,7 +4,11 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/di"
@@ -36,6 +40,27 @@ func main() {
 	if err := app.StorageService.EnsureBucket(ctx); err != nil {
 		log.Printf("Warning: Failed to ensure bucket exists: %v", err)
 	}
+
+	timerCtx, timerCancel := context.WithCancel(ctx)
+
+	go func() {
+		if err := app.QuizTimerService.StartTimerSubscription(timerCtx); err != nil {
+			log.Printf("Warning: Failed to start timer subscription: %v", err)
+		}
+	}()
+
+	go app.QuizTimerService.StartCronJob(timerCtx, app.Config.Redis.TimerCronInterval)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-quit
+		log.Println("Shutting down server...")
+		timerCancel()
+		app.QuizTimerService.Shutdown()
+		time.Sleep(2 * time.Second)
+		os.Exit(0)
+	}()
 
 	mux := http.NewServeMux()
 

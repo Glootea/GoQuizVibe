@@ -43,6 +43,7 @@ type AttemptRepository interface {
 	CreateUserAnswer(ctx context.Context, params db.CreateUserAnswerParams) (db.UserAnswer, error)
 	GetQuizErrors(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
 	GetRecentAttempts(ctx context.Context, limit int32) ([]db.GetRecentAttemptsRow, error)
+	GetStaleAttempts(ctx context.Context) ([]db.GetStaleAttemptsRow, error)
 }
 
 type ImageRepository interface {

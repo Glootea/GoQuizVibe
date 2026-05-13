@@ -32,8 +32,9 @@ type MinioConfig struct {
 }
 
 type RedisConfig struct {
-	Password string
-	CacheTTL time.Duration
+	Password          string
+	CacheTTL          time.Duration
+	TimerCronInterval time.Duration
 }
 
 type Config struct {
@@ -97,6 +98,15 @@ func Load() *Config {
 		}
 	}
 
+	var timerCronInterval time.Duration
+	if interval := os.Getenv("QUIZ_TIMER_CRON_INTERVAL"); interval != "" {
+		if parsed, err := time.ParseDuration(interval); err == nil {
+			timerCronInterval = parsed
+		} else {
+			panic("Failed to parse QUIZ_TIMER_CRON_INTERVAL")
+		}
+	}
+
 	return &Config{
 		ServerPort: port,
 		JWTSecret:  secret,
@@ -113,6 +123,6 @@ func Load() *Config {
 			SecretKey: os.Getenv("MINIO_ROOT_PASSWORD"),
 			Bucket:    os.Getenv("MINIO_BUCKET"),
 		},
-		Redis: RedisConfig{Password: redis_pass, CacheTTL: redisCacheTTL},
+		Redis: RedisConfig{Password: redis_pass, CacheTTL: redisCacheTTL, TimerCronInterval: timerCronInterval},
 	}
 }

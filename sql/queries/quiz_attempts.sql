@@ -105,3 +105,10 @@ SELECT json_object_agg(grade_level, count) as grade_dist FROM (
 SELECT json_object_agg(subject_name, count) as subject_dist FROM (
     SELECT subject as subject_name, COUNT(*) as count FROM quizzes WHERE status != 'archived' AND subject IS NOT NULL GROUP BY subject
 ) sub;
+
+-- name: GetStaleAttempts :many
+SELECT a.id, a.user_id, a.quiz_id, a.started_at, q.time_limit
+FROM quiz_attempts a
+JOIN quizzes q ON q.id = a.quiz_id
+WHERE a.completed_at IS NULL
+  AND a.started_at + (q.time_limit || ' seconds')::interval <= NOW();

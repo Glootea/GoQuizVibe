@@ -25,6 +25,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	client := ProvideRedis(config)
 	cacheService := ProvideCacheService(client, config)
 	quizSessionService := ProvideQuizSessionService(queries, gamificationService, cacheService)
+	quizTimerService := ProvideQuizTimerService(queries, quizSessionService, cacheService, client)
 	storageService, err := ProvideStorageService(config)
 	if err != nil {
 		return nil, err
@@ -49,6 +50,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		AuthService:             authService,
 		QuizService:             quizService,
 		QuizSessionService:      quizSessionService,
+		QuizTimerService:        quizTimerService,
 		AdminService:            adminService,
 		DashboardService:        dashboardService,
 		GamificationService:     gamificationService,

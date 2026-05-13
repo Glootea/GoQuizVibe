@@ -491,6 +491,48 @@ func (q *Queries) GetRecentAttempts(ctx context.Context, limit int32) ([]GetRece
 	return items, nil
 }
 
+const getStaleAttempts = `-- name: GetStaleAttempts :many
+SELECT a.id, a.user_id, a.quiz_id, a.started_at, q.time_limit
+FROM quiz_attempts a
+JOIN quizzes q ON q.id = a.quiz_id
+WHERE a.completed_at IS NULL
+  AND a.started_at + (q.time_limit || ' seconds')::interval <= NOW()
+`
+
+type GetStaleAttemptsRow struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	QuizID    uuid.UUID `json:"quiz_id"`
+	StartedAt time.Time `json:"started_at"`
+	TimeLimit int       `json:"time_limit"`
+}
+
+func (q *Queries) GetStaleAttempts(ctx context.Context) ([]GetStaleAttemptsRow, error) {
+	rows, err := q.db.Query(ctx, getStaleAttempts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetStaleAttemptsRow{}
+	for rows.Next() {
+		var i GetStaleAttemptsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.QuizID,
+			&i.StartedAt,
+			&i.TimeLimit,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSubjectDistribution = `-- name: GetSubjectDistribution :one
 SELECT json_object_agg(subject_name, count) as subject_dist FROM (
     SELECT subject as subject_name, COUNT(*) as count FROM quizzes WHERE status != 'archived' AND subject IS NOT NULL GROUP BY subject

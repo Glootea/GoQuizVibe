@@ -321,43 +321,16 @@ func (s *QuizSessionService) CompleteSession(ctx context.Context, userID uuid.UU
 		return nil, errors.New("session not found")
 	}
 
-	quiz, err := s.getQuizWithQuestions(ctx, session.QuizID)
+	attempt, err := s.CompleteSessionByAttemptID(ctx, session.AttemptID)
 	if err != nil {
-		return nil, fmt.Errorf("get quiz: %w", err)
-	}
-
-	answers, err := s.attempts.GetAnswersByAttempt(ctx, session.AttemptID)
-	if err != nil {
-		return nil, fmt.Errorf("get answers: %w", err)
-	}
-
-	var score, maxScore int
-	for _, q := range quiz.Questions {
-		maxScore += int(q.Points)
-		for _, a := range answers {
-			if a.QuestionID == q.ID && a.IsCorrect {
-				score += int(q.Points)
-				break
-			}
-		}
-	}
-
-	now := time.Now()
-	updatedAttempt, err := s.attempts.UpdateAttempt(ctx, db.UpdateAttemptParams{
-		ID:          session.AttemptID,
-		Score:       score,
-		MaxScore:    maxScore,
-		CompletedAt: sql.NullTime{Time: now, Valid: true},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("update attempt: %w", err)
+		return nil, err
 	}
 
 	if err := s.deleteSession(ctx, userID); err != nil {
 		return nil, fmt.Errorf("delete session: %w", err)
 	}
 
-	return &updatedAttempt, nil
+	return attempt, nil
 }
 
 func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID uuid.UUID, userID uuid.UUID) (*types.QuizResultData, error) {
@@ -679,4 +652,49 @@ func cacheKeyOrder(sessionID uuid.UUID) string {
 
 func cacheKeyAnswers(sessionID uuid.UUID) string {
 	return fmt.Sprintf("quiz:session:%s:answers", sessionID.String())
+}
+
+func (s *QuizSessionService) CompleteSessionByAttemptID(ctx context.Context, attemptID uuid.UUID) (*db.QuizAttempt, error) {
+	attempt, err := s.attempts.GetAttemptByID(ctx, attemptID)
+	if err != nil {
+		return nil, fmt.Errorf("get attempt: %w", err)
+	}
+
+	if attempt.CompletedAt.Valid {
+		return &attempt, nil
+	}
+
+	quiz, err := s.getQuizWithQuestions(ctx, attempt.QuizID)
+	if err != nil {
+		return nil, fmt.Errorf("get quiz: %w", err)
+	}
+
+	answers, err := s.attempts.GetAnswersByAttempt(ctx, attemptID)
+	if err != nil {
+		return nil, fmt.Errorf("get answers: %w", err)
+	}
+
+	var score, maxScore int
+	for _, q := range quiz.Questions {
+		maxScore += int(q.Points)
+		for _, a := range answers {
+			if a.QuestionID == q.ID && a.IsCorrect {
+				score += int(q.Points)
+				break
+			}
+		}
+	}
+
+	now := time.Now()
+	updatedAttempt, err := s.attempts.UpdateAttempt(ctx, db.UpdateAttemptParams{
+		ID:          attemptID,
+		Score:       score,
+		MaxScore:    maxScore,
+		CompletedAt: sql.NullTime{Time: now, Valid: true},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("update attempt: %w", err)
+	}
+
+	return &updatedAttempt, nil
 }
