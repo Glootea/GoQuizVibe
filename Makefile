@@ -10,7 +10,7 @@ dev: dc-up
 
 # generate: one-time generation of all assets (no watching)
 # runs: templ generation -> gettextgocodegen -> rustywind -> tailwind build
-generate: templ-generate gettext-generate rustywind tw-build
+generate: gettext-generate templ-generate tw-build rustywind
 
 # gettext-generate: generate locales/locales.go from .po files
 gettext-generate:
