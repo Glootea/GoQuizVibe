@@ -98,7 +98,7 @@ func QuestionCard(data *types.QuizPageData, t locales.Translator) templ.Componen
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" id=\"target-index\"><div class=\"mb-4 text-xl font-medium w-full\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" id=\"target-index\"><div class=\"mb-4 w-full text-xl font-medium\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -168,7 +168,7 @@ func QuestionCard(data *types.QuizPageData, t locales.Translator) templ.Componen
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					if data.Answers[data.CurrentIndex] == opt {
+					if data.Answers[data.CurrentIndex].Text == opt {
 						templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, " checked")
 						if templ_7745c5c3_Err != nil {
 							return templ_7745c5c3_Err
@@ -216,9 +216,9 @@ func QuestionCard(data *types.QuizPageData, t locales.Translator) templ.Componen
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Answers[data.CurrentIndex])
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Answers[data.CurrentIndex].Text)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/question_card.templ`, Line: 63, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/question_card.templ`, Line: 63, Col: 50}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -376,7 +376,7 @@ func QuestionCard(data *types.QuizPageData, t locales.Translator) templ.Componen
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-			} else if _, answered := data.Answers[i]; answered {
+			} else if data.Answers[i].Answered {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "●")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -400,12 +400,12 @@ func QuestionCard(data *types.QuizPageData, t locales.Translator) templ.Componen
 	})
 }
 
-func getQuestionNavClass(index int, currentIndex int, answers map[int]string) string {
+func getQuestionNavClass(index int, currentIndex int, answers map[int]types.AnswerState) string {
 	base := "w-10 h-10 rounded-lg font-medium text-sm transition "
 	if index == currentIndex {
 		return base + "bg-indigo-100 border-2 border-indigo-500 text-indigo-700"
 	}
-	if _, answered := answers[index]; answered {
+	if answers[index].Answered {
 		return base + "bg-green-100 border border-green-300 text-green-700 hover:bg-green-200"
 	}
 	return base + "bg-gray-100 border border-gray-300 text-gray-600 hover:bg-gray-200"

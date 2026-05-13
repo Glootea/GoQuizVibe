@@ -32,6 +32,11 @@ type SessionConflictData struct {
 	RequestedQuizID   uuid.UUID
 }
 
+type AnswerState struct {
+	Text     string
+	Answered bool
+}
+
 type QuizPageData struct {
 	User             *models.User
 	Questions        []models.QuestionWithImages
@@ -39,7 +44,7 @@ type QuizPageData struct {
 	AnswerOptions    map[int][]string
 	SessionID        string
 	CurrentIndex     int
-	Answers          map[int]string
+	Answers          map[int]AnswerState
 	TotalQuestions   int
 	RemainingSeconds int
 	TimeLimitMinutes int

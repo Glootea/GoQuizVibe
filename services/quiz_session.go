@@ -147,7 +147,7 @@ func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID u
 	if s.cache != nil {
 		_ = s.cache.Set(ctx, cacheKeyQuestions(session.ID), selectedQuestions, ttl)
 		_ = s.cache.Set(ctx, cacheKeyOrder(session.ID), order, ttl)
-		_ = s.cache.Set(ctx, cacheKeyAnswers(session.ID), map[int]string{}, ttl)
+		_ = s.cache.Set(ctx, cacheKeyAnswers(session.ID), map[int]types.AnswerState{}, ttl)
 	}
 
 	return session, nil
@@ -206,14 +206,14 @@ func (s *QuizSessionService) loadQuestionsFromDB(ctx context.Context, sessionID 
 	return quiz.Questions, nil
 }
 
-func (s *QuizSessionService) GetAnswers(ctx context.Context, sessionID uuid.UUID) (map[int]string, error) {
+func (s *QuizSessionService) GetAnswers(ctx context.Context, sessionID uuid.UUID) (map[int]types.AnswerState, error) {
 	if s.cache != nil {
-		var answers map[int]string
+		var answers map[int]types.AnswerState
 		if s.cache.Get(ctx, cacheKeyAnswers(sessionID), &answers) {
 			return answers, nil
 		}
 	}
-	return map[int]string{}, nil
+	return map[int]types.AnswerState{}, nil
 }
 
 func (s *QuizSessionService) SaveAnswer(ctx context.Context, sessionID uuid.UUID, quizID uuid.UUID, currentIndex int, answer string) (bool, error) {
@@ -274,13 +274,13 @@ func (s *QuizSessionService) NavigateQuestion(ctx context.Context, sessionID uui
 		targetIndex = 0
 	}
 
-	answers := make(map[int]string)
+	answers := make(map[int]types.AnswerState)
 	if session.Answers != nil {
 		if err := json.Unmarshal(session.Answers, &answers); err != nil {
 			return nil, fmt.Errorf("unmarshal answers: %w", err)
 		}
 	}
-	answers[currentIndex] = answer
+	answers[currentIndex] = types.AnswerState{Text: answer, Answered: answer != ""}
 
 	answersJSON, err := json.Marshal(answers)
 	if err != nil {
