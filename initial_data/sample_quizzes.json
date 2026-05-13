@@ -4,7 +4,7 @@
     "description": "Тест на знание обыкновенных и десятичных дробей",
     "subject": "Математика",
     "grade": 5,
-    "time_limit": 30,
+    "time_limit": 900,
     "created_by_email": "teacher@example.com",
     "questions": [
       {
@@ -32,7 +32,7 @@
     "description": "Тест на знание пропорций, координат и действий с отрицательными числами",
     "subject": "Математика",
     "grade": 6,
-    "time_limit": 30,
+    "time_limit": 900,
     "created_by_email": "teacher@example.com",
     "questions": [
       {

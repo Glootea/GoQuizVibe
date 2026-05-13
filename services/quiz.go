@@ -109,6 +109,7 @@ func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid
 	for _, q := range questions {
 		maxScore += int(q.Points)
 		userAnswer := answers[q.ID]
+
 		isCorrect := NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
 
 		userAnswers = append(userAnswers, db.UserAnswer{

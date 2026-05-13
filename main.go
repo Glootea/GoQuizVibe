@@ -67,6 +67,7 @@ func main() {
 		{"GET", "/logout", app.AuthHandler.Logout},
 		{"GET", "/dashboard", app.DashboardHandler.DashboardPage},
 		{"GET", "/quiz/{id}", app.QuizHandler.QuizStart},
+		{"GET", "/quiz/{id}/info", app.QuizHandler.QuizInfo},
 		{"GET", "/quiz/{id}/q/{index}", app.QuizHandler.QuizQuestion},
 		{"POST", "/quiz/{id}/navigate", app.QuizHandler.QuizNavigate},
 		{"POST", "/quiz/{id}/finish", app.QuizHandler.QuizFinish},

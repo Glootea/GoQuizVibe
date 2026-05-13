@@ -129,7 +129,7 @@ templ QuizGrid(quizzes []*models.Quiz, t locales.Translator) {
 }
 
 templ QuizCard(quiz *models.Quiz, t locales.Translator) {
-	<a href={ templ.URL("/quiz/" + quiz.ID.String() + "/q/0") } class="block p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-200 hover:shadow-lg">
+	<a href={ templ.URL("/quiz/" + quiz.ID.String() + "/info") } class="block p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-200 hover:shadow-lg">
 		<div class="flex justify-between items-start mb-3">
 			<span class="py-1 px-3 text-sm text-indigo-700 bg-indigo-100 rounded-full">
 				{ quiz.Subject }

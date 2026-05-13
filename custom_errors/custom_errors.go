@@ -49,4 +49,5 @@ var (
 	ErrForbidden      = errors.New("forbidden")
 	ErrNotFound       = errors.New("not found")
 	ErrInternal       = errors.New("internal error")
+	ErrTimeExpired    = errors.New("time expired")
 )

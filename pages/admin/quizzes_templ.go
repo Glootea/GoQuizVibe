@@ -607,7 +607,7 @@ func QuizzesPage(data types.AdminQuizListData, t locales.Translator) templ.Compo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</label> <input type=\"number\" name=\"time_limit\" min=\"0\" value=\"30\" class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></div></div><div class=\"flex gap-3 justify-end mt-6\"><button type=\"button\" onclick=\"document.getElementById('createModal').classList.add('hidden')\" class=\"py-2 px-4 text-gray-600 hover:text-gray-800\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</label> <input type=\"number\" name=\"time_limit\" min=\"0\" value=\"900\" class=\"py-2 px-3 w-full rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500\"></div></div><div class=\"flex gap-3 justify-end mt-6\"><button type=\"button\" onclick=\"document.getElementById('createModal').classList.add('hidden')\" class=\"py-2 px-4 text-gray-600 hover:text-gray-800\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

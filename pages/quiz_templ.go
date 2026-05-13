@@ -473,7 +473,7 @@ func QuizResultPage(data types.QuizResultData, t locales.Translator) templ.Compo
 					return templ_7745c5c3_Err
 				}
 				if !answer.IsCorrect && answer.Explanation != "" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div class=\"mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200\"><p class=\"text-sm text-gray-600\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div class=\"p-3 mt-2 bg-blue-50 rounded-lg border border-blue-200\"><p class=\"text-sm text-gray-600\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -690,9 +690,9 @@ func ErrorsPage(data types.ErrorsPageData, t locales.Translator) templ.Component
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var42 templ.SafeURL
-					templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz/" + qe.Quiz.ID.String() + "/q/0"))
+					templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz/" + qe.Quiz.ID.String() + "/info"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 157, Col: 70}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/quiz.templ`, Line: 157, Col: 71}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 					if templ_7745c5c3_Err != nil {

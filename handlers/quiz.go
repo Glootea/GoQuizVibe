@@ -17,6 +17,8 @@ import (
 	"github.com/goquizvibe/types"
 )
 
+var ErrTimeExpired = errors.New("time expired")
+
 type QuizHandler struct {
 	sessionService *services.QuizSessionService
 	quizService    *services.QuizService
@@ -39,8 +41,30 @@ func (h *QuizHandler) QuizStart(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
-	http.Redirect(w, r, "/quiz/"+quizID.String()+"/q/0", http.StatusFound)
+	http.Redirect(w, r, "/quiz/"+quizID.String()+"/info", http.StatusFound)
 	return nil
+}
+
+func (h *QuizHandler) QuizInfo(w http.ResponseWriter, r *http.Request) error {
+	quizID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	ctx := r.Context()
+
+	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
+	}
+
+	data, err := h.sessionService.GetQuizInfoData(ctx, userID, quizID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	t := middleware.GetTranslator(r.Context())
+	return pages.QuizInfoPage(data, t).Render(r.Context(), w)
 }
 
 func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error {
@@ -183,6 +207,10 @@ func (h *QuizHandler) QuizNavigate(w http.ResponseWriter, r *http.Request) error
 
 	navData, err := h.sessionService.NavigateQuestion(ctx, sessionID, quizID, currentIndex, targetIndex, answer, &user)
 	if err != nil {
+		if errors.Is(err, services.ErrTimeExpired) {
+			http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
+			return nil
+		}
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
@@ -218,6 +246,28 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 	sessionIDStr := r.URL.Query().Get("session")
 	if sessionIDStr == "" {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, errors.New("session ID missing")), http.StatusBadRequest)
+	}
+
+	sessionID, err := uuid.Parse(sessionIDStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	if err := r.ParseForm(); err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	currentIndexStr := r.FormValue("current_index")
+	currentIndex, err := strconv.Atoi(currentIndexStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	answer := r.FormValue("answer")
+
+	_, err = h.sessionService.SaveAnswer(r.Context(), sessionID, quizID, currentIndex, answer)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
 	if r.Header.Get("HX-Request") == "true" {
@@ -374,7 +424,8 @@ func (h *QuizHandler) SyncTime(w http.ResponseWriter, r *http.Request) error {
 
 	remainingSeconds := int(time.Until(attempt.StartedAt.Add(time.Duration(quiz.TimeLimit) * time.Second)).Seconds())
 	if remainingSeconds < 0 {
-		remainingSeconds = 0
+		http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
+		return nil
 	}
 
 	if r.Header.Get("HX-Request") == "true" {

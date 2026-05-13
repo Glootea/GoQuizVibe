@@ -36,6 +36,7 @@ type QuizPageData struct {
 	User             *models.User
 	Questions        []models.QuestionWithImages
 	QuestionOrder    []int
+	AnswerOptions    map[int][]string
 	SessionID        string
 	CurrentIndex     int
 	Answers          map[int]string
@@ -78,6 +79,13 @@ type QuizErrors struct {
 type LeaderboardPageData struct {
 	User    *models.User
 	Entries []*models.LeaderboardEntry
+}
+
+type QuizInfoData struct {
+	User          *models.User
+	Quiz          *models.Quiz
+	QuestionCount int
+	TimeLimitMin  int
 }
 
 type ErrorData struct {

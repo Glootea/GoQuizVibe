@@ -48,7 +48,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen bg-gray-50 flex items-center justify-center\"><div class=\"max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center\"><i class=\"mb-4 text-6xl text-yellow-500 fas fa-exclamation-triangle\"></i><h1 class=\"mb-2 text-2xl font-bold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-center items-center min-h-screen bg-gray-50\"><div class=\"p-8 w-full max-w-md text-center bg-white rounded-xl shadow-lg\"><i class=\"mb-4 text-6xl text-yellow-500 fas fa-exclamation-triangle\"></i><h1 class=\"mb-2 text-2xl font-bold\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -113,7 +113,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" class=\"py-3 px-4 font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -152,7 +152,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"> <button type=\"submit\" class=\"py-3 px-4 w-full bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"> <button type=\"submit\" class=\"py-3 px-4 w-full font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

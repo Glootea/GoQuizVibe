@@ -33,7 +33,7 @@
 
   function initTimer() {
     clearInterval(timerInterval);
-    clearInterval(syncInterval);
+    clearInterval(null);
 
     const data = getTimerData();
     if (!data) return;
@@ -45,7 +45,7 @@
     if (document.body) {
       document.body.addEventListener("htmx:beforeSwap", () => {
         clearInterval(timerInterval);
-        clearInterval(syncInterval);
+        clearInterval(null);
       });
 
       document.body.addEventListener("htmx:afterSwap", () => {

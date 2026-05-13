@@ -154,7 +154,7 @@ templ ErrorsPage(data types.ErrorsPageData, t locales.Translator) {
 										<p class="text-sm text-gray-500">{ len(qe.WrongAnswers) } { t.Mistakes() }</p>
 									</div>
 									<div class="flex gap-3 items-center">
-										<a href={ templ.URL("/quiz/" + qe.Quiz.ID.String() + "/q/0") } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+										<a href={ templ.URL("/quiz/" + qe.Quiz.ID.String() + "/info") } class="py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
 											{ t.TryAgain() }
 										</a>
 										<i class="text-gray-400 transition-transform fas fa-chevron-down"></i>
