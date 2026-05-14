@@ -1,5 +1,6 @@
 .PHONY: dev build
-.PHONY: dc-up templ-generate rustywind tw-build tw-watch templ-watch
+.PHONY: dc-up dc-down templ-generate rustywind tw-build tw-watch templ-watch
+.PHONY: monitoring-up monitoring-down
 
 # dev: start full development environment
 # runs: containers + one-time generation + parallel file watchers
@@ -24,6 +25,21 @@ build: templ-generate gettext-generate go-run
 dc-up:
 	@echo "Starting docker containers..."
 	podman compose up -d
+
+# dc-down: stop docker containers
+dc-down:
+	@echo "Stopping docker containers..."
+	podman compose down
+
+# monitoring-up: start monitoring stack (Prometheus, Grafana, node-exporter)
+monitoring-up:
+	@echo "Starting monitoring containers..."
+	podman compose -f docker-compose.yml up -d prometheus grafana node-exporter
+
+# monitoring-down: stop monitoring containers
+monitoring-down:
+	@echo "Stopping monitoring containers..."
+	podman compose -f docker-compose.yml stop prometheus grafana node-exporter
 
 # templ-generate: generate Go templ files from .templ source files
 templ-generate:

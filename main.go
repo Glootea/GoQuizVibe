@@ -13,6 +13,8 @@ import (
 	"github.com/goquizvibe/database"
 	"github.com/goquizvibe/di"
 	"github.com/goquizvibe/handlers"
+	"github.com/goquizvibe/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -125,6 +127,7 @@ func main() {
 	compressionMiddleware := app.CompressionMiddleware.Wrap
 	commonHeadersMiddleware := app.CommonHeadersMiddleware.Wrap
 	localeMiddleware := app.LocaleMiddleware.Wrap
+	metricsMiddleware := middleware.NewMetricsMiddleware().Wrap
 
 	wrapRoute := func(r Route) http.HandlerFunc {
 		wrapped := wrapHandler(r.Handler)
@@ -138,11 +141,19 @@ func main() {
 		wrapped = compressionMiddleware(wrapped)
 		wrapped = commonHeadersMiddleware(wrapped)
 		wrapped = localeMiddleware(wrapped)
+		wrapped = metricsMiddleware(wrapped)
 
 		return wrapped
 	}
 
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.Handler().ServeHTTP(w, r)
+	})
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
 	for _, r := range routes {
 		mux.HandleFunc(r.Method+" "+r.Pattern, wrapRoute(r))
