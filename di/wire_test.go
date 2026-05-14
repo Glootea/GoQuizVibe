@@ -2,6 +2,7 @@ package di
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -102,6 +103,61 @@ func (m *MockTimeProvider) SetNow(t time.Time) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.now = t
+}
+
+type MockCacheService struct {
+	mu   sync.RWMutex
+	data map[string][]byte
+}
+
+func NewMockCacheService() *MockCacheService {
+	return &MockCacheService{
+		data: make(map[string][]byte),
+	}
+}
+
+func (m *MockCacheService) Get(ctx context.Context, key string, dest any) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	data, ok := m.data[key]
+	if !ok {
+		return false
+	}
+	return json.Unmarshal(data, dest) == nil
+}
+
+func (m *MockCacheService) Set(ctx context.Context, key string, value any, ttl time.Duration) error {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.data[key] = data
+	return nil
+}
+
+func (m *MockCacheService) Delete(ctx context.Context, key string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.data, key)
+	return nil
+}
+
+func (m *MockCacheService) Exists(ctx context.Context, key string) (bool, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	_, ok := m.data[key]
+	return ok, nil
+}
+
+type MockGamificationService struct {
+	mu   sync.RWMutex
+	data map[uuid.UUID]*models.UserStats
+}
+
+func NewMockGamificationService() *services.GamificationService {
+	return nil
 }
 
 func ProvideTestConfig() *config.Config {
@@ -266,7 +322,7 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 	gamification := services.NewGamificationService(queries, queries, mockTime)
 	quizService := services.NewQuizService(queries, queries, queries, queries)
 
-	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, queries, gamification, nil)
+	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, *gamification, services.CacheService{})
 	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService)
 
 	localeSvc, _ := locales.NewService()

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 
@@ -17,39 +16,6 @@ import (
 	"github.com/goquizvibe/services"
 	"go.uber.org/mock/gomock"
 )
-
-type mockAuthenticator struct {
-	ctrl     *gomock.Controller
-	recorder *mockAuthenticatorRecorder
-}
-
-type mockAuthenticatorRecorder struct {
-	mock *mockAuthenticator
-}
-
-func newMockAuthenticator(ctrl *gomock.Controller) *mockAuthenticator {
-	m := &mockAuthenticator{ctrl: ctrl}
-	m.recorder = &mockAuthenticatorRecorder{mock: m}
-	return m
-}
-
-func (m *mockAuthenticator) EXPECT() *mockAuthenticatorRecorder {
-	return m.recorder
-}
-
-func (m *mockAuthenticator) ValidateToken(token string) (*models.AuthClaims, error) {
-	ret := m.ctrl.Call(m, "ValidateToken", token)
-	ret0, _ := ret[0].(*models.AuthClaims)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-func (mr *mockAuthenticatorRecorder) ValidateToken(token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateToken", reflect.TypeOf((*mockAuthenticator)(nil).ValidateToken), token)
-}
-
-var _ services.Authenticator = (*mockAuthenticator)(nil)
 
 func TestDashboardService_GetUserIDFromRequest(t *testing.T) {
 	t.Run("valid token", func(t *testing.T) {
@@ -64,13 +30,13 @@ func TestDashboardService_GetUserIDFromRequest(t *testing.T) {
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: time.Now()})
-		auth := newMockAuthenticator(ctrl)
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		auth := NewMockAuthenticator(ctrl)
 
 		userID := uuid.New()
 		auth.EXPECT().ValidateToken("valid-token").Return(&models.AuthClaims{UserID: userID}, nil)
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.AddCookie(&http.Cookie{Name: "token", Value: "valid-token"})
@@ -96,10 +62,10 @@ func TestDashboardService_GetUserIDFromRequest(t *testing.T) {
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: time.Now()})
-		auth := newMockAuthenticator(ctrl)
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		auth := NewMockAuthenticator(ctrl)
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 
@@ -121,12 +87,12 @@ func TestDashboardService_GetUserIDFromRequest(t *testing.T) {
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: time.Now()})
-		auth := newMockAuthenticator(ctrl)
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		auth := NewMockAuthenticator(ctrl)
 
 		auth.EXPECT().ValidateToken("invalid-token").Return(nil, errors.New("invalid token"))
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		req.AddCookie(&http.Cookie{Name: "token", Value: "invalid-token"})
@@ -150,10 +116,10 @@ func TestDashboardService_NewDashboardService(t *testing.T) {
 	mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
-	gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: time.Now()})
-	auth := newMockAuthenticator(ctrl)
+	gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+	auth := NewMockAuthenticator(ctrl)
 
-	svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+	svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 	if svc == nil {
 		t.Error("NewDashboardService() returned nil")
 	}
@@ -175,9 +141,9 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
-		auth := newMockAuthenticator(ctrl)
+		auth := NewMockAuthenticator(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: baseTime})
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 
 		user := db.User{ID: userID, Email: "test@example.com", Name: "Test User"}
 		quizzes := []db.Quiz{{ID: uuid.New(), Title: "Quiz 1"}}
@@ -197,7 +163,7 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return(recentAttempts, nil)
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		result, err := svc.GetDashboardData(ctx, userID)
 		if err != nil {
@@ -225,13 +191,13 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
-		auth := newMockAuthenticator(ctrl)
+		auth := NewMockAuthenticator(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: baseTime})
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(db.User{}, errors.New("user not found"))
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		_, err := svc.GetDashboardData(ctx, userID)
 		if err == nil {
@@ -250,15 +216,15 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
-		auth := newMockAuthenticator(ctrl)
+		auth := NewMockAuthenticator(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: baseTime})
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 
 		user := db.User{ID: userID}
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(user, nil)
 		mockQuizzes.EXPECT().GetQuizzesForUser(ctx, userID).Return(nil, errors.New("quizzes error"))
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		_, err := svc.GetDashboardData(ctx, userID)
 		if err == nil {
@@ -277,16 +243,16 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
-		auth := newMockAuthenticator(ctrl)
+		auth := NewMockAuthenticator(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: baseTime})
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 
 		user := db.User{ID: userID}
 		mockUsers.EXPECT().GetUserByID(ctx, userID).Return(user, nil)
 		mockQuizzes.EXPECT().GetQuizzesForUser(ctx, userID).Return([]db.Quiz{}, nil)
 		mockStats.EXPECT().GetUserStats(ctx, userID).Return(db.GetUserStatsRow{}, errors.New("stats error"))
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		_, err := svc.GetDashboardData(ctx, userID)
 		if err == nil {
@@ -305,9 +271,9 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
-		auth := newMockAuthenticator(ctrl)
+		auth := NewMockAuthenticator(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: baseTime})
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 
 		user := db.User{ID: userID}
 		statsRow := db.GetUserStatsRow{TotalXp: int64(100), CorrectCnt: 10, WrongCnt: 2}
@@ -318,7 +284,7 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return(nil, errors.New("leaderboard error"))
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		_, err := svc.GetDashboardData(ctx, userID)
 		if err == nil {
@@ -337,9 +303,9 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
-		auth := newMockAuthenticator(ctrl)
+		auth := NewMockAuthenticator(ctrl)
 
-		gamification := services.NewGamificationService(mockAttempts, mockStats, &mockTimeProvider{now: baseTime})
+		gamification := services.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 
 		quizID := uuid.New()
 		questionID := uuid.New()
@@ -360,7 +326,7 @@ func TestDashboardService_GetDashboardData(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return(recentAttempts, nil)
 
-		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth)
+		svc := services.NewDashboardService(mockUsers, mockQuizzes, mockQuestions, mockImages, gamification, auth, nil)
 
 		result, err := svc.GetDashboardData(ctx, userID)
 		if err != nil {

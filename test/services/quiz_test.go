@@ -301,6 +301,7 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil).Times(1)
 		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, errors.New("update failed"))
 
 		svc := services.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts)
@@ -328,7 +329,6 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
-		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{ID: uuid.New()}, nil)
 		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer failed"))
 
 		svc := services.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts)
