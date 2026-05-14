@@ -226,7 +226,7 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 			Score:    30,
 			MaxScore: 30,
 		}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil).Times(2)
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil).Times(2)
 
 		svc := services.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts)
 		result, err := svc.SubmitQuizAttempt(ctx, userID, quizID, answers)
@@ -329,7 +329,7 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
 		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{ID: uuid.New()}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer failed"))
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer failed"))
 
 		svc := services.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts)
 		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, map[uuid.UUID]string{})

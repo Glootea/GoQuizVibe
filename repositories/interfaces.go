@@ -40,7 +40,7 @@ type AttemptRepository interface {
 	GetAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
 	GetIncompleteAttemptsByUser(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
 	GetAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) ([]db.UserAnswer, error)
-	CreateUserAnswer(ctx context.Context, params db.CreateUserAnswerParams) (db.UserAnswer, error)
+	UpsertUserAnswer(ctx context.Context, params db.UpsertUserAnswerParams) (db.UserAnswer, error)
 	GetQuizErrors(ctx context.Context, userID uuid.UUID) ([]db.QuizAttempt, error)
 	GetRecentAttempts(ctx context.Context, limit int32) ([]db.GetRecentAttemptsRow, error)
 	GetStaleAttempts(ctx context.Context) ([]db.GetStaleAttemptsRow, error)

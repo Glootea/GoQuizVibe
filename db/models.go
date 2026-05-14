@@ -205,7 +205,6 @@ type User struct {
 }
 
 type UserAnswer struct {
-	ID         uuid.UUID `json:"id"`
 	AttemptID  uuid.UUID `json:"attempt_id"`
 	QuestionID uuid.UUID `json:"question_id"`
 	UserAnswer string    `json:"user_answer"`

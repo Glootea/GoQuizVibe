@@ -17,9 +17,12 @@ SELECT * FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NOT NULL ORDE
 -- name: GetIncompleteAttemptsByUser :many
 SELECT * FROM quiz_attempts WHERE user_id = $1 AND completed_at IS NULL ORDER BY started_at DESC;
 
--- name: CreateUserAnswer :one
-INSERT INTO user_answers (id, attempt_id, question_id, user_answer, is_correct)
-VALUES ($1, $2, $3, $4, $5)
+-- name: UpsertUserAnswer :one
+INSERT INTO user_answers (attempt_id, question_id, user_answer, is_correct)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (attempt_id, question_id) DO UPDATE SET
+    user_answer = EXCLUDED.user_answer,
+    is_correct = EXCLUDED.is_correct
 RETURNING *;
 
 -- name: GetAnswersByAttempt :many

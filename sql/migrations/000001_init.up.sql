@@ -48,11 +48,11 @@ CREATE TABLE quiz_attempts (
 );
 
 CREATE TABLE user_answers (
-    id UUID PRIMARY KEY,
     attempt_id UUID REFERENCES quiz_attempts(id) ON DELETE CASCADE,
     question_id UUID REFERENCES questions(id),
     user_answer TEXT NOT NULL,
-    is_correct BOOLEAN DEFAULT false
+    is_correct BOOLEAN DEFAULT false,
+    PRIMARY KEY (attempt_id, question_id)
 );
 
 CREATE TABLE quiz_sessions (

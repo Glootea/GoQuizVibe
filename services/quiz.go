@@ -104,7 +104,6 @@ func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid
 	}
 
 	var score, maxScore int
-	var userAnswers []db.UserAnswer
 
 	for _, q := range questions {
 		maxScore += int(q.Points)
@@ -112,13 +111,14 @@ func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid
 
 		isCorrect := NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
 
-		userAnswers = append(userAnswers, db.UserAnswer{
-			ID:         uuid.New(),
+		if _, err := s.attempts.UpsertUserAnswer(ctx, db.UpsertUserAnswerParams{
 			AttemptID:  attemptID,
 			QuestionID: q.ID,
 			UserAnswer: userAnswer,
 			IsCorrect:  isCorrect,
-		})
+		}); err != nil {
+			return nil, err
+		}
 
 		if isCorrect {
 			score += int(q.Points)
@@ -134,18 +134,6 @@ func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	for _, a := range userAnswers {
-		if _, err := s.attempts.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
-			ID:         a.ID,
-			AttemptID:  a.AttemptID,
-			QuestionID: a.QuestionID,
-			UserAnswer: a.UserAnswer,
-			IsCorrect:  a.IsCorrect,
-		}); err != nil {
-			return nil, err
-		}
 	}
 
 	return &attempt, nil

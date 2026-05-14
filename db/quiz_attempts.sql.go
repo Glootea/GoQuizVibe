@@ -46,39 +46,6 @@ func (q *Queries) CreateAttempt(ctx context.Context, arg CreateAttemptParams) (Q
 	return i, err
 }
 
-const createUserAnswer = `-- name: CreateUserAnswer :one
-INSERT INTO user_answers (id, attempt_id, question_id, user_answer, is_correct)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, attempt_id, question_id, user_answer, is_correct
-`
-
-type CreateUserAnswerParams struct {
-	ID         uuid.UUID `json:"id"`
-	AttemptID  uuid.UUID `json:"attempt_id"`
-	QuestionID uuid.UUID `json:"question_id"`
-	UserAnswer string    `json:"user_answer"`
-	IsCorrect  bool      `json:"is_correct"`
-}
-
-func (q *Queries) CreateUserAnswer(ctx context.Context, arg CreateUserAnswerParams) (UserAnswer, error) {
-	row := q.db.QueryRow(ctx, createUserAnswer,
-		arg.ID,
-		arg.AttemptID,
-		arg.QuestionID,
-		arg.UserAnswer,
-		arg.IsCorrect,
-	)
-	var i UserAnswer
-	err := row.Scan(
-		&i.ID,
-		&i.AttemptID,
-		&i.QuestionID,
-		&i.UserAnswer,
-		&i.IsCorrect,
-	)
-	return i, err
-}
-
 const getAllAttempts = `-- name: GetAllAttempts :many
 SELECT a.id, a.user_id, a.quiz_id, a.score, a.max_score, a.started_at, a.completed_at,
        u.name as user_name, q.title as quiz_title
@@ -132,7 +99,7 @@ func (q *Queries) GetAllAttempts(ctx context.Context) ([]GetAllAttemptsRow, erro
 }
 
 const getAnswersByAttempt = `-- name: GetAnswersByAttempt :many
-SELECT id, attempt_id, question_id, user_answer, is_correct FROM user_answers WHERE attempt_id = $1
+SELECT attempt_id, question_id, user_answer, is_correct FROM user_answers WHERE attempt_id = $1
 `
 
 func (q *Queries) GetAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) ([]UserAnswer, error) {
@@ -145,7 +112,6 @@ func (q *Queries) GetAnswersByAttempt(ctx context.Context, attemptID uuid.UUID) 
 	for rows.Next() {
 		var i UserAnswer
 		if err := rows.Scan(
-			&i.ID,
 			&i.AttemptID,
 			&i.QuestionID,
 			&i.UserAnswer,
@@ -567,7 +533,7 @@ func (q *Queries) GetUserStats(ctx context.Context, userID uuid.UUID) (GetUserSt
 }
 
 const getWrongAnswersByAttempt = `-- name: GetWrongAnswersByAttempt :many
-SELECT ua.id, ua.attempt_id, ua.question_id, ua.user_answer, ua.is_correct FROM user_answers ua
+SELECT ua.attempt_id, ua.question_id, ua.user_answer, ua.is_correct FROM user_answers ua
 WHERE ua.attempt_id = $1 AND ua.is_correct = false
 `
 
@@ -581,7 +547,6 @@ func (q *Queries) GetWrongAnswersByAttempt(ctx context.Context, attemptID uuid.U
 	for rows.Next() {
 		var i UserAnswer
 		if err := rows.Scan(
-			&i.ID,
 			&i.AttemptID,
 			&i.QuestionID,
 			&i.UserAnswer,
@@ -626,6 +591,39 @@ func (q *Queries) UpdateAttempt(ctx context.Context, arg UpdateAttemptParams) (Q
 		&i.MaxScore,
 		&i.StartedAt,
 		&i.CompletedAt,
+	)
+	return i, err
+}
+
+const upsertUserAnswer = `-- name: UpsertUserAnswer :one
+INSERT INTO user_answers (attempt_id, question_id, user_answer, is_correct)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (attempt_id, question_id) DO UPDATE SET
+    user_answer = EXCLUDED.user_answer,
+    is_correct = EXCLUDED.is_correct
+RETURNING attempt_id, question_id, user_answer, is_correct
+`
+
+type UpsertUserAnswerParams struct {
+	AttemptID  uuid.UUID `json:"attempt_id"`
+	QuestionID uuid.UUID `json:"question_id"`
+	UserAnswer string    `json:"user_answer"`
+	IsCorrect  bool      `json:"is_correct"`
+}
+
+func (q *Queries) UpsertUserAnswer(ctx context.Context, arg UpsertUserAnswerParams) (UserAnswer, error) {
+	row := q.db.QueryRow(ctx, upsertUserAnswer,
+		arg.AttemptID,
+		arg.QuestionID,
+		arg.UserAnswer,
+		arg.IsCorrect,
+	)
+	var i UserAnswer
+	err := row.Scan(
+		&i.AttemptID,
+		&i.QuestionID,
+		&i.UserAnswer,
+		&i.IsCorrect,
 	)
 	return i, err
 }

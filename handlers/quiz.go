@@ -276,6 +276,10 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 
 	_, err = h.sessionService.SaveAnswer(r.Context(), userID, quizID, currentIndex, answer)
 	if err != nil {
+		if errors.Is(err, services.ErrTimeExpired) {
+			http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
+			return nil
+		}
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
@@ -369,6 +373,22 @@ func (h *QuizHandler) QuizResult(w http.ResponseWriter, r *http.Request) error {
 
 	session := h.sessionService.GetSession(ctx, sessionID)
 	if session == nil {
+		attempt, err := h.pool.GetAttemptByID(ctx, sessionID)
+		if err == nil && attempt.CompletedAt.Valid {
+			data, err := h.sessionService.GetQuizResultData(ctx, quizID, userID)
+			if err == nil {
+				http.SetCookie(w, &http.Cookie{
+					Name:     "quiz_session_id",
+					Value:    "",
+					Path:     "/quiz",
+					HttpOnly: true,
+					SameSite: http.SameSiteLaxMode,
+					MaxAge:   -1,
+				})
+				t := middleware.GetTranslator(r.Context())
+				return pages.QuizResultPage(*data, t).Render(r.Context(), w)
+			}
+		}
 		http.Redirect(w, r, "/quiz/"+quizID.String()+"/info", http.StatusFound)
 		return nil
 	}

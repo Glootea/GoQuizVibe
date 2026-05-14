@@ -198,7 +198,7 @@ func TestQuizSessionService_NavigateQuestion(t *testing.T) {
 		mockSessions.EXPECT().GetSession(ctx, session.ID).Return(*session, nil)
 		expectGetQuizWithQuestions(ctx, mockQuizzes, mockQuestions, mockImages, defaultQuiz)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
 		mockAttempts.EXPECT().GetAttemptByID(ctx, session.AttemptID).Return(db.QuizAttempt{ID: session.AttemptID, StartedAt: now}, nil)
 
 		testUser := &db.User{ID: userID, Email: "test@example.com"}
@@ -230,7 +230,7 @@ func TestQuizSessionService_NavigateQuestion(t *testing.T) {
 		mockSessions.EXPECT().GetSession(ctx, session.ID).Return(*session, nil)
 		expectGetQuizWithQuestions(ctx, mockQuizzes, mockQuestions, mockImages, defaultQuiz)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
 		mockAttempts.EXPECT().GetAttemptByID(ctx, session.AttemptID).Return(db.QuizAttempt{ID: session.AttemptID, StartedAt: now}, nil)
 
 		testUser := &db.User{ID: userID, Email: "test@example.com"}
@@ -375,7 +375,7 @@ func TestQuizSessionService_NavigateQuestion(t *testing.T) {
 		mockSessions.EXPECT().GetSession(ctx, session.ID).Return(*session, nil)
 		expectGetQuizWithQuestions(ctx, mockQuizzes, mockQuestions, mockImages, defaultQuiz)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer error"))
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer error"))
 
 		testUser := &db.User{ID: userID, Email: "test@example.com"}
 		svc := services.NewQuizSessionService(mockAttempts, mockSessions, mockQuizzes, mockQuestions, mockImages, mockUsers, gamification, nil)
@@ -403,7 +403,7 @@ func TestQuizSessionService_NavigateQuestion(t *testing.T) {
 		mockSessions.EXPECT().GetSession(ctx, session.ID).Return(*session, nil)
 		expectGetQuizWithQuestions(ctx, mockQuizzes, mockQuestions, mockImages, defaultQuiz)
 		mockSessions.EXPECT().UpdateSession(ctx, gomock.Any()).Return(db.QuizSession{}, nil)
-		mockAttempts.EXPECT().CreateUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil)
 		mockAttempts.EXPECT().GetAttemptByID(ctx, session.AttemptID).Return(db.QuizAttempt{ID: session.AttemptID, StartedAt: now}, nil)
 
 		testUser := &db.User{ID: userID, Email: "test@example.com"}

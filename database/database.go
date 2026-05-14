@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -52,8 +54,28 @@ func runMigrations() error {
 	}
 	defer m.Close()
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to run migrations: %w", err)
+if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		if strings.Contains(err.Error(), "Dirty database version") {
+			parts := strings.Split(err.Error(), " ")
+			if len(parts) >= 5 {
+				ver := strings.TrimSuffix(parts[4], ".")
+				forceVer, parseErr := strconv.Atoi(ver)
+				if parseErr == nil {
+					log.Printf("Fixing dirty migration state, forcing version %d...", forceVer)
+					if fErr := m.Force(forceVer); fErr != nil {
+						return fmt.Errorf("failed to force migration: %w", fErr)
+					}
+					log.Printf("Forced to version %d, retrying migrations...", forceVer)
+					if retryErr := m.Up(); retryErr != nil && retryErr != migrate.ErrNoChange {
+						return fmt.Errorf("failed to run migrations after force: %w", retryErr)
+					}
+				} else {
+					return fmt.Errorf("failed to run migrations: %w", err)
+				}
+			}
+		} else {
+			return fmt.Errorf("failed to run migrations: %w", err)
+		}
 	}
 	log.Println("Migrations applied")
 	return nil
@@ -230,12 +252,12 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 }
 
 type jsonQuizInput struct {
-	Title          string             `json:"title"`
-	Description    string             `json:"description"`
-	Subject        string             `json:"subject"`
-	Grade          int                `json:"grade"`
-	TimeLimit      int                `json:"time_limit"`
-	CreatedByEmail string             `json:"created_by_email"`
+	Title          string              `json:"title"`
+	Description    string              `json:"description"`
+	Subject        string              `json:"subject"`
+	Grade          int                 `json:"grade"`
+	TimeLimit      int                 `json:"time_limit"`
+	CreatedByEmail string              `json:"created_by_email"`
 	Questions      []jsonQuestionInput `json:"questions"`
 }
 

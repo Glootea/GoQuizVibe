@@ -7,7 +7,7 @@
 - Используй ./tmp вместо ~/tmp для временных файлов. Не читай файлы вне изначальной директории
 
 ## Stack
-Go, Templ + HTMX + tailwind, docker-compose, PostgreSQL + sqlc, MinIO (S3 compatible), Redis 
+Go, Templ + HTMX + tailwind, podman-compose, PostgreSQL + sqlc, MinIO (S3 compatible), Redis 
 
 ## Конфигурация
 .env + чтение в config/config.go

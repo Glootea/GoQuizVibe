@@ -7,7 +7,6 @@ import (
 )
 
 type WrongAnswer struct {
-	ID            uuid.UUID `json:"id"`
 	QuestionID    uuid.UUID `json:"question_id"`
 	QuizID        uuid.UUID `json:"quiz_id"`
 	UserAnswer    string    `json:"user_answer"`

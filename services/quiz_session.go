@@ -221,18 +221,31 @@ func (s *QuizSessionService) SaveAnswer(ctx context.Context, userID uuid.UUID, q
 		return false, fmt.Errorf("invalid question index")
 	}
 
+	attempt, err := s.attempts.GetAttemptByID(ctx, session.AttemptID)
+	if err != nil {
+		return false, fmt.Errorf("get attempt: %w", err)
+	}
+
+	quiz, err := s.getQuizWithQuestions(ctx, quizID)
+	if err != nil {
+		return false, fmt.Errorf("get quiz: %w", err)
+	}
+
+	if s.isTimeExpired(attempt, quiz.TimeLimit) {
+		return false, ErrTimeExpired
+	}
+
 	question := questions[currentIndex]
 	isCorrect := NormalizeAnswer(answer) == NormalizeAnswer(question.CorrectAnswer)
 
-	_, err = s.attempts.CreateUserAnswer(ctx, db.CreateUserAnswerParams{
-		ID:         uuid.New(),
+	_, err = s.attempts.UpsertUserAnswer(ctx, db.UpsertUserAnswerParams{
 		AttemptID:  session.AttemptID,
 		QuestionID: question.ID,
 		UserAnswer: answer,
 		IsCorrect:  isCorrect,
 	})
 	if err != nil {
-		return false, fmt.Errorf("create user answer: %w", err)
+		return false, fmt.Errorf("upsert user answer: %w", err)
 	}
 
 	return isCorrect, nil
@@ -437,7 +450,6 @@ func (s *QuizSessionService) GetErrorsPageData(ctx context.Context, userID uuid.
 			if !a.IsCorrect {
 				q := questionMap[a.QuestionID]
 				wrongAnswers = append(wrongAnswers, models.WrongAnswer{
-					ID:            a.ID,
 					QuestionID:    a.QuestionID,
 					QuizID:        attempt.QuizID,
 					UserAnswer:    a.UserAnswer,
