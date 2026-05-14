@@ -221,7 +221,7 @@ func (s *AdminService) UpdateQuiz(ctx context.Context, quizID uuid.UUID, title, 
 		return fmt.Errorf("quiz not found: %w", err)
 	}
 
-	inserted, err := s.quizzes.UpdateQuiz(ctx, db.UpdateQuizParams{
+	_, err = s.quizzes.UpdateQuiz(ctx, db.UpdateQuizParams{
 		ID:          quizID,
 		Title:       title,
 		Description: description,
@@ -234,8 +234,6 @@ func (s *AdminService) UpdateQuiz(ctx context.Context, quizID uuid.UUID, title, 
 		return fmt.Errorf("update quiz: %w", err)
 	}
 
-	insertedJson, _ := json.Marshal(inserted)
-	fmt.Printf("Inserted: %s", string(insertedJson))
 	return nil
 }
 
@@ -564,18 +562,7 @@ func (s *AdminService) RestoreQuiz(ctx context.Context, quizID uuid.UUID) error 
 }
 
 func (s *AdminService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.Question {
-	result := make([]models.Question, len(questions))
-	for i, q := range questions {
-		images, err := s.images.GetImagesByQuestionID(ctx, q.ID)
-		if err != nil {
-			images = nil
-		}
-		result[i] = models.Question{
-			Question: q,
-			Images:   images,
-		}
-	}
-	return result
+	return AttachImagesToQuestions(ctx, questions, s.images)
 }
 
 func (s *AdminService) GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUID) ([]models.Question, error) {

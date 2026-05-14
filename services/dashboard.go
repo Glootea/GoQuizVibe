@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 	r "github.com/goquizvibe/repositories"
 	"github.com/goquizvibe/types"
@@ -40,6 +39,10 @@ func NewDashboardService(
 		auth:           auth,
 		sessionService: sessionService,
 	}
+}
+
+func (s *DashboardService) GetUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
+	return GetUserIDFromRequest(r, s.auth)
 }
 
 func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUID) (*types.DashboardData, error) {
@@ -77,18 +80,6 @@ func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUI
 	}, nil
 }
 
-func (s *DashboardService) GetUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("get cookie: %w", err)
-	}
-	claims, err := s.auth.ValidateToken(cookie.Value)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("validate token: %w", err)
-	}
-	return claims.UserID, nil
-}
-
 func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
 	quizzes, err := s.quizzes.GetQuizzesForUser(ctx, userID)
 	if err != nil {
@@ -97,23 +88,11 @@ func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UU
 	result := make([]*models.QuizWithQuestionsAndImages, len(quizzes))
 	for i, q := range quizzes {
 		questions, _ := s.questions.GetQuestionsByQuizID(ctx, q.ID)
-		questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+		questionsWithImages := AttachImagesToQuestions(ctx, questions, s.images)
 		result[i] = &models.QuizWithQuestionsAndImages{
 			Quiz:      q,
 			Questions: questionsWithImages,
 		}
 	}
 	return result, err
-}
-
-func (s *DashboardService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.QuestionWithImages {
-	result := make([]models.QuestionWithImages, len(questions))
-	for i, q := range questions {
-		images, _ := s.images.GetImagesByQuestionID(ctx, q.ID)
-		result[i] = models.QuestionWithImages{
-			Question: q,
-			Images:   images,
-		}
-	}
-	return result
 }

@@ -43,7 +43,7 @@ func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) (
 	result := make([]*models.QuizWithQuestionsAndImages, len(quizzes))
 	for i, q := range quizzes {
 		questions, _ := s.questions.GetQuestionsByQuizID(ctx, q.ID)
-		questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+questionsWithImages := AttachImagesToQuestions(ctx, questions, s.images)
 		result[i] = &models.QuizWithQuestionsAndImages{
 			Quiz:      q,
 			Questions: questionsWithImages,
@@ -61,24 +61,14 @@ func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.Qu
 	if err != nil {
 		return nil, err
 	}
-	questionsWithImages := s.attachImagesToQuestions(ctx, questions)
+	questionsWithImages := AttachImagesToQuestions(ctx, questions, s.images)
 	return &models.QuizWithQuestionsAndImages{
 		Quiz:      quiz,
 		Questions: questionsWithImages,
 	}, nil
 }
 
-func (s *QuizService) attachImagesToQuestions(ctx context.Context, questions []db.Question) []models.QuestionWithImages {
-	result := make([]models.QuestionWithImages, len(questions))
-	for i, q := range questions {
-		images, _ := s.images.GetImagesByQuestionID(ctx, q.ID)
-		result[i] = models.QuestionWithImages{
-			Question: q,
-			Images:   images,
-		}
-	}
-	return result
-}
+
 
 func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid.UUID, answers map[uuid.UUID]string) (*db.QuizAttempt, error) {
 	_, err := s.quizzes.GetQuizByID(ctx, quizID)

@@ -125,7 +125,7 @@ func (h *QuizHandler) QuizQuestion(w http.ResponseWriter, r *http.Request) error
 
 	t := middleware.GetTranslator(r.Context())
 
-	isHtmx := r.Header.Get("HX-Request") == "true"
+	isHtmx := IsHTMXRequest(r)
 	if !isHtmx {
 		user, err := h.pool.GetUserByID(ctx, userID)
 		if err != nil {
@@ -283,7 +283,7 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		w.Header().Set("HX-Redirect", "/quiz/"+quizID.String()+"/result?session="+sessionIDStr)
 		w.WriteHeader(http.StatusOK)
 		return nil
@@ -479,7 +479,7 @@ func (h *QuizHandler) SyncTime(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if IsHTMXRequest(r) {
 		return pages.TimerWidget(quiz.ID, sessionIDStr, remainingSeconds).Render(ctx, w)
 	}
 

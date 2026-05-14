@@ -19,33 +19,20 @@ type RequireRoleMiddleware struct {
 
 func (m RequireRoleMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("token")
+		cookie, err := r.Cookie(cookieNameToken)
 		if err != nil {
-			if r.Header.Get("HX-Request") == "true" {
-				http.NotFound(w, r)
-				return
-			}
-			http.Redirect(w, r, "/login", http.StatusFound)
+			HandleAuthFailure(w, r)
 			return
 		}
 		claims, err := m.authService.ValidateToken(cookie.Value)
 		if err != nil {
-			if r.Header.Get("HX-Request") == "true" {
-				http.NotFound(w, r)
-				return
-			}
-			http.Redirect(w, r, "/login", http.StatusFound)
+			HandleAuthFailure(w, r)
 			return
 		}
 		if slices.Contains(m.roles, claims.Role) {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if r.Header.Get("HX-Request") == "true" {
-			http.NotFound(w, r)
-			return
-		}
-		http.Redirect(w, r, "/login", http.StatusFound)
+		HandleAuthFailure(w, r)
 	})
-
 }
