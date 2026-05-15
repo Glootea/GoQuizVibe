@@ -581,3 +581,85 @@ msgstr "Осталось времени"
 
 msgid "Resume"
 msgstr "Продолжить"
+
+# JSON Import
+
+msgid "Import Questions"
+msgstr "Импорт вопросов"
+
+msgid "Import from JSON"
+msgstr "Импорт из JSON"
+
+msgid "Upload JSON file"
+msgstr "Загрузить JSON файл"
+
+msgid "Or enter JSON manually"
+msgstr "Или введите JSON вручную"
+
+msgid "Import"
+msgstr "Импортировать"
+
+msgid "Download Prompt as File"
+msgstr "Сохранить промпт в файл"
+
+msgid "Prompt for LLM question generation"
+msgstr "Промпт для генерации вопросов LLM"
+
+msgid "Enter quiz topic above to generate prompt"
+msgstr "Введите тему теста выше для генерации промпта"
+
+msgid "JSON structure for question:"
+msgstr "Структура JSON для вопроса:"
+
+msgid "Questions imported successfully"
+msgstr "Вопросы успешно импортированы"
+
+msgid "Failed to import questions"
+msgstr "Ошибка импорта вопросов"
+
+msgid "Invalid JSON format"
+msgstr "Неверный формат JSON"
+
+msgid "Language"
+msgstr "Язык"
+
+msgid "Response must be in JSON format"
+msgstr "Ответ должен быть в формате JSON"
+
+# LLM Prompt generation
+
+msgid "You are an expert at creating test questions. Create an array of questions on the topic."
+msgstr "Ты — эксперт по созданию тестовых вопросов. Создай массив вопросов по указанной теме."
+
+msgid "Each question must contain the following fields:"
+msgstr "Каждый вопрос должен содержать следующие поля:"
+
+msgid "Response must be a VALID JSON array of objects. No additional text."
+msgstr "Ответ должен быть ВАЛИДНЫМ JSON-массивом объектов. Без дополнительного текста."
+
+msgid "Topic"
+msgstr "Тема"
+
+msgid "text (string) - question text"
+msgstr "text (строка) — текст вопроса"
+
+msgid "type (string) - one of: choice, open, fill"
+msgstr "type (строка) — тип вопроса: choice, open или fill"
+
+msgid "options (array of strings) - answer options for choice type, empty for others"
+msgstr "options (массив строк) — варианты ответов для типа choice, пустой для остальных"
+
+msgid "correct_answer (string) - correct answer"
+msgstr "correct_answer (строка) — правильный ответ"
+
+msgid "explanation (string) - explanation for the answer"
+msgstr "explanation (строка) — пояснение к ответу"
+
+msgid "points (integer) - point value for the question (default 10)"
+msgstr "points (целое число) — количество баллов за вопрос (по умолчанию 10)"
+
+msgid "order_index (integer) - position in the quiz (0-based)"
+msgstr "order_index (целое число) — позиция в тесте (начиная с 0)"
+
+msgid "JSON Schema for question object"
+msgstr "JSON Schema для объекта вопроса"

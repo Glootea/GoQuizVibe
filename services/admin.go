@@ -423,6 +423,81 @@ func (s *AdminService) DeleteQuestionImage(ctx context.Context, imageID, questio
 	return nil
 }
 
+func (s *AdminService) ImportQuestions(ctx context.Context, quizID uuid.UUID, questions []map[string]interface{}) (int, error) {
+	createdCount := 0
+	currentMaxOrder := -1
+	if result, err := s.questions.GetMaxOrderIndex(ctx, quizID); err == nil {
+		if v, ok := result.(int64); ok {
+			currentMaxOrder = int(v)
+		}
+	}
+
+	for i, q := range questions {
+		text := getString(q, "text", "")
+		if text == "" {
+			continue
+		}
+
+		questionTypeStr := getString(q, "type", "choice")
+		questionType := db.QuestionType(questionTypeStr)
+
+		correctAnswer := getString(q, "correct_answer", "")
+		explanation := getString(q, "explanation", "")
+		points := getInt(q, "points", 10)
+		orderIndex := getInt(q, "order_index", currentMaxOrder+1+i)
+
+		var options []string
+		if opts, ok := q["options"].([]interface{}); ok {
+			for _, opt := range opts {
+				if s, ok := opt.(string); ok {
+					options = append(options, s)
+				}
+			}
+		}
+
+		optionsJSON, err := json.Marshal(options)
+		if err != nil {
+			continue
+		}
+
+		newQuestionID := uuid.New()
+		_, err = s.questions.CreateQuestion(ctx, db.CreateQuestionParams{
+			ID:            newQuestionID,
+			QuizID:        quizID,
+			Text:          text,
+			Type:          questionType,
+			Options:       optionsJSON,
+			CorrectAnswer: correctAnswer,
+			Explanation:   explanation,
+			Points:        points,
+			OrderIndex:    orderIndex,
+		})
+		if err != nil {
+			continue
+		}
+		createdCount++
+	}
+
+	return createdCount, nil
+}
+
+func getString(m map[string]interface{}, key, defaultVal string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+	return defaultVal
+}
+
+func getInt(m map[string]interface{}, key string, defaultVal int) int {
+	if v, ok := m[key].(float64); ok {
+		return int(v)
+	}
+	if v, ok := m[key].(int); ok {
+		return v
+	}
+	return defaultVal
+}
+
 func (s *AdminService) GetResultsData(ctx context.Context, userID uuid.UUID) (*types.AdminResultsData, error) {
 	user, err := s.users.GetUserByID(ctx, userID)
 	if err != nil {
