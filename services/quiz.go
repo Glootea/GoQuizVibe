@@ -24,26 +24,31 @@ type QuizService struct {
 	questions r.QuestionRepository
 	images    r.ImageRepository
 	attempts  r.AttemptRepository
+	cache     *CacheService
 }
 
-func NewQuizService(quizzes r.QuizRepository, questions r.QuestionRepository, images r.ImageRepository, attempts r.AttemptRepository) *QuizService {
+func NewQuizService(quizzes r.QuizRepository, questions r.QuestionRepository, images r.ImageRepository, attempts r.AttemptRepository, cache *CacheService) *QuizService {
 	return &QuizService{
 		quizzes:   quizzes,
 		questions: questions,
 		images:    images,
 		attempts:  attempts,
+		cache:     cache,
 	}
 }
 
 func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
-	quizzes, err := s.quizzes.GetQuizzesForUser(ctx, userID)
+	cacheKey := "quizzes:user:" + userID.String()
+	quizzes, err := GetOrFetch(ctx, s.cache, cacheKey, func() ([]db.Quiz, error) {
+		return s.quizzes.GetQuizzesForUser(ctx, userID)
+	})
 	if err != nil {
 		return nil, err
 	}
 	result := make([]*models.QuizWithQuestionsAndImages, len(quizzes))
 	for i, q := range quizzes {
 		questions, _ := s.questions.GetQuestionsByQuizID(ctx, q.ID)
-questionsWithImages := AttachImagesToQuestions(ctx, questions, s.images)
+		questionsWithImages := AttachImagesToQuestions(ctx, questions, s.images)
 		result[i] = &models.QuizWithQuestionsAndImages{
 			Quiz:      q,
 			Questions: questionsWithImages,
@@ -53,11 +58,17 @@ questionsWithImages := AttachImagesToQuestions(ctx, questions, s.images)
 }
 
 func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.QuizWithQuestionsAndImages, error) {
-	quiz, err := s.quizzes.GetQuizByID(ctx, id)
+	cacheKey := "quiz:" + id.String()
+	quiz, err := GetOrFetch(ctx, s.cache, cacheKey, func() (db.Quiz, error) {
+		return s.quizzes.GetQuizByID(ctx, id)
+	})
 	if err != nil {
 		return nil, err
 	}
-	questions, err := s.questions.GetQuestionsByQuizID(ctx, id)
+	questionsCacheKey := "questions:quiz:" + id.String()
+	questions, err := GetOrFetch(ctx, s.cache, questionsCacheKey, func() ([]db.Question, error) {
+		return s.questions.GetQuestionsByQuizID(ctx, id)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +78,6 @@ func (s *QuizService) GetQuizByID(ctx context.Context, id uuid.UUID) (*models.Qu
 		Questions: questionsWithImages,
 	}, nil
 }
-
-
 
 func (s *QuizService) SubmitQuizAttempt(ctx context.Context, userID, quizID uuid.UUID, answers map[uuid.UUID]string) (*db.QuizAttempt, error) {
 	_, err := s.quizzes.GetQuizByID(ctx, quizID)

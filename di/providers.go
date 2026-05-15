@@ -78,8 +78,8 @@ func ProvideGamificationService(queries *db.Queries) *services.GamificationServi
 	return services.NewGamificationService(queries, queries, services.RealTimeProvider{})
 }
 
-func ProvideQuizService(queries *db.Queries) *services.QuizService {
-	return services.NewQuizService(queries, queries, queries, queries)
+func ProvideQuizService(queries *db.Queries, cacheService *services.CacheService) *services.QuizService {
+	return services.NewQuizService(queries, queries, queries, queries, cacheService)
 }
 
 func ProvideStorageService(cfg *config.Config) (*services.StorageService, error) {
@@ -90,8 +90,9 @@ func ProvideAdminService(
 	queries *db.Queries,
 	authService *services.AuthService,
 	storageService *services.StorageService,
+	cacheService *services.CacheService,
 ) *services.AdminService {
-	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService)
+	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
 }
 
 func ProvideQuizSessionService(
@@ -116,8 +117,9 @@ func ProvideDashboardService(
 	gamification *services.GamificationService,
 	authService *services.AuthService,
 	quizSessionService *services.QuizSessionService,
+	cacheService *services.CacheService,
 ) *services.DashboardService {
-	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService)
+	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
 }
 
 func ProvideLocaleService() (*locales.Service, error) {

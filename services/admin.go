@@ -28,6 +28,7 @@ type AdminService struct {
 	stats          r.StatsRepository
 	authService    *AuthService
 	storageService *StorageService
+	cache          *CacheService
 }
 
 func NewAdminService(
@@ -39,6 +40,7 @@ func NewAdminService(
 	stats r.StatsRepository,
 	auth *AuthService,
 	storage *StorageService,
+	cache *CacheService,
 ) *AdminService {
 	return &AdminService{
 		users:          users,
@@ -49,6 +51,7 @@ func NewAdminService(
 		stats:          stats,
 		authService:    auth,
 		storageService: storage,
+		cache:          cache,
 	}
 }
 
@@ -61,7 +64,10 @@ func (s *AdminService) GetUserFromRequest(r *http.Request) (*db.User, error) {
 	if err != nil {
 		return nil, errors.Join(errors.New("validate token"), err)
 	}
-	user, err := s.users.GetUserByID(context.Background(), claims.UserID)
+	cacheKey := "user:" + claims.UserID.String()
+	user, err := GetOrFetch(r.Context(), s.cache, cacheKey, func() (db.User, error) {
+		return s.users.GetUserByID(context.Background(), claims.UserID)
+	})
 	if err != nil {
 		return nil, errors.Join(errors.New("can not get user from db"), err)
 	}
@@ -69,7 +75,10 @@ func (s *AdminService) GetUserFromRequest(r *http.Request) (*db.User, error) {
 }
 
 func (s *AdminService) GetDashboardData(ctx context.Context, userID uuid.UUID) (*types.AdminDashboardData, error) {
-	user, err := s.users.GetUserByID(ctx, userID)
+	userCacheKey := "user:" + userID.String()
+	user, err := GetOrFetch(ctx, s.cache, userCacheKey, func() (db.User, error) {
+		return s.users.GetUserByID(ctx, userID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
@@ -123,7 +132,10 @@ func (s *AdminService) GetDashboardData(ctx context.Context, userID uuid.UUID) (
 }
 
 func (s *AdminService) GetQuizzesListData(ctx context.Context, userID uuid.UUID) (*types.AdminQuizListData, error) {
-	user, err := s.users.GetUserByID(ctx, userID)
+	userCacheKey := "user:" + userID.String()
+	user, err := GetOrFetch(ctx, s.cache, userCacheKey, func() (db.User, error) {
+		return s.users.GetUserByID(ctx, userID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
@@ -168,35 +180,52 @@ func (s *AdminService) GetQuizzesListData(ctx context.Context, userID uuid.UUID)
 
 func (s *AdminService) CreateQuiz(ctx context.Context, userID uuid.UUID, title, description, subject string, grade, timeLimit int) (uuid.UUID, error) {
 	newQuizID := uuid.New()
-	_, err := s.quizzes.CreateQuiz(ctx, db.CreateQuizParams{
-		ID:          newQuizID,
-		Title:       title,
-		Description: description,
-		Subject:     subject,
-		Grade:       grade,
-		Status:      db.QuizStatusAvailable,
-		TimeLimit:   timeLimit,
-		CreatedBy:   userID,
-		CreatedAt:   time.Now(),
+	cacheKey := "quiz:" + newQuizID.String()
+	createdQuiz, err := SaveOrUpdate(ctx, s.cache, cacheKey, func() (db.Quiz, error) {
+		return s.quizzes.CreateQuiz(ctx, db.CreateQuizParams{
+			ID:          newQuizID,
+			Title:       title,
+			Description: description,
+			Subject:     subject,
+			Grade:       grade,
+			Status:      db.QuizStatusAvailable,
+			TimeLimit:   timeLimit,
+			CreatedBy:   userID,
+			CreatedAt:   time.Now(),
+		})
 	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create quiz: %w", err)
 	}
-	return newQuizID, nil
+
+	_ = Delete(ctx, s.cache, "quizzes:user:"+userID.String(), func() error {
+		return nil
+	})
+
+	return createdQuiz.ID, nil
 }
 
 func (s *AdminService) GetQuizEditData(ctx context.Context, userID, quizID uuid.UUID) (*types.AdminQuizEditData, error) {
-	user, err := s.users.GetUserByID(ctx, userID)
+	userCacheKey := "user:" + userID.String()
+	user, err := GetOrFetch(ctx, s.cache, userCacheKey, func() (db.User, error) {
+		return s.users.GetUserByID(ctx, userID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
-	quiz, err := s.quizzes.GetQuizByID(ctx, quizID)
+	quizCacheKey := "quiz:" + quizID.String()
+	quiz, err := GetOrFetch(ctx, s.cache, quizCacheKey, func() (db.Quiz, error) {
+		return s.quizzes.GetQuizByID(ctx, quizID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}
 
-	questions, err := s.questions.GetQuestionsByQuizID(ctx, quizID)
+	questionsCacheKey := "questions:quiz:" + quizID.String()
+	questions, err := GetOrFetch(ctx, s.cache, questionsCacheKey, func() ([]db.Question, error) {
+		return s.questions.GetQuestionsByQuizID(ctx, quizID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get questions: %w", err)
 	}
@@ -238,10 +267,16 @@ func (s *AdminService) UpdateQuiz(ctx context.Context, quizID uuid.UUID, title, 
 }
 
 func (s *AdminService) DeleteQuiz(ctx context.Context, quizID uuid.UUID) error {
-	err := s.quizzes.DeleteQuiz(ctx, quizID)
+	cacheKey := "quiz:" + quizID.String()
+	err := Delete(ctx, s.cache, cacheKey, func() error {
+		return s.quizzes.DeleteQuiz(ctx, quizID)
+	})
 	if err != nil {
 		return fmt.Errorf("delete quiz: %w", err)
 	}
+
+	_ = Delete(ctx, s.cache, "questions:quiz:"+quizID.String(), func() error { return nil })
+
 	return nil
 }
 
@@ -566,7 +601,10 @@ func (s *AdminService) attachImagesToQuestions(ctx context.Context, questions []
 }
 
 func (s *AdminService) GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUID) ([]models.Question, error) {
-	questions, err := s.questions.GetQuestionsByQuizID(ctx, quizID)
+	cacheKey := "questions:quiz:" + quizID.String()
+	questions, err := GetOrFetch(ctx, s.cache, cacheKey, func() ([]db.Question, error) {
+		return s.questions.GetQuestionsByQuizID(ctx, quizID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get questions: %w", err)
 	}
@@ -574,7 +612,10 @@ func (s *AdminService) GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUI
 }
 
 func (s *AdminService) GetQuizByID(ctx context.Context, quizID uuid.UUID) (*models.Quiz, error) {
-	quiz, err := s.quizzes.GetQuizByID(ctx, quizID)
+	cacheKey := "quiz:" + quizID.String()
+	quiz, err := GetOrFetch(ctx, s.cache, cacheKey, func() (db.Quiz, error) {
+		return s.quizzes.GetQuizByID(ctx, quizID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get quiz: %w", err)
 	}

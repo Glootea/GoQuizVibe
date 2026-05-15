@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 	r "github.com/goquizvibe/repositories"
 	"github.com/goquizvibe/types"
@@ -19,6 +20,7 @@ type DashboardService struct {
 	gamification   *GamificationService
 	auth           Authenticator
 	sessionService *QuizSessionService
+	cache          *CacheService
 }
 
 func NewDashboardService(
@@ -29,6 +31,7 @@ func NewDashboardService(
 	gamification *GamificationService,
 	auth Authenticator,
 	sessionService *QuizSessionService,
+	cache *CacheService,
 ) *DashboardService {
 	return &DashboardService{
 		users:          users,
@@ -38,6 +41,7 @@ func NewDashboardService(
 		gamification:   gamification,
 		auth:           auth,
 		sessionService: sessionService,
+		cache:          cache,
 	}
 }
 
@@ -46,7 +50,10 @@ func (s *DashboardService) GetUserIDFromRequest(r *http.Request) (uuid.UUID, err
 }
 
 func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUID) (*types.DashboardData, error) {
-	user, err := s.users.GetUserByID(ctx, userID)
+	userCacheKey := "user:" + userID.String()
+	user, err := GetOrFetch(ctx, s.cache, userCacheKey, func() (db.User, error) {
+		return s.users.GetUserByID(ctx, userID)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("get user: %w", err)
 	}
@@ -81,7 +88,10 @@ func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUI
 }
 
 func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
-	quizzes, err := s.quizzes.GetQuizzesForUser(ctx, userID)
+	cacheKey := "quizzes:user:" + userID.String()
+	quizzes, err := GetOrFetch(ctx, s.cache, cacheKey, func() ([]db.Quiz, error) {
+		return s.quizzes.GetQuizzesForUser(ctx, userID)
+	})
 	if err != nil {
 		return nil, err
 	}

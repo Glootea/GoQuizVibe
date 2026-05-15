@@ -181,16 +181,17 @@ func ProvideTestGamificationService(queries *db.Queries, tp services.TimeProvide
 	return services.NewGamificationService(queries, queries, tp)
 }
 
-func ProvideTestQuizService(queries *db.Queries) *services.QuizService {
-	return services.NewQuizService(queries, queries, queries, queries)
+func ProvideTestQuizService(queries *db.Queries, cacheService *services.CacheService) *services.QuizService {
+	return services.NewQuizService(queries, queries, queries, queries, cacheService)
 }
 
 func ProvideTestAdminService(
 	queries *db.Queries,
 	authService *services.AuthService,
 	storageService *services.StorageService,
+	cacheService *services.CacheService,
 ) *services.AdminService {
-	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService)
+	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
 }
 
 func ProvideTestQuizSessionService(
@@ -205,8 +206,9 @@ func ProvideTestDashboardService(
 	gamification *services.GamificationService,
 	authService *services.AuthService,
 	sessionService *services.QuizSessionService,
+	cacheService *services.CacheService,
 ) *services.DashboardService {
-	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService, sessionService)
+	return services.NewDashboardService(queries, queries, queries, queries, gamification, authService, sessionService, cacheService)
 }
 
 func ProvideMockAuthenticator() services.Authenticator {
@@ -320,10 +322,11 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 	mockTime := NewMockTimeProvider()
 	authService := services.NewAuthService(queries, cfg.JWTSecret, 24*time.Hour)
 	gamification := services.NewGamificationService(queries, queries, mockTime)
-	quizService := services.NewQuizService(queries, queries, queries, queries)
+	cacheService := services.NewCacheService(nil, cfg.Redis.CacheTTL)
+	quizService := services.NewQuizService(queries, queries, queries, queries, cacheService)
 
 	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, *gamification, services.CacheService{})
-	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService)
+	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
 
 	localeSvc, _ := locales.NewService()
 

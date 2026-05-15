@@ -93,18 +93,18 @@ func cacheKeyAnswers(userID uuid.UUID) string {
 
 func (s *QuizSessionService) GetSession(ctx context.Context, userID uuid.UUID) *QuizSession {
 	var session QuizSession
-	if s.cache.Get(ctx, userSessionKey(userID), &session) {
+	if s.cache.Get(ctx, userSessionKey(userID), &session, "session") {
 		return &session
 	}
 	return nil
 }
 
 func (s *QuizSessionService) saveSession(ctx context.Context, session *QuizSession, ttl time.Duration) error {
-	return s.cache.Set(ctx, userSessionKey(session.UserID), session, ttl)
+	return s.cache.Set(ctx, userSessionKey(session.UserID), session, ttl, "session")
 }
 
 func (s *QuizSessionService) deleteSession(ctx context.Context, userID uuid.UUID) error {
-	return s.cache.Delete(ctx, userSessionKey(userID))
+	return s.cache.Delete(ctx, userSessionKey(userID), "session")
 }
 
 func shuffleOptions(options []string) []string {
@@ -169,13 +169,13 @@ func (s *QuizSessionService) CreateSession(ctx context.Context, userID, quizID u
 		return nil, fmt.Errorf("save session: %w", err)
 	}
 
-	if err := s.cache.Set(ctx, cacheKeyQuestions(userID), selectedQuestions, ttl); err != nil {
+	if err := s.cache.Set(ctx, cacheKeyQuestions(userID), selectedQuestions, ttl, "session_questions"); err != nil {
 		log.Printf("cache set questions: %v", err)
 	}
-	if err := s.cache.Set(ctx, cacheKeyOrder(userID), order, ttl); err != nil {
+	if err := s.cache.Set(ctx, cacheKeyOrder(userID), order, ttl, "session_order"); err != nil {
 		log.Printf("cache set order: %v", err)
 	}
-	if err := s.cache.Set(ctx, cacheKeyAnswers(userID), map[int]types.AnswerState{}, ttl); err != nil {
+	if err := s.cache.Set(ctx, cacheKeyAnswers(userID), map[int]types.AnswerState{}, ttl, "session_answers"); err != nil {
 		log.Printf("cache set answers: %v", err)
 	}
 
@@ -191,7 +191,7 @@ type QuestionFeedback struct {
 
 func (s *QuizSessionService) GetSessionQuestions(ctx context.Context, userID uuid.UUID) ([]models.QuestionWithImages, error) {
 	var questions []models.QuestionWithImages
-	if s.cache.Get(ctx, cacheKeyQuestions(userID), &questions) {
+	if s.cache.Get(ctx, cacheKeyQuestions(userID), &questions, "session_questions") {
 		return questions, nil
 	}
 
@@ -201,7 +201,7 @@ func (s *QuizSessionService) GetSessionQuestions(ctx context.Context, userID uui
 	}
 
 	ttl := time.Minute
-	if err := s.cache.Set(ctx, cacheKeyQuestions(userID), questions, ttl); err != nil {
+	if err := s.cache.Set(ctx, cacheKeyQuestions(userID), questions, ttl, "session_questions"); err != nil {
 		log.Printf("cache set questions: %v", err)
 	}
 
@@ -220,7 +220,7 @@ func (s *QuizSessionService) loadQuestionsFromDB(ctx context.Context, userID uui
 	}
 
 	var order []int
-	if s.cache.Get(ctx, cacheKeyOrder(userID), &order) {
+	if s.cache.Get(ctx, cacheKeyOrder(userID), &order, "session_order") {
 		selected := make([]models.QuestionWithImages, len(order))
 		for i, idx := range order {
 			selected[i] = quiz.Questions[idx]
@@ -233,7 +233,7 @@ func (s *QuizSessionService) loadQuestionsFromDB(ctx context.Context, userID uui
 
 func (s *QuizSessionService) GetAnswers(ctx context.Context, userID uuid.UUID) (map[int]types.AnswerState, error) {
 	var answers map[int]types.AnswerState
-	if s.cache.Get(ctx, cacheKeyAnswers(userID), &answers) {
+	if s.cache.Get(ctx, cacheKeyAnswers(userID), &answers, "session_answers") {
 		return answers, nil
 	}
 	return map[int]types.AnswerState{}, nil
@@ -328,7 +328,7 @@ func (s *QuizSessionService) NavigateQuestion(ctx context.Context, userID uuid.U
 		return nil, fmt.Errorf("save answer: %w", err)
 	}
 
-	if err := s.cache.Set(ctx, cacheKeyAnswers(userID), answers, time.Minute); err != nil {
+	if err := s.cache.Set(ctx, cacheKeyAnswers(userID), answers, time.Minute, "session_answers"); err != nil {
 		log.Printf("cache set answers: %v", err)
 	}
 
@@ -600,11 +600,18 @@ func (s *QuizSessionService) GetQuizInfoData(ctx context.Context, userID, quizID
 }
 
 func (s *QuizSessionService) getQuizWithQuestions(ctx context.Context, quizID uuid.UUID) (*models.QuizWithQuestionsAndImages, error) {
-	quiz, err := s.quizzes.GetQuizByID(ctx, quizID)
+	cacheKey := "quiz:" + quizID.String()
+	quiz, err := GetOrFetch(ctx, &s.cache, cacheKey, func() (db.Quiz, error) {
+		return s.quizzes.GetQuizByID(ctx, quizID)
+	})
 	if err != nil {
 		return nil, err
 	}
-	questions, err := s.questions.GetQuestionsByQuizID(ctx, quizID)
+	questionsCacheKey := "questions:quiz:" + quizID.String()
+	ttl := time.Duration(quiz.TimeLimit+60) * time.Second
+	questions, err := GetOrFetch(ctx, &s.cache, questionsCacheKey, func() ([]db.Question, error) {
+		return s.questions.GetQuestionsByQuizID(ctx, quizID)
+	}, ttl)
 	if err != nil {
 		return nil, err
 	}

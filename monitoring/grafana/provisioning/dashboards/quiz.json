@@ -13,150 +13,6 @@
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
       "id": 1,
-      "title": "Quiz Sessions",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "blue", "value": null },
-              { "color": "green", "value": 10 },
-              { "color": "yellow", "value": 50 },
-              { "color": "red", "value": 100 }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "expr": "quiz_sessions_active",
-          "legendFormat": "Active Sessions",
-          "refId": "A"
-        }
-      ],
-      "title": "Active Quiz Sessions",
-      "type": "stat"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 6, "w": 9, "x": 6, "y": 1 },
-      "id": 3,
-      "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "targets": [
-        {
-          "expr": "sum(quiz_sessions_total) by (status)",
-          "legendFormat": "{{status}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Quiz Sessions by Status",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "sessions/s",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 6, "w": 9, "x": 15, "y": 1 },
-      "id": 4,
-      "options": {
-        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "targets": [
-        {
-          "expr": "sum(rate(quiz_sessions_total[5m])) by (status)",
-          "legendFormat": "{{status}} rate",
-          "refId": "A"
-        }
-      ],
-      "title": "Quiz Session Rate",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
-      "id": 5,
       "title": "Cache Performance",
       "type": "row"
     },
@@ -193,25 +49,69 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
-      "id": 6,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "id": 2,
       "options": {
         "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "expr": "sum(rate(cache_hits_total[5m])) by (cache_type)",
-          "legendFormat": "Hits {{cache_type}}",
+          "expr": "sum(rate(cache_hits_total[5m])) by (query) / (sum(rate(cache_hits_total[5m])) by (query) + sum(rate(cache_misses_total[5m])) by (query))",
+          "legendFormat": "Hit Rate {{query}}",
           "refId": "A"
-        },
-        {
-          "expr": "sum(rate(cache_misses_total[5m])) by (cache_type)",
-          "legendFormat": "Misses {{cache_type}}",
-          "refId": "B"
         }
       ],
-      "title": "Cache Hits vs Misses",
+      "title": "Cache Hit Rate by Query",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 7,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(cache_misses_total[5m])) by (query) / (sum(rate(cache_hits_total[5m])) by (query) + sum(rate(cache_misses_total[5m])) by (query))",
+          "legendFormat": "Miss Rate {{query}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cache Miss Rate by Query",
       "type": "timeseries"
     },
     {
@@ -232,8 +132,8 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
-      "id": 7,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -254,9 +154,9 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
-      "id": 8,
-      "title": "Database",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 4,
+      "title": "Redis Operations",
       "type": "row"
     },
     {
@@ -267,7 +167,7 @@
           "custom": {
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "seconds",
+            "axisLabel": "ops/s",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
@@ -288,122 +188,24 @@
             "mode": "absolute",
             "steps": [{ "color": "green", "value": null }]
           },
-          "unit": "s"
+          "unit": "ops"
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 17 },
-      "id": 9,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "id": 5,
       "options": {
         "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(db_query_duration_seconds_bucket[5m])) by (le, query_name))",
-          "legendFormat": "{{query_name}}",
+          "expr": "sum(rate(redis_operations_total[5m])) by (operation, status)",
+          "legendFormat": "{{operation}} ({{status}})",
           "refId": "A"
         }
       ],
-      "title": "DB Query Duration p50",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "seconds",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 17 },
-      "id": 11,
-      "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "targets": [
-        {
-          "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le, query_name))",
-          "legendFormat": "{{query_name}}",
-          "refId": "A"
-        }
-      ],
-      "title": "DB Query Duration p95",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "seconds",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 17 },
-      "id": 12,
-      "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "targets": [
-        {
-          "expr": "histogram_quantile(0.99, sum(rate(db_query_duration_seconds_bucket[5m])) by (le, query_name))",
-          "legendFormat": "{{query_name}}",
-          "refId": "A"
-        }
-      ],
-      "title": "DB Query Duration p99",
+      "title": "Redis Operations Rate",
       "type": "timeseries"
     },
     {
@@ -439,20 +241,20 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
-      "id": 10,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "id": 6,
       "options": {
         "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "expr": "sum(rate(redis_operations_total[5m])) by (operation)",
-          "legendFormat": "{{operation}}",
+          "expr": "sum(rate(redis_operations_total[5m])) by (query)",
+          "legendFormat": "{{query}}",
           "refId": "A"
         }
       ],
-      "title": "Redis Operations Rate",
+      "title": "Redis Operations by Query",
       "type": "timeseries"
     }
   ],
@@ -466,5 +268,5 @@
   "timezone": "browser",
   "title": "GoQuizVibe Quiz Metrics",
   "uid": "goquizvibe-quiz",
-  "version": 1
+  "version": 3
 }

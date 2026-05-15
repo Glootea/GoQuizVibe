@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: goquizvibe:latest
+          image: localhost/backend
           ports:
             - containerPort: 443
           envFrom:

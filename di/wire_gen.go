@@ -20,18 +20,18 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	}
 	queries := ProvideDB(pool)
 	authService := ProvideAuthService(queries, config)
-	quizService := ProvideQuizService(queries)
-	gamificationService := ProvideGamificationService(queries)
 	client := ProvideRedis(config)
 	cacheService := ProvideCacheService(client, config)
+	quizService := ProvideQuizService(queries, cacheService)
+	gamificationService := ProvideGamificationService(queries)
 	quizSessionService := ProvideQuizSessionService(queries, gamificationService, cacheService)
 	quizTimerService := ProvideQuizTimerService(queries, quizSessionService, cacheService, client)
 	storageService, err := ProvideStorageService(config)
 	if err != nil {
 		return nil, err
 	}
-	adminService := ProvideAdminService(queries, authService, storageService)
-	dashboardService := ProvideDashboardService(queries, gamificationService, authService, quizSessionService)
+	adminService := ProvideAdminService(queries, authService, storageService, cacheService)
+	dashboardService := ProvideDashboardService(queries, gamificationService, authService, quizSessionService, cacheService)
 	service, err := ProvideLocaleService()
 	if err != nil {
 		return nil, err

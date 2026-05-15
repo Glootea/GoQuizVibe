@@ -43,7 +43,7 @@ var (
 			Name: "cache_hits_total",
 			Help: "Total number of cache hits",
 		},
-		[]string{"cache_type"},
+		[]string{"query"},
 	)
 
 	CacheMissesTotal = promauto.NewCounterVec(
@@ -51,7 +51,7 @@ var (
 			Name: "cache_misses_total",
 			Help: "Total number of cache misses",
 		},
-		[]string{"cache_type"},
+		[]string{"query"},
 	)
 
 	DBQueryDuration = promauto.NewHistogramVec(
@@ -68,6 +68,6 @@ var (
 			Name: "redis_operations_total",
 			Help: "Total number of Redis operations",
 		},
-		[]string{"operation", "status"},
+		[]string{"operation", "status", "query"},
 	)
 )

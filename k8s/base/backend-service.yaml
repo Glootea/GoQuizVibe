@@ -9,4 +9,3 @@ spec:
   ports:
     - port: 443
       targetPort: 443
-  clusterIP: None

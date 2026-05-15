@@ -51,7 +51,7 @@ services:
       - 8081:8080
 
   prometheus:
-    image: prom/prometheus:v2.54.1
+    image: docker.io/prom/prometheus:main-distroless
     container_name: goquizvibe_prometheus
     ports:
       - "9090:9090"
@@ -68,7 +68,7 @@ services:
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:11.4.0
+    image: grafana/grafana:main
     container_name: goquizvibe_grafana
     ports:
       - "3000:3000"
@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
 
   node-exporter:
-    image: prom/node-exporter:v1.8.2
+    image: docker.io/prom/node-exporter:master-distroless
     container_name: goquizvibe_node_exporter
     ports:
       - "9100:9100"

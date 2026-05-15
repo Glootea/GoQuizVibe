@@ -37,7 +37,7 @@ func TestNewAdminService(t *testing.T) {
 	authSvc := &services.AuthService{}
 	storageSvc := &services.StorageService{}
 
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, authSvc, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, authSvc, storageSvc, nil)
 
 	if svc == nil {
 		t.Fatal("NewAdminService returned nil")
@@ -59,7 +59,7 @@ func TestAdminService_GetUserFromRequest(t *testing.T) {
 
 		authSvc := &services.AuthService{}
 		storageSvc := &services.StorageService{}
-		svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, authSvc, storageSvc)
+		svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, authSvc, storageSvc, nil)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
 		_, err := svc.GetUserFromRequest(req)
@@ -82,7 +82,7 @@ func TestAdminService_GetUserFromRequest(t *testing.T) {
 
 		authSvc := services.NewAuthService(mockUsers, "test-secret", time.Hour*24)
 		storageSvc := &services.StorageService{}
-		svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, authSvc, storageSvc)
+		svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, authSvc, storageSvc, nil)
 
 		userID := uuid.New()
 		user := db.User{ID: userID, Name: "Test User", Email: "test@example.com"}
@@ -117,7 +117,7 @@ func TestAdminService_GetDashboardData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get user error", func(t *testing.T) {
 		userID := uuid.New()
@@ -222,7 +222,7 @@ func TestAdminService_GetQuizzesListData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get user error", func(t *testing.T) {
 		userID := uuid.New()
@@ -293,7 +293,7 @@ func TestAdminService_CreateQuiz(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("create quiz error", func(t *testing.T) {
 		userID := uuid.New()
@@ -349,7 +349,7 @@ func TestAdminService_GetQuizEditData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get user error", func(t *testing.T) {
 		userID, quizID := uuid.New(), uuid.New()
@@ -463,7 +463,7 @@ func TestAdminService_UpdateQuiz(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("quiz not found", func(t *testing.T) {
 		quizID := uuid.New()
@@ -513,7 +513,7 @@ func TestAdminService_DeleteQuiz(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("delete error", func(t *testing.T) {
 		quizID := uuid.New()
@@ -550,7 +550,7 @@ func TestAdminService_AddQuestion(t *testing.T) {
 	mockMinio := servicestest.NewMockMinioClient(ctrl)
 
 	storageSvc := services.NewStorageService(mockMinio, "test-bucket")
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("create question error", func(t *testing.T) {
 		quizID := uuid.New()
@@ -699,7 +699,7 @@ func TestAdminService_UpdateQuestion(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get question error", func(t *testing.T) {
 		questionID, quizID := uuid.New(), uuid.New()
@@ -759,7 +759,7 @@ func TestAdminService_DeleteQuestion(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get question error", func(t *testing.T) {
 		questionID, quizID := uuid.New(), uuid.New()
@@ -819,7 +819,7 @@ func TestAdminService_UploadQuestionImage(t *testing.T) {
 	mockMinio := servicestest.NewMockMinioClient(ctrl)
 
 	storageSvc := services.NewStorageService(mockMinio, "test-bucket")
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get question error", func(t *testing.T) {
 		quizID, questionID := uuid.New(), uuid.New()
@@ -952,7 +952,7 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 	mockMinio := servicestest.NewMockMinioClient(ctrl)
 
 	storageSvc := services.NewStorageService(mockMinio, "test-bucket")
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get image error", func(t *testing.T) {
 		imageID, questionID := uuid.New(), uuid.New()
@@ -1024,7 +1024,7 @@ func TestAdminService_GetResultsData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get user error", func(t *testing.T) {
 		userID := uuid.New()
@@ -1096,7 +1096,7 @@ func TestAdminService_GetStatisticsData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get user error", func(t *testing.T) {
 		userID := uuid.New()
@@ -1161,7 +1161,7 @@ func TestAdminService_GetQuizStatsData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get quiz stats error", func(t *testing.T) {
 		mockStats.EXPECT().GetQuizStats(gomock.Any()).Return(nil, errors.New("stats error"))
@@ -1204,7 +1204,7 @@ func TestAdminService_GetGradeDistributionData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get error", func(t *testing.T) {
 		mockStats.EXPECT().GetGradeDistribution(gomock.Any()).Return(nil, errors.New("stats error"))
@@ -1264,7 +1264,7 @@ func TestAdminService_GetSubjectDistributionData(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get error", func(t *testing.T) {
 		mockStats.EXPECT().GetSubjectDistribution(gomock.Any()).Return(nil, errors.New("stats error"))
@@ -1312,7 +1312,7 @@ func TestAdminService_RestoreQuiz(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("restore error", func(t *testing.T) {
 		quizID := uuid.New()
@@ -1354,7 +1354,7 @@ func TestAdminService_GetQuestionsByQuizID(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get questions error", func(t *testing.T) {
 		quizID := uuid.New()
@@ -1396,7 +1396,7 @@ func TestAdminService_GetQuizByID(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 
 	storageSvc := &services.StorageService{}
-	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc)
+	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, nil, storageSvc, nil)
 
 	t.Run("get quiz error", func(t *testing.T) {
 		quizID := uuid.New()
