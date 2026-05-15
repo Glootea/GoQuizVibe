@@ -19,6 +19,43 @@ func NormalizeAnswer(answer string) string {
 	return answer
 }
 
+func CheckFillAnswer(userAnswers []string, correctAnswerJSON string) bool {
+	if len(userAnswers) == 0 {
+		return false
+	}
+
+	segments, err := models.ParseFillSegments(correctAnswerJSON)
+	if err != nil || len(segments) == 0 {
+		return false
+	}
+
+	gapCount := 0
+	for _, seg := range segments {
+		if seg.Type == "gap" {
+			gapCount++
+		}
+	}
+
+	if gapCount == 0 {
+		return false
+	}
+
+	if len(userAnswers) != gapCount {
+		return false
+	}
+
+	gapIndex := 0
+	for _, seg := range segments {
+		if seg.Type == "gap" {
+			if NormalizeAnswer(userAnswers[gapIndex]) != NormalizeAnswer(seg.Content) {
+				return false
+			}
+			gapIndex++
+		}
+	}
+	return true
+}
+
 type QuizService struct {
 	quizzes   r.QuizRepository
 	questions r.QuestionRepository

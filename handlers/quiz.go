@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -203,6 +204,11 @@ func (h *QuizHandler) QuizNavigate(w http.ResponseWriter, r *http.Request) error
 
 	answer := r.FormValue("answer")
 
+	gapAnswers := ParseGapAnswers(r)
+	if len(gapAnswers) > 0 {
+		answer = joinGapAnswers(gapAnswers)
+	}
+
 	navData, err := h.sessionService.NavigateQuestion(ctx, userID, quizID, currentIndex, targetIndex, answer, &usr)
 	if err != nil {
 		if errors.Is(err, services.ErrTimeExpired) {
@@ -262,6 +268,11 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	answer := r.FormValue("answer")
+
+	gapAnswers := ParseGapAnswers(r)
+	if len(gapAnswers) > 0 {
+		answer = joinGapAnswers(gapAnswers)
+	}
 
 	userID, err := h.sessionService.GetUserIDFromRequest(r, h.authService)
 	if err != nil {
@@ -541,4 +552,27 @@ func (h *QuizHandler) CancelSession(w http.ResponseWriter, r *http.Request) erro
 
 	http.Redirect(w, r, "/quiz/"+quizID.String()+"/q/0", http.StatusFound)
 	return nil
+}
+
+func ParseGapAnswers(r *http.Request) []string {
+	var answers []string
+	for i := 0; ; i++ {
+		ans := r.FormValue(fmt.Sprintf("gap_%d", i))
+		if ans == "" {
+			break
+		}
+		answers = append(answers, ans)
+	}
+	return answers
+}
+
+func joinGapAnswers(answers []string) string {
+	var result strings.Builder
+	for i, ans := range answers {
+		if i > 0 {
+			result.WriteString("|")
+		}
+		result.WriteString(ans)
+	}
+	return result.String()
 }

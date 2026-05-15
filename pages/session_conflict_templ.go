@@ -107,7 +107,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			var templ_7745c5c3_Var7 templ.SafeURL
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz/" + data.ExistingQuizID.String() + "/q/" + strconv.Itoa(data.CurrentIndex)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 22, Col: 107}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 22, Col: 105}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -120,7 +120,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.ResumeTest())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 24, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 25, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -133,7 +133,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			var templ_7745c5c3_Var9 templ.SafeURL
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz/" + data.RequestedQuizID.String() + "/cancel-session"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 26, Col: 105}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 27, Col: 105}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -146,7 +146,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.ExistingSessionID.String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 27, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 28, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -159,7 +159,7 @@ func SessionConflictPage(data *types.SessionConflictData, t locales.Translator) 
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(t.CancelAndStartNew())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 29, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/session_conflict.templ`, Line: 30, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {

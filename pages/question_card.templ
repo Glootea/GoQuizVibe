@@ -1,8 +1,11 @@
 package pages
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"strconv"
+	"strings"
 
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
@@ -26,7 +29,11 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 				<input type="hidden" name="current_index" value={ strconv.Itoa(data.CurrentIndex) } id="current-index"/>
 				<input type="hidden" name="target_index" value={ strconv.Itoa(data.CurrentIndex + 1) } id="target-index"/>
 				<div class="mb-4 w-full text-xl font-medium">
-					{ data.Questions[data.CurrentIndex].Text }
+					if data.Questions[data.CurrentIndex].Type == models.QuestionTypeFill {
+						@renderFillQuestionHTML(data.Questions[data.CurrentIndex].CorrectAnswer, data.Questions[data.CurrentIndex].Text, data.CurrentIndex, data.Answers)
+					} else {
+						{ data.Questions[data.CurrentIndex].Text }
+					}
 				</div>
 				if len(data.Questions[data.CurrentIndex].Images) > 0 {
 					<div class="flex flex-wrap gap-3 mb-6">
@@ -54,7 +61,7 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 							}
 						}
 					</div>
-				} else {
+				} else if data.Questions[data.CurrentIndex].Type != models.QuestionTypeFill {
 					<input
 						type="text"
 						name="answer"
@@ -115,6 +122,46 @@ templ QuestionCard(data *types.QuizPageData, t locales.Translator) {
 			</div>
 		</div>
 	</div>
+}
+
+func renderFillQuestionHTML(correctAnswer, fallbackText string, questionIndex int, answers map[int]types.AnswerState) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		segments, err := models.ParseFillSegments(correctAnswer)
+		if err != nil || len(segments) == 0 {
+			ansVal := ""
+			if answers[questionIndex].Answered {
+				ansVal = answers[questionIndex].Text
+			}
+			_, err = fmt.Fprintf(w, `%s<input type="text" name="gap_0" value="%s" class="inline py-1 px-2 mx-1 w-32 rounded-lg border border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="..."/>`, fallbackText, ansVal)
+			return err
+		}
+
+		gapIdx := 0
+		storedAnswers := []string{}
+		if answers[questionIndex].Answered {
+			storedAnswers = strings.Split(answers[questionIndex].Text, "|")
+		}
+
+		for _, seg := range segments {
+			if seg.Type == "text" {
+				_, err = io.WriteString(w, seg.Content)
+				if err != nil {
+					return err
+				}
+			} else if seg.Type == "gap" {
+				ansVal := ""
+				if gapIdx < len(storedAnswers) {
+					ansVal = storedAnswers[gapIdx]
+				}
+				_, err = fmt.Fprintf(w, `<input type="text" name="gap_%d" value="%s" class="inline py-1 px-2 mx-1 w-32 rounded-lg border border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="..."/>`, gapIdx, ansVal)
+				if err != nil {
+					return err
+				}
+				gapIdx++
+			}
+		}
+		return nil
+	})
 }
 
 func getQuestionNavClass(index int, currentIndex int, answers map[int]types.AnswerState) string {

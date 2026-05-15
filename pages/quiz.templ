@@ -2,6 +2,7 @@ package pages
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/models"
@@ -99,8 +100,26 @@ templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
 								<div class="grid grid-cols-2 gap-4 text-sm">
 									<div>
 										<span class="text-gray-500">{ t.YourAnswer() } </span>
-										<span class={ "font-medium " + ternary(answer.IsCorrect, "text-green-700", "text-red-700") }>{ answer.UserAnswer }</span>
+										if answer.QuestionType == "fill" {
+											<span class={ "font-medium " + ternary(answer.IsCorrect, "text-green-700", "text-red-700") }>
+												@templ.Raw(formatFillAnswerDisplay(answer.UserAnswer, answer.CorrectAnswer, false))
+											</span>
+										} else {
+											<span class={ "font-medium " + ternary(answer.IsCorrect, "text-green-700", "text-red-700") }>{ answer.UserAnswer }</span>
+										}
 									</div>
+									if !answer.IsCorrect {
+										<div>
+											<span class="text-gray-500">{ t.CorrectAnswer() } </span>
+											if answer.QuestionType == "fill" {
+												<span class="font-medium text-green-700">
+													@templ.Raw(formatFillAnswerDisplay(answer.UserAnswer, answer.CorrectAnswer, true))
+												</span>
+											} else {
+												<span class="font-medium text-green-700">{ answer.CorrectAnswer }</span>
+											}
+										</div>
+									}
 								</div>
 								if !answer.IsCorrect && answer.Explanation != "" {
 									<div class="p-3 mt-2 bg-blue-50 rounded-lg border border-blue-200">
@@ -115,6 +134,39 @@ templ QuizResultPage(data types.QuizResultData, t locales.Translator) {
 			</main>
 		</div>
 	}
+}
+
+// TODO: Refactor to templ component
+func formatFillAnswerDisplay(userAnswer string, correctAnswer string, showCorrect bool) string {
+	segments, err := models.ParseFillSegments(correctAnswer)
+	if err != nil || len(segments) == 0 {
+		if showCorrect {
+			return correctAnswer
+		}
+		return userAnswer
+	}
+
+	answers := strings.Split(userAnswer, "|")
+	gapIdx := 0
+	color := ternary(showCorrect, "green", "red")
+
+	result := ""
+	for _, seg := range segments {
+		if seg.Type == "text" {
+			result += seg.Content
+		} else if seg.Type == "gap" {
+			ans := ""
+			if gapIdx < len(answers) {
+				ans = answers[gapIdx]
+			}
+			if showCorrect {
+				ans = seg.Content
+			}
+			result += fmt.Sprintf(`<span class="px-1 mx-0.5 bg-%s-100 border border-%s-300 rounded text-%s-700">%s</span>`, color, color, color, ans)
+			gapIdx++
+		}
+	}
+	return result
 }
 
 func floatToPercent(score int, maxScore int) int {
