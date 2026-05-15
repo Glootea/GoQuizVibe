@@ -1,3 +1,4 @@
+
 var isDirty = false;
 var confirmDeleteImage = "Delete image?";
 var answerOptionsLabel = "Answer Options";
@@ -210,6 +211,20 @@ function updateAnswerOptions(select) {
       '<button type="button" onclick="addOption(this)" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800"><i class="mr-1 fas fa-plus"></i>' +
       addOptionText +
       "</button>";
+  } else if (select.value === "fill") {
+    container.innerHTML =
+      '<div class="fill-answer-editor">' +
+      '<label class="block mb-2 text-sm font-medium text-gray-700">Правильные ответы (сегменты)</label>' +
+      '<div id="segments-preview" class="p-3 bg-gray-50 rounded-lg text-sm mb-3">' +
+      '<span class="text-gray-400">Добавьте текст и пропуски</span>' +
+      '</div>' +
+      '<div class="flex gap-2 mb-3">' +
+      '<button type="button" onclick="addSegment(\'text\')" class="py-1 px-3 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border"><i class="mr-1 fas fa-font"></i>Добавить текст</button>' +
+      '<button type="button" onclick="addSegment(\'gap\')" class="py-1 px-3 text-sm bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300"><i class="mr-1 fas fa-question-circle"></i>Добавить пропуск</button>' +
+      '</div>' +
+      '<div id="segment-inputs" class="space-y-2"></div>' +
+      '<input type="hidden" name="segments_json" id="segments-json"/>' +
+      '</div>';
   } else {
     container.innerHTML =
       '<label class="block mb-1 text-sm font-medium text-gray-700">' +
@@ -241,6 +256,20 @@ function updateAddFormAnswerOptions(select) {
       '<button type="button" onclick="addOptionToForm()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800"><i class="mr-1 fas fa-plus"></i>' +
       addOptionText +
       "</button>";
+  } else if (select.value === "fill") {
+    container.innerHTML =
+      '<div class="fill-answer-editor">' +
+      '<label class="block mb-2 text-sm font-medium text-gray-700">Правильные ответы (сегменты)</label>' +
+      '<div id="addForm-segments-preview" class="p-3 bg-gray-50 rounded-lg text-sm mb-3">' +
+      '<span class="text-gray-400">Добавьте текст и пропуски</span>' +
+      '</div>' +
+      '<div class="flex gap-2 mb-3">' +
+      '<button type="button" onclick="addSegment(\'text\')" class="py-1 px-3 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border"><i class="mr-1 fas fa-font"></i>Добавить текст</button>' +
+      '<button type="button" onclick="addSegment(\'gap\')" class="py-1 px-3 text-sm bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300"><i class="mr-1 fas fa-question-circle"></i>Добавить пропуск</button>' +
+      '</div>' +
+      '<div id="addForm-segment-inputs" class="space-y-2"></div>' +
+      '<input type="hidden" name="segments_json" id="addForm-segments-json"/>' +
+      '</div>';
   } else {
     container.innerHTML =
       '<label class="block mb-1 text-sm font-medium text-gray-700">' +
@@ -289,6 +318,117 @@ function removeOption(btn) {
   var row = btn.closest(".option-row");
   if (row && row.parentElement.querySelectorAll(".option-row").length > 2) {
     row.remove();
+  }
+}
+
+function syncSegmentsPreview(containerId) {
+  var targetContainer = containerId
+    ? document.getElementById(containerId)
+    : document.getElementById("segment-inputs");
+  var previewId = containerId ? containerId.replace("segment-inputs", "segments-preview") : "segments-preview";
+  var preview = document.getElementById(previewId);
+  if (!targetContainer || !preview) return;
+
+  var html = "";
+  targetContainer.querySelectorAll(".segment-row").forEach(function (row) {
+    var type = row.querySelector('input[name$="_type"]');
+    var content = row.querySelector('input[name$="_content"]');
+    if (type && content) {
+      if (type.value === "text") {
+        html += content.value;
+      } else {
+        html += '<span class="mx-1 px-2 py-0.5 bg-indigo-100 border border-indigo-300 rounded text-indigo-700">' + content.value + '</span>';
+      }
+    }
+  });
+  preview.innerHTML = html || '<span class="text-gray-400">Добавьте текст и пропуски</span>';
+}
+
+function addSegment(type, containerId) {
+  var targetContainer = containerId
+    ? document.getElementById(containerId)
+    : document.getElementById("segment-inputs");
+  if (!targetContainer) return;
+  var index = targetContainer.querySelectorAll(".segment-row").length;
+  var row = document.createElement("div");
+  row.className = "flex gap-2 items-center segment-row";
+  row.dataset.type = type;
+
+  if (type === "text") {
+    row.innerHTML =
+      '<input type="hidden" name="segment_' + index + '_type" value="text"/>' +
+      '<span class="px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-gray-700">Текст</span>' +
+      '<input type="text" name="segment_' + index + '_content" placeholder="Введите текст" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/>' +
+      '<button type="button" onclick="removeSegment(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
+  } else {
+    row.innerHTML =
+      '<input type="hidden" name="segment_' + index + '_type" value="gap"/>' +
+      '<span class="px-2 py-1 text-sm bg-indigo-100 border border-indigo-300 rounded text-indigo-700">Пропуск</span>' +
+      '<input type="text" name="segment_' + index + '_content" placeholder="Правильный ответ" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/>' +
+      '<button type="button" onclick="removeSegment(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
+  }
+  targetContainer.appendChild(row);
+  syncSegmentsPreview(containerId);
+}
+
+function removeSegment(btn, containerId) {
+  var row = btn.closest(".segment-row");
+  if (row) {
+    row.remove();
+    reindexSegments(containerId);
+    syncSegmentsPreview(containerId);
+  }
+}
+
+function reindexSegments(containerId) {
+  var targetContainer = containerId
+    ? document.getElementById(containerId)
+    : document.getElementById("segment-inputs");
+  if (!targetContainer) return;
+  var rows = targetContainer.querySelectorAll(".segment-row");
+  rows.forEach(function (row, i) {
+    row.querySelectorAll("input").forEach(function (input) {
+      input.name = input.name.replace(/segment_\d+/, "segment_" + i);
+    });
+  });
+}
+
+function updateSegmentsJSON() {
+  var container = document.getElementById("segment-inputs");
+  var jsonInput = document.getElementById("segments-json");
+  if (!container || !jsonInput) return;
+
+  var segments = [];
+  container.querySelectorAll(".segment-row").forEach(function (row) {
+    var type = row.querySelector('input[name$="_type"]');
+    var content = row.querySelector('input[name$="_content"]');
+    if (type && content) {
+      segments.push({ type: type.value, content: content.value });
+    }
+  });
+  jsonInput.value = JSON.stringify(segments);
+}
+
+function setupFillAnswerEditor(correctAnswer) {
+  var container = document.getElementById("segment-inputs");
+  if (!container) return;
+
+  if (correctAnswer) {
+    try {
+      var segments = JSON.parse(correctAnswer);
+      segments.forEach(function (seg) {
+        addSegment(seg.type, "segment-inputs");
+        var rows = container.querySelectorAll(".segment-row");
+        var lastRow = rows[rows.length - 1];
+        if (lastRow) {
+          var contentInput = lastRow.querySelector('input[name$="_content"]');
+          if (contentInput) {
+            contentInput.value = seg.content;
+          }
+        }
+      });
+      syncSegmentsPreview("segment-inputs");
+    } catch (e) { }
   }
 }
 

@@ -22,8 +22,10 @@ templ DashboardPage(data types.DashboardData, t locales.Translator) {
 								@TimerWidget(data.ActiveSession.QuizID, data.ActiveSession.SessionID.String(), data.ActiveSession.RemainingSeconds)
 							</div>
 						</div>
-						<a href={ templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)) } 
-						   class="py-2 px-4 font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600">
+						<a
+							href={ templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)) }
+							class="py-2 px-4 font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
+						>
 							{ t.Resume() }
 						</a>
 					</div>

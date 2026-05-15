@@ -756,6 +756,10 @@ func ParseQuestionForm(r *http.Request) (text, questionTypeStr, explanation, cor
 		}
 	}
 
+	if questionTypeStr == "fill" || questionTypeStr == string(db.QuestionTypeFill) {
+		correctAnswer = parseFillSegmentsFromForm(r)
+	}
+
 	options = opts
 	files = nil
 	if mpForm := r.MultipartForm; mpForm != nil {
@@ -763,4 +767,42 @@ func ParseQuestionForm(r *http.Request) (text, questionTypeStr, explanation, cor
 	}
 
 	return text, questionTypeStr, explanation, correctAnswer, points, orderIndex, options, files, nil
+}
+
+func parseFillSegmentsFromForm(r *http.Request) string {
+	var segments []models.TextSegment
+
+	for i := 0; ; i++ {
+		segType := r.FormValue(fmt.Sprintf("segment_%d_type", i))
+		if segType == "" {
+			break
+		}
+		segContent := r.FormValue(fmt.Sprintf("segment_%d_content", i))
+		segments = append(segments, models.TextSegment{
+			Type:    segType,
+			Content: segContent,
+		})
+	}
+
+	if len(segments) == 0 {
+		return r.FormValue("correct_answer")
+	}
+
+	result, err := models.MarshalFillSegments(segments)
+	if err != nil {
+		return r.FormValue("correct_answer")
+	}
+	return result
+}
+
+func ParseFillAnswerFromRequest(r *http.Request) []string {
+	var answers []string
+	for i := 0; ; i++ {
+		ans := r.FormValue(fmt.Sprintf("gap_%d", i))
+		if ans == "" {
+			break
+		}
+		answers = append(answers, ans)
+	}
+	return answers
 }

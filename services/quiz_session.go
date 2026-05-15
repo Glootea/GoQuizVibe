@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -264,7 +265,13 @@ func (s *QuizSessionService) SaveAnswer(ctx context.Context, userID uuid.UUID, q
 	}
 
 	question := questions[currentIndex]
-	isCorrect := NormalizeAnswer(answer) == NormalizeAnswer(question.CorrectAnswer)
+	var isCorrect bool
+	if question.Type == models.QuestionTypeFill {
+		userAnswers := strings.Split(answer, "|")
+		isCorrect = CheckFillAnswer(userAnswers, question.CorrectAnswer)
+	} else {
+		isCorrect = NormalizeAnswer(answer) == NormalizeAnswer(question.CorrectAnswer)
+	}
 
 	_, err = s.attempts.UpsertUserAnswer(ctx, db.UpsertUserAnswerParams{
 		AttemptID:  session.AttemptID,
@@ -419,10 +426,18 @@ func (s *QuizSessionService) GetQuizResultData(ctx context.Context, quizID uuid.
 		if userAnswer == "" {
 			userAnswer = "Нет ответа"
 		}
-		isCorrect := userAnswer != "" && NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
+
+		var isCorrect bool
+		if q.Type == models.QuestionTypeFill {
+			userAnswers := strings.Split(userAnswer, "|")
+			isCorrect = CheckFillAnswer(userAnswers, q.CorrectAnswer)
+		} else {
+			isCorrect = userAnswer != "" && NormalizeAnswer(userAnswer) == NormalizeAnswer(q.CorrectAnswer)
+		}
 
 		answerDetails = append(answerDetails, types.AnswerDetail{
 			Question:      q.Text,
+			QuestionType:  string(q.Type),
 			UserAnswer:    userAnswer,
 			CorrectAnswer: q.CorrectAnswer,
 			IsCorrect:     isCorrect,

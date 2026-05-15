@@ -48,3 +48,15 @@ sql:
           - db_type: "pg_catalog.bool"
             nullable: true
             go_type: "bool"
+          - db_type: "pg_catalog.float8"
+            nullable: true
+            go_type: "float64"
+          - db_type: "pg_catalog.float8"
+            nullable: false
+            go_type: "float64"
+          - db_type: "pg_catalog.numeric"
+            nullable: true
+            go_type: "float64"
+          - db_type: "pg_catalog.numeric"
+            nullable: false
+            go_type: "float64"

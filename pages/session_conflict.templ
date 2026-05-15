@@ -17,10 +17,11 @@ templ SessionConflictPage(data *types.SessionConflictData, t locales.Translator)
 					{ t.AnotherTest() } <span class="font-semibold">"{ data.ExistingQuizTitle }"</span>
 				</p>
 				<p class="mb-8 text-sm text-gray-500">{ t.CancellingWillCompleteTheCurrentTestWithYourCurrentAnswersThisActionCannotBeUndone() }</p>
-				
 				<div class="flex flex-col gap-3">
-					<a href={ templ.URL("/quiz/" + data.ExistingQuizID.String() + "/q/" + strconv.Itoa(data.CurrentIndex)) } 
-					   class="py-3 px-4 font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+					<a
+						href={ templ.URL("/quiz/" + data.ExistingQuizID.String() + "/q/" + strconv.Itoa(data.CurrentIndex)) }
+						class="py-3 px-4 font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+					>
 						{ t.ResumeTest() }
 					</a>
 					<form method="POST" action={ templ.URL("/quiz/" + data.RequestedQuizID.String() + "/cancel-session") }>

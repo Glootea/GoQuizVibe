@@ -64,6 +64,7 @@ type QuizResultData struct {
 
 type AnswerDetail struct {
 	Question      string
+	QuestionType  string
 	UserAnswer    string
 	CorrectAnswer string
 	IsCorrect     bool

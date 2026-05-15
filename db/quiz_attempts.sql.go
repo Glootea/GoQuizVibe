@@ -357,10 +357,10 @@ const getQuizStats = `-- name: GetQuizStats :many
 SELECT
     q.id as quiz_id, q.title, q.subject,
     COUNT(a.id) as attempt_count,
-    COALESCE(AVG(a.score * 100.0 / NULLIF(a.max_score, 0)), 0) as avg_score,
+    COALESCE(AVG(a.score * 100.0 / NULLIF(a.max_score, 0)), 0)::float8 as avg_score,
     CASE WHEN COUNT(a.id) > 0
-         THEN (COUNT(*) FILTER (WHERE a.score * 100.0 / NULLIF(a.max_score, 0) >= 60))::float / COUNT(*) * 100
-         ELSE 0
+         THEN (COUNT(*) FILTER (WHERE a.score * 100.0 / NULLIF(a.max_score, 0) >= 60))::float8 / COUNT(*) * 100
+         ELSE 0::float8
     END as pass_rate
 FROM quizzes q
 LEFT JOIN quiz_attempts a ON a.quiz_id = q.id AND a.completed_at IS NOT NULL AND a.max_score > 0
@@ -370,12 +370,12 @@ ORDER BY q.created_at DESC
 `
 
 type GetQuizStatsRow struct {
-	QuizID       uuid.UUID   `json:"quiz_id"`
-	Title        string      `json:"title"`
-	Subject      string      `json:"subject"`
-	AttemptCount int64       `json:"attempt_count"`
-	AvgScore     interface{} `json:"avg_score"`
-	PassRate     int32       `json:"pass_rate"`
+	QuizID       uuid.UUID `json:"quiz_id"`
+	Title        string    `json:"title"`
+	Subject      string    `json:"subject"`
+	AttemptCount int64     `json:"attempt_count"`
+	AvgScore     float64   `json:"avg_score"`
+	PassRate     float64   `json:"pass_rate"`
 }
 
 func (q *Queries) GetQuizStats(ctx context.Context) ([]GetQuizStatsRow, error) {

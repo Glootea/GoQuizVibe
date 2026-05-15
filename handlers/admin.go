@@ -248,6 +248,10 @@ func (h *AdminHandler) UpdateQuestion(w http.ResponseWriter, r *http.Request) er
 		}
 	}
 
+	if questionType == db.QuestionTypeFill {
+		correctAnswer = parseFillSegmentsFromForm(r)
+	}
+
 	err = h.adminService.UpdateQuestion(r.Context(), questionID, quizID, text, questionType, options, correctAnswer, explanation, points, orderIndex)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
@@ -482,4 +486,30 @@ func (h *AdminHandler) ImportQuestions(w http.ResponseWriter, r *http.Request) e
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"created": createdCount})
 	return nil
+}
+
+func parseFillSegmentsFromForm(r *http.Request) string {
+	var segments []models.TextSegment
+
+	for i := 0; ; i++ {
+		segType := r.FormValue(fmt.Sprintf("segment_%d_type", i))
+		if segType == "" {
+			break
+		}
+		segContent := r.FormValue(fmt.Sprintf("segment_%d_content", i))
+		segments = append(segments, models.TextSegment{
+			Type:    segType,
+			Content: segContent,
+		})
+	}
+
+	if len(segments) == 0 {
+		return r.FormValue("correct_answer")
+	}
+
+	result, err := models.MarshalFillSegments(segments)
+	if err != nil {
+		return r.FormValue("correct_answer")
+	}
+	return result
 }
