@@ -1,299 +1,424 @@
-(() => {
-  var isDirty = false;
-  var confirmDeleteImage = "Delete image?";
-  var answerOptionsLabel = "Answer Options";
-  var correctAnswerLabel = "Correct Answer";
-  var addOptionText = "Add Option";
-  var optionPlaceholder = "Choice 1";
+var isDirty = false;
+var confirmDeleteImage = "Delete image?";
+var answerOptionsLabel = "Answer Options";
+var correctAnswerLabel = "Correct Answer";
+var addOptionText = "Add Option";
+var optionPlaceholder = "Choice 1";
 
-  function submitQuizForm() {
-    var form = document.getElementById("quizEditForm");
-    if (!form) return;
+function submitQuizForm() {
+  var form = document.getElementById("quizEditForm");
+  if (!form) return;
 
-    var formData = new FormData(form);
-    fetch(form.action || form.getAttribute("hx-put"), {
-      method: "PUT",
-      body: formData,
-      headers: {
-        "HX-Request": "true",
-      },
-    })
-      .then((response) => {
-        if (response.ok || response.status === 200) {
-          showSaveAlert();
-          setTimeout(() => {
-            location.reload();
-          }, 1000);
-        } else {
-          showErrorAlert();
-        }
-      })
-      .catch(() => {
+  var formData = new FormData(form);
+  fetch(form.action || form.getAttribute("hx-put"), {
+    method: "PUT",
+    body: formData,
+    headers: {
+      "HX-Request": "true",
+    },
+  })
+    .then((response) => {
+      if (response.ok || response.status === 200) {
+        showSaveAlert();
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else {
         showErrorAlert();
-      });
-  }
-
-  function handleQuestionEditSubmit(event) {
-    event.preventDefault();
-    var button = event.target;
-    var quizID = button.getAttribute("data-quiz-id");
-    var questionID = button.getAttribute("data-question-id");
-    var container = button.closest('div[id^="editForm_"]');
-
-    if (!container || !quizID || !questionID) {
-      return;
-    }
-
-    var url = `/admin/quizzes/${quizID}/question/${questionID}`;
-    var formData = new FormData();
-
-    var inputs = container.querySelectorAll("input, select, textarea");
-    inputs.forEach((input) => {
-      if (input.name) {
-        formData.append(input.name, input.value);
       }
-    });
-
-    fetch(url, {
-      method: "PUT",
-      body: formData,
-      headers: {
-        "HX-Request": "true",
-      },
     })
-      .then((response) => {
-        if (response.ok || response.status === 200) {
-          showSaveAlert();
-          container.classList.add("hidden");
-        } else {
-          showErrorAlert();
-        }
-      })
-      .catch(() => {
-        showErrorAlert();
-      });
-  }
-
-  function uploadQuestionImage(input) {
-    var url = input.getAttribute("data-upload-url");
-    var file = input.files[0];
-    if (!file || !url) return;
-
-    var formData = new FormData();
-    formData.append("image", file);
-
-    fetch(url, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "HX-Request": "true",
-      },
-    })
-      .then((response) => {
-        if (response.ok || response.status === 200) {
-          showSaveAlert();
-          setTimeout(() => {
-            location.reload();
-          }, 1000);
-        } else {
-          showErrorAlert();
-        }
-      })
-      .catch(() => {
-        showErrorAlert();
-      });
-  }
-
-  function deleteQuestionImage(button) {
-    var url = button.getAttribute("data-delete-url");
-    if (!url) return;
-    if (!confirm(confirmDeleteImage)) return;
-
-    fetch(url, {
-      method: "DELETE",
-      headers: {
-        "HX-Request": "true",
-      },
-    })
-      .then((response) => {
-        var container = button.closest(".relative.group");
-        if (response.ok || response.status === 200) {
-          if (container) {
-            container.remove();
-          }
-        } else {
-          showErrorAlert();
-        }
-      })
-      .catch(() => {
-        showErrorAlert();
-      });
-  }
-
-  function markDirty() {
-    isDirty = true;
-  }
-
-  function setupDirtyTracking() {
-    var form = document.getElementById("quizEditForm");
-    if (!form) return;
-
-    initialData = getFormData(form);
-
-    var inputs = form.querySelectorAll("input, select, textarea");
-    inputs.forEach((input) => {
-      input.addEventListener("change", markDirty);
-      input.addEventListener("input", markDirty);
+    .catch(() => {
+      showErrorAlert();
     });
+}
+
+function handleQuestionEditSubmit(event) {
+  event.preventDefault();
+  var button = event.target;
+  var quizID = button.getAttribute("data-quiz-id");
+  var questionID = button.getAttribute("data-question-id");
+  var container = button.closest('div[id^="editForm_"]');
+
+  if (!container || !quizID || !questionID) {
+    return;
   }
 
-  function getFormData(form) {
-    var data = {};
-    var inputs = form.querySelectorAll("input, select, textarea");
-    inputs.forEach((input) => {
-      if (input.name) {
-        data[input.name] = input.value;
-      }
-    });
-    return data;
-  }
+  var url = `/admin/quizzes/${quizID}/question/${questionID}`;
+  var formData = new FormData();
 
-  window.addEventListener("beforeunload", (e) => {
-    if (isDirty) {
-      e.preventDefault();
-      e.returnValue = "";
+  var inputs = container.querySelectorAll("input, select, textarea");
+  inputs.forEach((input) => {
+    if (input.name) {
+      formData.append(input.name, input.value);
     }
   });
 
-  function showSaveAlert() {
-    var alert = document.getElementById("saveAlert");
-    alert.classList.remove("hidden");
-    setTimeout(() => {
-      alert.classList.add("hidden");
-    }, 2000);
-  }
+  fetch(url, {
+    method: "PUT",
+    body: formData,
+    headers: {
+      "HX-Request": "true",
+    },
+  })
+    .then((response) => {
+      if (response.ok || response.status === 200) {
+        showSaveAlert();
+        container.classList.add("hidden");
+      } else {
+        showErrorAlert();
+      }
+    })
+    .catch(() => {
+      showErrorAlert();
+    });
+}
 
-  function showErrorAlert() {
-    var alert = document.getElementById("errorAlert");
-    alert.classList.remove("hidden");
-    setTimeout(() => {
-      alert.classList.add("hidden");
-    }, 2000);
-  }
+function uploadQuestionImage(input) {
+  var url = input.getAttribute("data-upload-url");
+  var file = input.files[0];
+  if (!file || !url) return;
 
-  function toggleEditForm(quizId, index) {
-    var formId = `editForm_${quizId}_${index}`;
-    var form = document.getElementById(formId);
-    if (form) {
-      form.classList.toggle("hidden");
-    }
-  }
+  var formData = new FormData();
+  formData.append("image", file);
 
-  function updateAnswerOptions(select) {
-    var container = select
-      .closest(".space-y-3")
-      .querySelector(".answer-options-container");
-    if (!container) return;
+  fetch(url, {
+    method: "POST",
+    body: formData,
+    headers: {
+      "HX-Request": "true",
+    },
+  })
+    .then((response) => {
+      if (response.ok || response.status === 200) {
+        showSaveAlert();
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else {
+        showErrorAlert();
+      }
+    })
+    .catch(() => {
+      showErrorAlert();
+    });
+}
 
-    if (select.value === "choice") {
-      container.innerHTML =
-        '<label class="block mb-1 text-sm font-medium text-gray-700">' +
-        answerOptionsLabel +
-        "</label>" +
-        '<div class="space-y-2 options-list">' +
-        '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_0" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_0" placeholder="' +
-        optionPlaceholder +
-        '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
-        '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_1" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_1" placeholder="' +
-        optionPlaceholder +
-        '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
-        "</div>" +
-        '<button type="button" onclick="addOption(this)" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800"><i class="mr-1 fas fa-plus"></i>' +
-        addOptionText +
-        "</button>";
-    } else {
-      container.innerHTML =
-        '<label class="block mb-1 text-sm font-medium text-gray-700">' +
-        correctAnswerLabel +
-        "</label>" +
-        '<input type="text" name="correct_answer" class="py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500"/>';
-    }
-  }
+function deleteQuestionImage(button) {
+  var url = button.getAttribute("data-delete-url");
+  if (!url) return;
+  if (!confirm(confirmDeleteImage)) return;
 
-  function updateAddFormAnswerOptions(select) {
-    var container = select
-      .closest("div[hx-post]")
-      .querySelector("#addFormAnswerOptions");
-    if (!container) return;
+  fetch(url, {
+    method: "DELETE",
+    headers: {
+      "HX-Request": "true",
+    },
+  })
+    .then((response) => {
+      var container = button.closest(".relative.group");
+      if (response.ok || response.status === 200) {
+        if (container) {
+          container.remove();
+        }
+      } else {
+        showErrorAlert();
+      }
+    })
+    .catch(() => {
+      showErrorAlert();
+    });
+}
 
-    if (select.value === "choice") {
-      container.innerHTML =
-        '<label class="block mb-1 text-sm font-medium text-gray-700">' +
-        answerOptionsLabel +
-        "</label>" +
-        '<div id="addFormOptionsList" class="space-y-2">' +
-        '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_0" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_0" placeholder="' +
-        optionPlaceholder +
-        '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
-        '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_1" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_1" placeholder="' +
-        optionPlaceholder +
-        '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
-        "</div>" +
-        '<button type="button" onclick="addOptionToForm()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800"><i class="mr-1 fas fa-plus"></i>' +
-        addOptionText +
-        "</button>";
-    } else {
-      container.innerHTML =
-        '<label class="block mb-1 text-sm font-medium text-gray-700">' +
-        correctAnswerLabel +
-        "</label>" +
-        '<input type="text" name="correct_answer" class="py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500"/>';
-    }
-  }
+function markDirty() {
+  isDirty = true;
+}
 
-  function addOption(button) {
-    var container = button.closest(".answer-options-container");
-    var optionsList = container.querySelector(".options-list");
-    if (!optionsList) return;
-    var count = optionsList.querySelectorAll(".option-row").length;
-    var newRow = document.createElement("div");
-    newRow.className = "flex gap-2 items-center option-row";
-    newRow.innerHTML =
-      '<input type="radio" name="correct_answer" value="option_' +
-      count +
-      '" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_' +
-      count +
-      '" placeholder="' +
-      optionPlaceholder +
-      '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
-    optionsList.appendChild(newRow);
-  }
+function setupDirtyTracking() {
+  var form = document.getElementById("quizEditForm");
+  if (!form) return;
 
-  function addOptionToForm() {
-    var optionsList = document.getElementById("addFormOptionsList");
-    if (!optionsList) return;
-    var count = optionsList.querySelectorAll(".option-row").length;
-    var newRow = document.createElement("div");
-    newRow.className = "flex gap-2 items-center option-row";
-    newRow.innerHTML =
-      '<input type="radio" name="correct_answer" value="option_' +
-      count +
-      '" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_' +
-      count +
-      '" placeholder="' +
-      optionPlaceholder +
-      '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
-    optionsList.appendChild(newRow);
-  }
+  initialData = getFormData(form);
 
-  function removeOption(btn) {
-    var row = btn.closest(".option-row");
-    if (row && row.parentElement.querySelectorAll(".option-row").length > 2) {
-      row.remove();
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    setupDirtyTracking();
+  var inputs = form.querySelectorAll("input, select, textarea");
+  inputs.forEach((input) => {
+    input.addEventListener("change", markDirty);
+    input.addEventListener("input", markDirty);
   });
-})();
+}
+
+function getFormData(form) {
+  var data = {};
+  var inputs = form.querySelectorAll("input, select, textarea");
+  inputs.forEach((input) => {
+    if (input.name) {
+      data[input.name] = input.value;
+    }
+  });
+  return data;
+}
+
+window.addEventListener("beforeunload", (e) => {
+  if (isDirty) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+function showSaveAlert() {
+  var alert = document.getElementById("saveAlert");
+  alert.classList.remove("hidden");
+  setTimeout(() => {
+    alert.classList.add("hidden");
+  }, 2000);
+}
+
+function showErrorAlert() {
+  var alert = document.getElementById("errorAlert");
+  alert.classList.remove("hidden");
+  setTimeout(() => {
+    alert.classList.add("hidden");
+  }, 2000);
+}
+
+function toggleEditForm(quizId, index) {
+  var formId = `editForm_${quizId}_${index}`;
+  var form = document.getElementById(formId);
+  if (form) {
+    form.classList.toggle("hidden");
+  }
+}
+
+function updateAnswerOptions(select) {
+  var container = select
+    .closest(".space-y-3")
+    .querySelector(".answer-options-container");
+  if (!container) return;
+
+  if (select.value === "choice") {
+    container.innerHTML =
+      '<label class="block mb-1 text-sm font-medium text-gray-700">' +
+      answerOptionsLabel +
+      "</label>" +
+      '<div class="space-y-2 options-list">' +
+      '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_0" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_0" placeholder="' +
+      optionPlaceholder +
+      '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
+      '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_1" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_1" placeholder="' +
+      optionPlaceholder +
+      '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
+      "</div>" +
+      '<button type="button" onclick="addOption(this)" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800"><i class="mr-1 fas fa-plus"></i>' +
+      addOptionText +
+      "</button>";
+  } else {
+    container.innerHTML =
+      '<label class="block mb-1 text-sm font-medium text-gray-700">' +
+      correctAnswerLabel +
+      "</label>" +
+      '<input type="text" name="correct_answer" class="py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500"/>';
+  }
+}
+
+function updateAddFormAnswerOptions(select) {
+  var container = select
+    .closest("div[hx-post]")
+    .querySelector("#addFormAnswerOptions");
+  if (!container) return;
+
+  if (select.value === "choice") {
+    container.innerHTML =
+      '<label class="block mb-1 text-sm font-medium text-gray-700">' +
+      answerOptionsLabel +
+      "</label>" +
+      '<div id="addFormOptionsList" class="space-y-2">' +
+      '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_0" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_0" placeholder="' +
+      optionPlaceholder +
+      '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
+      '<div class="flex gap-2 items-center option-row"><input type="radio" name="correct_answer" value="option_1" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_1" placeholder="' +
+      optionPlaceholder +
+      '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button></div>' +
+      "</div>" +
+      '<button type="button" onclick="addOptionToForm()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-800"><i class="mr-1 fas fa-plus"></i>' +
+      addOptionText +
+      "</button>";
+  } else {
+    container.innerHTML =
+      '<label class="block mb-1 text-sm font-medium text-gray-700">' +
+      correctAnswerLabel +
+      "</label>" +
+      '<input type="text" name="correct_answer" class="py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500"/>';
+  }
+}
+
+function addOption(button) {
+  var container = button.closest(".answer-options-container");
+  var optionsList = container.querySelector(".options-list");
+  if (!optionsList) return;
+  var count = optionsList.querySelectorAll(".option-row").length;
+  var newRow = document.createElement("div");
+  newRow.className = "flex gap-2 items-center option-row";
+  newRow.innerHTML =
+    '<input type="radio" name="correct_answer" value="option_' +
+    count +
+    '" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_' +
+    count +
+    '" placeholder="' +
+    optionPlaceholder +
+    '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
+  optionsList.appendChild(newRow);
+}
+
+function addOptionToForm() {
+  var optionsList = document.getElementById("addFormOptionsList");
+  if (!optionsList) return;
+  var count = optionsList.querySelectorAll(".option-row").length;
+  var newRow = document.createElement("div");
+  newRow.className = "flex gap-2 items-center option-row";
+  newRow.innerHTML =
+    '<input type="radio" name="correct_answer" value="option_' +
+    count +
+    '" class="w-4 h-4 text-indigo-600"/><input type="text" name="option_' +
+    count +
+    '" placeholder="' +
+    optionPlaceholder +
+    '" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/><button type="button" onclick="removeOption(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
+  optionsList.appendChild(newRow);
+}
+
+function removeOption(btn) {
+  var row = btn.closest(".option-row");
+  if (row && row.parentElement.querySelectorAll(".option-row").length > 2) {
+    row.remove();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupDirtyTracking();
+});
+
+function openImportModal() {
+  var modal = document.getElementById("importModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    updateImportPrompt();
+  }
+}
+
+function closeImportModal() {
+  var modal = document.getElementById("importModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+function updateImportPrompt() {
+  var titleInput = document.getElementById("importQuizTitle");
+  var promptArea = document.getElementById("promptTextarea");
+  if (!titleInput || !promptArea) return;
+
+  var title = titleInput.value;
+  if (!title) {
+    promptArea.value = "";
+    return;
+  }
+
+  var url = `/admin/questions/prompt?title=${encodeURIComponent(title)}`;
+
+  fetch(url)
+    .then((response) => response.text())
+    .then((data) => {
+      promptArea.value = data;
+    })
+    .catch(() => {
+      promptArea.value = "";
+    });
+}
+
+function downloadPrompt() {
+  var promptArea = document.getElementById("promptTextarea");
+  if (!promptArea || !promptArea.value) return;
+
+  var titleInput = document.getElementById("importQuizTitle");
+  var title = titleInput ? titleInput.value : "prompt";
+
+  var blob = new Blob([promptArea.value], { type: "text/plain;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = `prompt_${title.replace(/[^a-z0-9]/gi, "_")}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function handleJSONFileUpload(input) {
+  var file = input.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    var manualInput = document.getElementById("manualJSONInput");
+    if (manualInput) {
+      manualInput.value = e.target.result;
+    }
+  };
+  reader.readAsText(file);
+}
+
+function importQuestions() {
+  var quizID = document.getElementById("importQuizID");
+  var manualInput = document.getElementById("manualJSONInput");
+  var errorDiv = document.getElementById("importError");
+
+  if (!quizID || !manualInput) return;
+
+  var jsonStr = manualInput.value.trim();
+  if (!jsonStr) {
+    showImportError(errorDiv, "Please enter JSON data or upload a file");
+    return;
+  }
+
+  var data;
+  try {
+    data = JSON.parse(jsonStr);
+  } catch (e) {
+    showImportError(errorDiv, "Invalid JSON format");
+    return;
+  }
+
+  if (!Array.isArray(data)) {
+    data = [data];
+  }
+
+  errorDiv.classList.add("hidden");
+
+  fetch(`/admin/quizzes/${quizID.value}/questions/import`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "HX-Request": "true",
+    },
+    body: JSON.stringify({ questions: data }),
+  })
+    .then((response) => {
+      if (response.ok || response.status === 200) {
+        closeImportModal();
+        location.reload();
+      } else {
+        return response.text().then((text) => {
+          showImportError(errorDiv, text || "Import failed");
+        });
+      }
+    })
+    .catch(() => {
+      showImportError(errorDiv, "Network error");
+    });
+}
+
+function showImportError(errorDiv, message) {
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.classList.remove("hidden");
+  }
+}

@@ -65,6 +65,17 @@ func (q *Queries) DeleteQuestion(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getMaxOrderIndex = `-- name: GetMaxOrderIndex :one
+SELECT COALESCE(MAX(order_index), -1) FROM questions WHERE quiz_id = $1
+`
+
+func (q *Queries) GetMaxOrderIndex(ctx context.Context, quizID uuid.UUID) (interface{}, error) {
+	row := q.db.QueryRow(ctx, getMaxOrderIndex, quizID)
+	var coalesce interface{}
+	err := row.Scan(&coalesce)
+	return coalesce, err
+}
+
 const getQuestionByID = `-- name: GetQuestionByID :one
 SELECT id, quiz_id, text, type, options, correct_answer, explanation, points, order_index FROM questions WHERE id = $1
 `

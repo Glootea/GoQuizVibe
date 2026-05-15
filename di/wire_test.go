@@ -169,6 +169,11 @@ func ProvideTestCacheService() *services.CacheService {
 	return nil
 }
 
+func ProvideTestPromptGenerator(cacheService *services.CacheService) *services.PromptGenerator {
+	schemaService := services.NewQuestionSchema(cacheService)
+	return services.NewPromptGenerator(schemaService)
+}
+
 func ProvideTestStorageService() *services.StorageService {
 	return nil
 }
@@ -236,10 +241,12 @@ func ProvideTestQuizHandler(
 }
 
 func ProvideTestAdminHandler(
+	adminService *services.AdminService,
 	authService *services.AuthService,
 	localeService *locales.Service,
+	promptGenerator *services.PromptGenerator,
 ) *handlers.AdminHandler {
-	return handlers.NewAdmin(nil, authService, localeService)
+	return handlers.NewAdmin(adminService, authService, localeService, promptGenerator)
 }
 
 func ProvideTestRequireAuthMiddleware(authService *services.AuthService) middleware.RequireAuthMiddleware {
@@ -275,6 +282,7 @@ var TestProviderSet = wire.NewSet(
 	ProvideTestAdminService,
 	ProvideTestQuizSessionService,
 	ProvideTestDashboardService,
+	ProvideTestPromptGenerator,
 	ProvideLocaleService,
 	ProvideMockAuthenticator,
 	ProvideMockTimeProvider,
@@ -324,6 +332,8 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 	gamification := services.NewGamificationService(queries, queries, mockTime)
 	cacheService := services.NewCacheService(nil, cfg.Redis.CacheTTL)
 	quizService := services.NewQuizService(queries, queries, queries, queries, cacheService)
+	schemaService := services.NewQuestionSchema(nil)
+	promptGenerator := services.NewPromptGenerator(schemaService)
 
 	quizSessionService := services.NewQuizSessionService(queries, queries, queries, queries, queries, *gamification, services.CacheService{})
 	dashboardService := services.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
@@ -342,7 +352,7 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 		AuthHandler:             handlers.NewAuth(queries, authService, localeSvc),
 		DashboardHandler:        handlers.NewDashboard(dashboardService),
 		QuizHandler:             handlers.NewQuiz(queries, quizService, nil, authService),
-		AdminHandler:            handlers.NewAdmin(nil, authService, localeSvc),
+		AdminHandler:            handlers.NewAdmin(nil, authService, localeSvc, promptGenerator),
 		RequireAuthMiddleware:   middleware.NewRequireAuthMiddleware(authService),
 		RequireRoleMiddleware:   middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher),
 		CompressionMiddleware:   middleware.NewCompressionMiddleware(),

@@ -342,6 +342,21 @@ func (mr *MockQuestionRepositoryMockRecorder) UpdateQuestion(ctx, params any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestion", reflect.TypeOf((*MockQuestionRepository)(nil).UpdateQuestion), ctx, params)
 }
 
+// GetMaxOrderIndex mocks base method.
+func (m *MockQuestionRepository) GetMaxOrderIndex(ctx context.Context, quizID uuid.UUID) (interface{}, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaxOrderIndex", ctx, quizID)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMaxOrderIndex indicates an expected call of GetMaxOrderIndex.
+func (mr *MockQuestionRepositoryMockRecorder) GetMaxOrderIndex(ctx, quizID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxOrderIndex", reflect.TypeOf((*MockQuestionRepository)(nil).GetMaxOrderIndex), ctx, quizID)
+}
+
 // MockAttemptRepository is a mock of AttemptRepository interface.
 type MockAttemptRepository struct {
 	ctrl     *gomock.Controller

@@ -84,7 +84,16 @@ templ QuizEditPage(data types.AdminQuizEditData, t locales.Translator) {
 
 templ QuestionsSection(quiz *models.Quiz, questions []models.Question, t locales.Translator) {
 	<div id="questions-section" class="p-6 bg-white rounded-xl shadow-sm">
-		<h2 class="mb-4 text-xl font-bold">{ t.Question(len(questions)) }</h2>
+		<div class="flex justify-between items-center mb-4">
+			<h2 class="text-xl font-bold">{ t.Question(len(questions)) }</h2>
+			<button
+				type="button"
+				onclick="openImportModal()"
+				class="py-2 px-4 text-sm text-indigo-600 bg-indigo-50 rounded-lg transition hover:bg-indigo-100"
+			>
+				<i class="mr-1 fas fa-file-import"></i>{ t.ImportQuestions() }
+			</button>
+		</div>
 		if len(questions) == 0 {
 			<div class="py-8 text-center text-gray-500">
 				<i class="mb-4 text-4xl text-gray-300 fas fa-question-circle"></i>
@@ -100,6 +109,7 @@ templ QuestionsSection(quiz *models.Quiz, questions []models.Question, t locales
 		@AddQuestionButton(t)
 		@AddQuestionForm(quiz.ID.String(), len(questions), t)
 	</div>
+	@ImportQuestionsModal(quiz.ID.String(), quiz.Title, t)
 }
 
 templ QuestionCard(q models.Question, index int, quizID string, t locales.Translator) {
@@ -376,5 +386,87 @@ templ QuestionImagesSection(q models.Question, quizID string, t locales.Translat
 				</button>
 			</div>
 		}
+	</div>
+}
+
+templ ImportQuestionsModal(quizID string, quizTitle string, t locales.Translator) {
+	<div id="importModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<div class="p-6 w-full max-w-2xl bg-white rounded-xl shadow-xl max-h-[90vh] overflow-y-auto">
+			<div class="flex justify-between items-center mb-4">
+				<h2 class="text-xl font-bold">{ t.ImportFromJson() }</h2>
+				<button type="button" onclick="closeImportModal()" class="text-gray-500 hover:text-gray-700">
+					<i class="text-xl fas fa-times"></i>
+				</button>
+			</div>
+			<div class="space-y-4">
+				<div>
+					<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Title() }</label>
+					<input
+						type="text"
+						id="importQuizTitle"
+						value={ quizTitle }
+						class="py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500"
+						oninput="updateImportPrompt()"
+					/>
+				</div>
+				<div>
+					<label class="block mb-1 text-sm font-medium text-gray-700">{ t.PromptForLlmQuestionGeneration() }</label>
+					<textarea
+						id="promptTextarea"
+						readonly
+						rows="6"
+						class="py-2 px-3 w-full rounded-lg border bg-gray-50 font-mono text-sm"
+						placeholder={ t.EnterQuizTopicAboveToGeneratePrompt() }
+					></textarea>
+				</div>
+				<div class="flex gap-2">
+					<button
+						type="button"
+						onclick="downloadPrompt()"
+						class="py-2 px-4 text-sm text-indigo-600 bg-indigo-50 rounded-lg transition hover:bg-indigo-100"
+					>
+						<i class="mr-1 fas fa-download"></i>{ t.DownloadPromptAsFile() }
+					</button>
+				</div>
+				<div class="border-t pt-4">
+					<label class="block mb-1 text-sm font-medium text-gray-700">{ t.UploadJsonFile() }</label>
+					<input
+						type="file"
+						id="jsonFileInput"
+						accept=".json"
+						class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+						onchange="handleJSONFileUpload(this)"
+					/>
+				</div>
+				<div class="text-center text-gray-500">— { t.OrEnterJsonManually() } —</div>
+				<div>
+					<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Questions() }</label>
+					<textarea
+						id="manualJSONInput"
+						rows="8"
+						class="py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
+						placeholder={`[{"text": "...", "type": "choice", ...}, ...]`}
+					></textarea>
+				</div>
+				<div id="importError" class="hidden text-sm text-red-600"></div>
+				<div class="flex gap-2 justify-end pt-4 border-t">
+					<button
+						type="button"
+						onclick="closeImportModal()"
+						class="py-2 px-4 text-gray-600 hover:text-gray-800"
+					>
+						{ t.Cancel() }
+					</button>
+					<button
+						type="button"
+						onclick="importQuestions()"
+						class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700"
+					>
+						<i class="mr-1 fas fa-upload"></i>{ t.Import() }
+					</button>
+				</div>
+			</div>
+			<input type="hidden" id="importQuizID" value={ quizID }/>
+		</div>
 	</div>
 }

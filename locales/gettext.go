@@ -98,6 +98,8 @@ type Translator interface {
 	Correct() string
 	// "Correct Answer"
 	CorrectAnswer() string
+	// "correct_answer (string) - correct answer"
+	CorrectAnswerStringCorrectAnswer() string
 	// "Create"
 	Create() string
 	// "Create first quiz"
@@ -120,6 +122,10 @@ type Translator interface {
 	DeleteQuiz() string
 	// "Description"
 	Description() string
+	// "Download Prompt as File"
+	DownloadPromptAsFile() string
+	// "Each question must contain the following fields:"
+	EachQuestionMustContainTheFollowingFields() string
 	// "Edit"
 	Edit() string
 	// "Editing: %s"
@@ -128,6 +134,8 @@ type Translator interface {
 	Email() string
 	// "End quiz? This action cannot be undone."
 	EndQuizThisActionCannotBeUndone() string
+	// "Enter quiz topic above to generate prompt"
+	EnterQuizTopicAboveToGeneratePrompt() string
 	// "Enter your answer..."
 	EnterYourAnswer() string
 	// "Error"
@@ -138,6 +146,10 @@ type Translator interface {
 	ExperiencePoints() string
 	// "Explanation:"
 	Explanation() string
+	// "explanation (string) - explanation for the answer"
+	ExplanationStringExplanationForTheAnswer() string
+	// "Failed to import questions"
+	FailedToImportQuestions() string
 	// "Fill"
 	Fill() string
 	// "Filter by Quiz"
@@ -154,12 +166,26 @@ type Translator interface {
 	GreatJob() string
 	// "Images (up to 3)"
 	ImagesUpTo3() string
+	// "Import"
+	Import() string
+	// "Import from JSON"
+	ImportFromJson() string
+	// "Import Questions"
+	ImportQuestions() string
 	// "Interactive exam preparation platform with gamification. Earn XP, maintain streaks, and compete with friends!"
 	InteractiveExamPreparationPlatformWithGamificationEarnXpMaintainStreaksAndCompeteWithFriends() string
+	// "Invalid JSON format"
+	InvalidJsonFormat() string
 	// "Join thousands of students who are already learning with joy!"
 	JoinThousandsOfStudentsWhoAreAlreadyLearningWithJoy() string
 	// "JPG, PNG, WebP up to 5MB each"
 	JpgPngWebpUpTo5mbEach() string
+	// "JSON Schema for question object"
+	JsonSchemaForQuestionObject() string
+	// "JSON structure for question:"
+	JsonStructureForQuestion() string
+	// "Language"
+	Language() string
 	// "Leaderboard"
 	Leaderboard() string
 	// "Leaders"
@@ -212,6 +238,12 @@ type Translator interface {
 	Open() string
 	// "Options:"
 	Options() string
+	// "options (array of strings) - answer options for choice type, empty for others"
+	OptionsArrayOfStringsAnswerOptionsForChoiceTypeEmptyForOthers() string
+	// "Or enter JSON manually"
+	OrEnterJsonManually() string
+	// "order_index (integer) - position in the quiz (0-based)"
+	OrderIndexIntegerPositionInTheQuiz0Based() string
 	// "Overview"
 	Overview() string
 	// "Page Not Found"
@@ -222,8 +254,12 @@ type Translator interface {
 	PhysicsMechanicsElectricityOptics() string
 	// "Points"
 	Points() string
+	// "points (integer) - point value for the question (default 10)"
+	PointsIntegerPointValueForTheQuestionDefault10() string
 	// "Practice daily to keep your streak. Consistency is the key to success!"
 	PracticeDailyToKeepYourStreakConsistencyIsTheKeyToSuccess() string
+	// "Prompt for LLM question generation"
+	PromptForLlmQuestionGeneration() string
 	// "Question %d"
 	Question(param1 int) string
 	// "Question %d of %d"
@@ -232,6 +268,8 @@ type Translator interface {
 	QuestionText() string
 	// "Questions"
 	Questions() string
+	// "Questions imported successfully"
+	QuestionsImportedSuccessfully() string
 	// "Quick Actions"
 	QuickActions() string
 	// "Quiz"
@@ -258,6 +296,10 @@ type Translator interface {
 	RecentActivity() string
 	// "Registration"
 	Registration() string
+	// "Response must be a VALID JSON array of objects. No additional text."
+	ResponseMustBeAValidJsonArrayOfObjectsNoAdditionalText() string
+	// "Response must be in JSON format"
+	ResponseMustBeInJsonFormat() string
 	// "Result"
 	Result() string
 	// "Results"
@@ -320,6 +362,8 @@ type Translator interface {
 	TestConflict() string
 	// "Test in progress"
 	TestInProgress() string
+	// "text (string) - question text"
+	TextStringQuestionText() string
 	// "There are %d unanswered questions! Are you sure you want to end?"
 	ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(param1 int) string
 	// "Time"
@@ -332,6 +376,8 @@ type Translator interface {
 	Title() string
 	// "To quiz list"
 	ToQuizList() string
+	// "Topic"
+	Topic() string
 	// "Total Attempts"
 	TotalAttempts() string
 	// "Total Points"
@@ -346,14 +392,20 @@ type Translator interface {
 	TryAgain() string
 	// "Type"
 	Type() string
+	// "type (string) - one of: choice, open, fill"
+	TypeStringOneOfChoiceOpenFill() string
 	// "Unsatisfactory"
 	Unsatisfactory() string
 	// "Upload"
 	Upload() string
+	// "Upload JSON file"
+	UploadJsonFile() string
 	// "View student answers"
 	ViewStudentAnswers() string
 	// "Why GoQuizVibe?"
 	WhyGoquizvibe() string
+	// "You are an expert at creating test questions. Create an array of questions on the topic."
+	YouAreAnExpertAtCreatingTestQuestionsCreateAnArrayOfQuestionsOnTheTopic() string
 	// "You have no mistakes yet. Keep it up!"
 	YouHaveNoMistakesYetKeepItUp() string
 	// "Your answer:"
@@ -532,6 +584,10 @@ func (t *translator) CorrectAnswer() string {
 	return t.locale.Get("Correct Answer")
 }
 
+func (t *translator) CorrectAnswerStringCorrectAnswer() string {
+	return t.locale.Get("correct_answer (string) - correct answer")
+}
+
 func (t *translator) Create() string {
 	return t.locale.Get("Create")
 }
@@ -576,6 +632,14 @@ func (t *translator) Description() string {
 	return t.locale.Get("Description")
 }
 
+func (t *translator) DownloadPromptAsFile() string {
+	return t.locale.Get("Download Prompt as File")
+}
+
+func (t *translator) EachQuestionMustContainTheFollowingFields() string {
+	return t.locale.Get("Each question must contain the following fields:")
+}
+
 func (t *translator) Edit() string {
 	return t.locale.Get("Edit")
 }
@@ -590,6 +654,10 @@ func (t *translator) Email() string {
 
 func (t *translator) EndQuizThisActionCannotBeUndone() string {
 	return t.locale.Get("End quiz? This action cannot be undone.")
+}
+
+func (t *translator) EnterQuizTopicAboveToGeneratePrompt() string {
+	return t.locale.Get("Enter quiz topic above to generate prompt")
 }
 
 func (t *translator) EnterYourAnswer() string {
@@ -610,6 +678,14 @@ func (t *translator) ExperiencePoints() string {
 
 func (t *translator) Explanation() string {
 	return t.locale.Get("Explanation:")
+}
+
+func (t *translator) ExplanationStringExplanationForTheAnswer() string {
+	return t.locale.Get("explanation (string) - explanation for the answer")
+}
+
+func (t *translator) FailedToImportQuestions() string {
+	return t.locale.Get("Failed to import questions")
 }
 
 func (t *translator) Fill() string {
@@ -644,8 +720,24 @@ func (t *translator) ImagesUpTo3() string {
 	return t.locale.Get("Images (up to 3)")
 }
 
+func (t *translator) Import() string {
+	return t.locale.Get("Import")
+}
+
+func (t *translator) ImportFromJson() string {
+	return t.locale.Get("Import from JSON")
+}
+
+func (t *translator) ImportQuestions() string {
+	return t.locale.Get("Import Questions")
+}
+
 func (t *translator) InteractiveExamPreparationPlatformWithGamificationEarnXpMaintainStreaksAndCompeteWithFriends() string {
 	return t.locale.Get("Interactive exam preparation platform with gamification. Earn XP, maintain streaks, and compete with friends!")
+}
+
+func (t *translator) InvalidJsonFormat() string {
+	return t.locale.Get("Invalid JSON format")
 }
 
 func (t *translator) JoinThousandsOfStudentsWhoAreAlreadyLearningWithJoy() string {
@@ -654,6 +746,18 @@ func (t *translator) JoinThousandsOfStudentsWhoAreAlreadyLearningWithJoy() strin
 
 func (t *translator) JpgPngWebpUpTo5mbEach() string {
 	return t.locale.Get("JPG, PNG, WebP up to 5MB each")
+}
+
+func (t *translator) JsonSchemaForQuestionObject() string {
+	return t.locale.Get("JSON Schema for question object")
+}
+
+func (t *translator) JsonStructureForQuestion() string {
+	return t.locale.Get("JSON structure for question:")
+}
+
+func (t *translator) Language() string {
+	return t.locale.Get("Language")
 }
 
 func (t *translator) Leaderboard() string {
@@ -760,6 +864,18 @@ func (t *translator) Options() string {
 	return t.locale.Get("Options:")
 }
 
+func (t *translator) OptionsArrayOfStringsAnswerOptionsForChoiceTypeEmptyForOthers() string {
+	return t.locale.Get("options (array of strings) - answer options for choice type, empty for others")
+}
+
+func (t *translator) OrEnterJsonManually() string {
+	return t.locale.Get("Or enter JSON manually")
+}
+
+func (t *translator) OrderIndexIntegerPositionInTheQuiz0Based() string {
+	return t.locale.Get("order_index (integer) - position in the quiz (0-based)")
+}
+
 func (t *translator) Overview() string {
 	return t.locale.Get("Overview")
 }
@@ -780,8 +896,16 @@ func (t *translator) Points() string {
 	return t.locale.Get("Points")
 }
 
+func (t *translator) PointsIntegerPointValueForTheQuestionDefault10() string {
+	return t.locale.Get("points (integer) - point value for the question (default 10)")
+}
+
 func (t *translator) PracticeDailyToKeepYourStreakConsistencyIsTheKeyToSuccess() string {
 	return t.locale.Get("Practice daily to keep your streak. Consistency is the key to success!")
+}
+
+func (t *translator) PromptForLlmQuestionGeneration() string {
+	return t.locale.Get("Prompt for LLM question generation")
 }
 
 func (t *translator) Question(param1 int) string {
@@ -798,6 +922,10 @@ func (t *translator) QuestionText() string {
 
 func (t *translator) Questions() string {
 	return t.locale.Get("Questions")
+}
+
+func (t *translator) QuestionsImportedSuccessfully() string {
+	return t.locale.Get("Questions imported successfully")
 }
 
 func (t *translator) QuickActions() string {
@@ -850,6 +978,14 @@ func (t *translator) RecentActivity() string {
 
 func (t *translator) Registration() string {
 	return t.locale.Get("Registration")
+}
+
+func (t *translator) ResponseMustBeAValidJsonArrayOfObjectsNoAdditionalText() string {
+	return t.locale.Get("Response must be a VALID JSON array of objects. No additional text.")
+}
+
+func (t *translator) ResponseMustBeInJsonFormat() string {
+	return t.locale.Get("Response must be in JSON format")
 }
 
 func (t *translator) Result() string {
@@ -976,6 +1112,10 @@ func (t *translator) TestInProgress() string {
 	return t.locale.Get("Test in progress")
 }
 
+func (t *translator) TextStringQuestionText() string {
+	return t.locale.Get("text (string) - question text")
+}
+
 func (t *translator) ThereAreUnansweredQuestionsAreYouSureYouWantToEnd(param1 int) string {
 	return t.locale.Get("There are %d unanswered questions! Are you sure you want to end?", param1)
 }
@@ -998,6 +1138,10 @@ func (t *translator) Title() string {
 
 func (t *translator) ToQuizList() string {
 	return t.locale.Get("To quiz list")
+}
+
+func (t *translator) Topic() string {
+	return t.locale.Get("Topic")
 }
 
 func (t *translator) TotalAttempts() string {
@@ -1028,6 +1172,10 @@ func (t *translator) Type() string {
 	return t.locale.Get("Type")
 }
 
+func (t *translator) TypeStringOneOfChoiceOpenFill() string {
+	return t.locale.Get("type (string) - one of: choice, open, fill")
+}
+
 func (t *translator) Unsatisfactory() string {
 	return t.locale.Get("Unsatisfactory")
 }
@@ -1036,12 +1184,20 @@ func (t *translator) Upload() string {
 	return t.locale.Get("Upload")
 }
 
+func (t *translator) UploadJsonFile() string {
+	return t.locale.Get("Upload JSON file")
+}
+
 func (t *translator) ViewStudentAnswers() string {
 	return t.locale.Get("View student answers")
 }
 
 func (t *translator) WhyGoquizvibe() string {
 	return t.locale.Get("Why GoQuizVibe?")
+}
+
+func (t *translator) YouAreAnExpertAtCreatingTestQuestionsCreateAnArrayOfQuestionsOnTheTopic() string {
+	return t.locale.Get("You are an expert at creating test questions. Create an array of questions on the topic.")
 }
 
 func (t *translator) YouHaveNoMistakesYetKeepItUp() string {

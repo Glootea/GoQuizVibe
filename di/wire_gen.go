@@ -36,10 +36,11 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	promptGenerator := ProvidePromptGenerator(cacheService)
 	authHandler := ProvideAuthHandler(queries, authService, service)
 	dashboardHandler := ProvideDashboardHandler(dashboardService)
 	quizHandler := ProvideQuizHandler(queries, quizService, quizSessionService, authService)
-	adminHandler := ProvideAdminHandler(adminService, authService, service)
+	adminHandler := ProvideAdminHandler(adminService, authService, service, promptGenerator)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	compressionMiddleware := ProvideCompressionMiddleware()

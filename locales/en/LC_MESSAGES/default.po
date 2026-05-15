@@ -578,3 +578,85 @@ msgstr "Time remaining"
 
 msgid "Resume"
 msgstr "Resume"
+
+# JSON Import
+
+msgid "Import Questions"
+msgstr "Import Questions"
+
+msgid "Import from JSON"
+msgstr "Import from JSON"
+
+msgid "Upload JSON file"
+msgstr "Upload JSON file"
+
+msgid "Or enter JSON manually"
+msgstr "Or enter JSON manually"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Download Prompt as File"
+msgstr "Download Prompt as File"
+
+msgid "Prompt for LLM question generation"
+msgstr "Prompt for LLM question generation"
+
+msgid "Enter quiz topic above to generate prompt"
+msgstr "Enter quiz topic above to generate prompt"
+
+msgid "JSON structure for question:"
+msgstr "JSON structure for question:"
+
+msgid "Questions imported successfully"
+msgstr "Questions imported successfully"
+
+msgid "Failed to import questions"
+msgstr "Failed to import questions"
+
+msgid "Invalid JSON format"
+msgstr "Invalid JSON format"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Response must be in JSON format"
+msgstr "Response must be in JSON format"
+
+# LLM Prompt generation
+
+msgid "You are an expert at creating test questions. Create an array of questions on the topic."
+msgstr "You are an expert at creating test questions. Create an array of questions on the topic."
+
+msgid "Each question must contain the following fields:"
+msgstr "Each question must contain the following fields:"
+
+msgid "Response must be a VALID JSON array of objects. No additional text."
+msgstr "Response must be a VALID JSON array of objects. No additional text."
+
+msgid "Topic"
+msgstr "Topic"
+
+msgid "text (string) - question text"
+msgstr "text (string) - question text"
+
+msgid "type (string) - one of: choice, open, fill"
+msgstr "type (string) - one of: choice, open, fill"
+
+msgid "options (array of strings) - answer options for choice type, empty for others"
+msgstr "options (array of strings) - answer options for choice type, empty for others"
+
+msgid "correct_answer (string) - correct answer"
+msgstr "correct_answer (string) - correct answer"
+
+msgid "explanation (string) - explanation for the answer"
+msgstr "explanation (string) - explanation for the answer"
+
+msgid "points (integer) - point value for the question (default 10)"
+msgstr "points (integer) - point value for the question (default 10)"
+
+msgid "order_index (integer) - position in the quiz (0-based)"
+msgstr "order_index (integer) - position in the quiz (0-based)"
+
+msgid "JSON Schema for question object"
+msgstr "JSON Schema for question object"

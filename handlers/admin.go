@@ -19,16 +19,18 @@ import (
 )
 
 type AdminHandler struct {
-	adminService *services.AdminService
-	authService  *services.AuthService
-	localeSvc    *locales.Service
+	adminService    *services.AdminService
+	authService     *services.AuthService
+	localeSvc       *locales.Service
+	promptGenerator *services.PromptGenerator
 }
 
-func NewAdmin(adminSvc *services.AdminService, auth *services.AuthService, svc *locales.Service) *AdminHandler {
+func NewAdmin(adminSvc *services.AdminService, auth *services.AuthService, svc *locales.Service, pg *services.PromptGenerator) *AdminHandler {
 	return &AdminHandler{
-		adminService: adminSvc,
-		authService:  auth,
-		localeSvc:    svc,
+		adminService:    adminSvc,
+		authService:     auth,
+		localeSvc:       svc,
+		promptGenerator: pg,
 	}
 }
 
@@ -416,5 +418,68 @@ func (h *AdminHandler) RestoreQuiz(w http.ResponseWriter, r *http.Request) error
 	}
 
 	http.Redirect(w, r, "/admin/quizzes", http.StatusFound)
+	return nil
+}
+
+func (h *AdminHandler) GetSchema(w http.ResponseWriter, r *http.Request) error {
+	schemaJSON, err := h.promptGenerator.GetSchema(r.Context())
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(schemaJSON))
+	return nil
+}
+
+func (h *AdminHandler) GetPrompt(w http.ResponseWriter, r *http.Request) error {
+	title := r.URL.Query().Get("title")
+
+	if title == "" {
+		title = r.FormValue("title")
+	}
+
+	t := middleware.GetTranslator(r.Context())
+
+	prompt, err := h.promptGenerator.GeneratePrompt(r.Context(), title, t)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte(prompt))
+	return nil
+}
+
+func (h *AdminHandler) ImportQuestions(w http.ResponseWriter, r *http.Request) error {
+	quizID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	var input struct {
+		Questions []map[string]interface{} `json:"questions"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
+	if len(input.Questions) == 0 {
+		return ce.WithHTTPStatus(errors.New("no questions provided"), http.StatusBadRequest)
+	}
+
+	createdCount, err := h.adminService.ImportQuestions(r.Context(), quizID, input.Questions)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
+	if IsHTMXRequest(r) {
+		w.Header().Set("HX-Refresh", "true")
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"created": createdCount})
 	return nil
 }

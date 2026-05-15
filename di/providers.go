@@ -155,8 +155,14 @@ func ProvideAdminHandler(
 	adminService *services.AdminService,
 	authService *services.AuthService,
 	localeService *locales.Service,
+	promptGenerator *services.PromptGenerator,
 ) *handlers.AdminHandler {
-	return handlers.NewAdmin(adminService, authService, localeService)
+	return handlers.NewAdmin(adminService, authService, localeService, promptGenerator)
+}
+
+func ProvidePromptGenerator(cacheService *services.CacheService) *services.PromptGenerator {
+	schemaService := services.NewQuestionSchema(cacheService)
+	return services.NewPromptGenerator(schemaService)
 }
 
 func ProvideRequireAuthMiddleware(authService *services.AuthService) middleware.RequireAuthMiddleware {
@@ -203,6 +209,7 @@ var HandlerSet = wire.NewSet(
 	ProvideDashboardHandler,
 	ProvideQuizHandler,
 	ProvideAdminHandler,
+	ProvidePromptGenerator,
 )
 
 var MiddlewareSet = wire.NewSet(

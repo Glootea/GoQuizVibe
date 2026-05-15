@@ -15,3 +15,6 @@ WHERE id = $1 RETURNING *;
 
 -- name: DeleteQuestion :exec
 DELETE FROM questions WHERE id = $1;
+
+-- name: GetMaxOrderIndex :one
+SELECT COALESCE(MAX(order_index), -1) FROM questions WHERE quiz_id = $1;

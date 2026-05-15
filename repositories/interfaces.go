@@ -31,6 +31,7 @@ type QuestionRepository interface {
 	GetQuestionsByQuizID(ctx context.Context, quizID uuid.UUID) ([]db.Question, error)
 	UpdateQuestion(ctx context.Context, params db.UpdateQuestionParams) (db.Question, error)
 	DeleteQuestion(ctx context.Context, id uuid.UUID) error
+	GetMaxOrderIndex(ctx context.Context, quizID uuid.UUID) (interface{}, error)
 }
 
 type AttemptRepository interface {

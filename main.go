@@ -120,6 +120,9 @@ func main() {
 		{"GET", "/admin/api/quiz-stats", app.AdminHandler.QuizStatsData},
 		{"GET", "/admin/api/grade-dist", app.AdminHandler.GradeDistData},
 		{"GET", "/admin/api/subject-dist", app.AdminHandler.SubjectDistData},
+		{"GET", "/admin/questions/schema", app.AdminHandler.GetSchema},
+		{"GET", "/admin/questions/prompt", app.AdminHandler.GetPrompt},
+		{"POST", "/admin/quizzes/{id}/questions/import", app.AdminHandler.ImportQuestions},
 	}
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap
