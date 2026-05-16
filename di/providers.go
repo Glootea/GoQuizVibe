@@ -35,6 +35,7 @@ type App struct {
 	DashboardHandler *handlers.DashboardHandler
 	QuizHandler      *handlers.QuizHandler
 	AdminHandler     *handlers.AdminHandler
+	EditorHandler    *handlers.EditorHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -165,6 +166,10 @@ func ProvidePromptGenerator(cacheService *services.CacheService) *services.Promp
 	return services.NewPromptGenerator(schemaService)
 }
 
+func ProvideEditorHandler() *handlers.EditorHandler {
+	return handlers.NewEditor()
+}
+
 func ProvideRequireAuthMiddleware(authService *services.AuthService) middleware.RequireAuthMiddleware {
 	return middleware.NewRequireAuthMiddleware(authService)
 }
@@ -209,6 +214,7 @@ var HandlerSet = wire.NewSet(
 	ProvideDashboardHandler,
 	ProvideQuizHandler,
 	ProvideAdminHandler,
+	ProvideEditorHandler,
 	ProvidePromptGenerator,
 )
 
@@ -224,5 +230,5 @@ var AppSet = wire.NewSet(
 	ServiceSet,
 	HandlerSet,
 	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
+	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
 )

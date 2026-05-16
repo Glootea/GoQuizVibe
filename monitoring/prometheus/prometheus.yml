@@ -5,7 +5,7 @@ global:
 scrape_configs:
   - job_name: 'goquizvibe'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['host.docker.internal:7890']
     metrics_path: '/metrics'
     scrape_interval: 15s
 

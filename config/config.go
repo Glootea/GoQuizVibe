@@ -52,7 +52,7 @@ func Load() *Config {
 	}
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "7890"
 	}
 
 	secret := os.Getenv("JWT_SECRET")

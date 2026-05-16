@@ -1,0 +1,54 @@
+package editor
+
+templ EditorPage() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Typst Editor</title>
+			<link href="/static/style/editor.css" rel="stylesheet"/>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+		</head>
+		<body>
+			<div class="editor-container">
+				<aside id="files-panel" class="files-panel">
+					<div class="files-header">
+						<span>Files</span>
+						<button id="toggle-files" class="btn-toggle" title="Toggle files panel">
+							<i class="fas fa-chevron-left"></i>
+						</button>
+					</div>
+					<div id="file-actions" class="file-actions">
+						<button id="new-file" class="btn-action" title="New file">
+							<i class="fas fa-plus"></i>
+						</button>
+						<button id="delete-file" class="btn-action" title="Delete file" disabled>
+							<i class="fas fa-trash"></i>
+						</button>
+					</div>
+					<div id="file-list" class="file-list"></div>
+				</aside>
+				<div class="resize-handler-v" data-resize="files"></div>
+				<div class="main-area">
+					<div class="editor-panel">
+						<div id="editor-container"></div>
+					</div>
+					<div class="resize-handler-h" data-resize="editor-preview"></div>
+					<div class="preview-panel">
+						<div id="preview-container"></div>
+					</div>
+					<div class="errors-panel">
+						<div class="errors-header">
+							<i class="fas fa-exclamation-circle"></i>
+							<span>Errors</span>
+						</div>
+						<div id="errors-list" class="errors-list"></div>
+					</div>
+				</div>
+			</div>
+
+			<script src="/static/scripts/editor/editor.bundle.js"></script>
+		</body>
+	</html>
+}

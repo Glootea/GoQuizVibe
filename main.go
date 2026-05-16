@@ -103,6 +103,7 @@ func main() {
 		{"GET", "/quiz/{id}/result", app.QuizHandler.QuizResult},
 		{"GET", "/errors", app.QuizHandler.ErrorsPage},
 		{"GET", "/leaderboard", app.QuizHandler.LeaderboardPage},
+		{"GET", "/editor", app.EditorHandler.EditorPage},
 		{"GET", "/admin", app.AdminHandler.Dashboard},
 		{"GET", "/admin/quizzes", app.AdminHandler.Quizzes},
 		{"GET", "/admin/quizzes/new", app.AdminHandler.QuizzesNew},

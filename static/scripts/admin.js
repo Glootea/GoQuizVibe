@@ -215,12 +215,12 @@ function updateAnswerOptions(select) {
     container.innerHTML =
       '<div class="fill-answer-editor">' +
       '<label class="block mb-2 text-sm font-medium text-gray-700">Правильные ответы (сегменты)</label>' +
-      '<div id="segments-preview" class="p-3 bg-gray-50 rounded-lg text-sm mb-3">' +
+      '<div id="segments-preview" class="p-3 mb-3 text-sm bg-gray-50 rounded-lg">' +
       '<span class="text-gray-400">Добавьте текст и пропуски</span>' +
       '</div>' +
       '<div class="flex gap-2 mb-3">' +
-      '<button type="button" onclick="addSegment(\'text\')" class="py-1 px-3 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border"><i class="mr-1 fas fa-font"></i>Добавить текст</button>' +
-      '<button type="button" onclick="addSegment(\'gap\')" class="py-1 px-3 text-sm bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300"><i class="mr-1 fas fa-question-circle"></i>Добавить пропуск</button>' +
+      '<button type="button" onclick="addSegment(\'text\')" class="py-1 px-3 text-sm bg-gray-100 rounded-lg border hover:bg-gray-200"><i class="mr-1 fas fa-font"></i>Добавить текст</button>' +
+      '<button type="button" onclick="addSegment(\'gap\')" class="py-1 px-3 text-sm bg-indigo-100 rounded-lg border border-indigo-300 hover:bg-indigo-200"><i class="mr-1 fas fa-question-circle"></i>Добавить пропуск</button>' +
       '</div>' +
       '<div id="segment-inputs" class="space-y-2"></div>' +
       '<input type="hidden" name="segments_json" id="segments-json"/>' +
@@ -260,12 +260,12 @@ function updateAddFormAnswerOptions(select) {
     container.innerHTML =
       '<div class="fill-answer-editor">' +
       '<label class="block mb-2 text-sm font-medium text-gray-700">Правильные ответы (сегменты)</label>' +
-      '<div id="addForm-segments-preview" class="p-3 bg-gray-50 rounded-lg text-sm mb-3">' +
+      '<div id="addForm-segments-preview" class="p-3 mb-3 text-sm bg-gray-50 rounded-lg">' +
       '<span class="text-gray-400">Добавьте текст и пропуски</span>' +
       '</div>' +
       '<div class="flex gap-2 mb-3">' +
-      '<button type="button" onclick="addSegment(\'text\')" class="py-1 px-3 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border"><i class="mr-1 fas fa-font"></i>Добавить текст</button>' +
-      '<button type="button" onclick="addSegment(\'gap\')" class="py-1 px-3 text-sm bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300"><i class="mr-1 fas fa-question-circle"></i>Добавить пропуск</button>' +
+      '<button type="button" onclick="addSegment(\'text\')" class="py-1 px-3 text-sm bg-gray-100 rounded-lg border hover:bg-gray-200"><i class="mr-1 fas fa-font"></i>Добавить текст</button>' +
+      '<button type="button" onclick="addSegment(\'gap\')" class="py-1 px-3 text-sm bg-indigo-100 rounded-lg border border-indigo-300 hover:bg-indigo-200"><i class="mr-1 fas fa-question-circle"></i>Добавить пропуск</button>' +
       '</div>' +
       '<div id="addForm-segment-inputs" class="space-y-2"></div>' +
       '<input type="hidden" name="segments_json" id="addForm-segments-json"/>' +
@@ -337,7 +337,7 @@ function syncSegmentsPreview(containerId) {
       if (type.value === "text") {
         html += content.value;
       } else {
-        html += '<span class="mx-1 px-2 py-0.5 bg-indigo-100 border border-indigo-300 rounded text-indigo-700">' + content.value + '</span>';
+        html += '<span class="py-0.5 px-2 mx-1 text-indigo-700 bg-indigo-100 rounded border border-indigo-300">' + content.value + '</span>';
       }
     }
   });
@@ -357,13 +357,13 @@ function addSegment(type, containerId) {
   if (type === "text") {
     row.innerHTML =
       '<input type="hidden" name="segment_' + index + '_type" value="text"/>' +
-      '<span class="px-2 py-1 text-sm bg-gray-100 border border-gray-300 rounded text-gray-700">Текст</span>' +
+      '<span class="py-1 px-2 text-sm text-gray-700 bg-gray-100 rounded border border-gray-300">Текст</span>' +
       '<input type="text" name="segment_' + index + '_content" placeholder="Введите текст" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/>' +
       '<button type="button" onclick="removeSegment(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
   } else {
     row.innerHTML =
       '<input type="hidden" name="segment_' + index + '_type" value="gap"/>' +
-      '<span class="px-2 py-1 text-sm bg-indigo-100 border border-indigo-300 rounded text-indigo-700">Пропуск</span>' +
+      '<span class="py-1 px-2 text-sm text-indigo-700 bg-indigo-100 rounded border border-indigo-300">Пропуск</span>' +
       '<input type="text" name="segment_' + index + '_content" placeholder="Правильный ответ" class="flex-1 py-2 px-3 rounded-lg border focus:ring-2 focus:ring-indigo-500"/>' +
       '<button type="button" onclick="removeSegment(this)" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>';
   }

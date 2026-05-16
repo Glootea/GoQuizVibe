@@ -1161,7 +1161,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 				return templ_7745c5c3_Err
 			}
 		case models.QuestionTypeFill:
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 96, "<div class=\"fill-answer-editor\"><label class=\"block mb-2 text-sm font-medium text-gray-700\">Правильные ответы (сегменты)</label><div id=\"segments-preview\" class=\"p-3 bg-gray-50 rounded-lg text-sm mb-3\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 96, "<div class=\"fill-answer-editor\"><label class=\"block mb-2 text-sm font-medium text-gray-700\">Правильные ответы (сегменты)</label><div id=\"segments-preview\" class=\"p-3 mb-3 text-sm bg-gray-50 rounded-lg\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1169,7 +1169,7 @@ func AnswerOptionsByType(q models.Question, t locales.Translator) templ.Componen
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 97, "</div><div class=\"flex gap-2 mb-3\"><button type=\"button\" onclick=\"addSegment('text', 'segment-inputs')\" class=\"py-1 px-3 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg border\"><i class=\"mr-1 fas fa-font\"></i>Добавить текст</button> <button type=\"button\" onclick=\"addSegment('gap', 'segment-inputs')\" class=\"py-1 px-3 text-sm bg-indigo-100 hover:bg-indigo-200 rounded-lg border border-indigo-300\"><i class=\"mr-1 fas fa-question-circle\"></i>Добавить пропуск</button></div><div id=\"segment-inputs\" class=\"space-y-2\" data-correct-answer=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 97, "</div><div class=\"flex gap-2 mb-3\"><button type=\"button\" onclick=\"addSegment('text', 'segment-inputs')\" class=\"py-1 px-3 text-sm bg-gray-100 rounded-lg border hover:bg-gray-200\"><i class=\"mr-1 fas fa-font\"></i>Добавить текст</button> <button type=\"button\" onclick=\"addSegment('gap', 'segment-inputs')\" class=\"py-1 px-3 text-sm bg-indigo-100 rounded-lg border border-indigo-300 hover:bg-indigo-200\"><i class=\"mr-1 fas fa-question-circle\"></i>Добавить пропуск</button></div><div id=\"segment-inputs\" class=\"space-y-2\" data-correct-answer=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1936,7 +1936,7 @@ func ImportQuestionsModal(quizID string, quizTitle string, t locales.Translator)
 			templ_7745c5c3_Var115 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 154, "<div id=\"importModal\" class=\"hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50\"><div class=\"p-6 w-full max-w-2xl bg-white rounded-xl shadow-xl max-h-[90vh] overflow-y-auto\"><div class=\"flex justify-between items-center mb-4\"><h2 class=\"text-xl font-bold\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 154, "<div id=\"importModal\" class=\"flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50\"><div class=\"overflow-y-auto p-6 w-full max-w-2xl bg-white rounded-xl shadow-xl max-h-[90vh]\"><div class=\"flex justify-between items-center mb-4\"><h2 class=\"text-xl font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1988,7 +1988,7 @@ func ImportQuestionsModal(quizID string, quizTitle string, t locales.Translator)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 158, "</label> <textarea id=\"promptTextarea\" readonly rows=\"6\" class=\"py-2 px-3 w-full rounded-lg border bg-gray-50 font-mono text-sm\" placeholder=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 158, "</label> <textarea id=\"promptTextarea\" readonly rows=\"6\" class=\"py-2 px-3 w-full font-mono text-sm bg-gray-50 rounded-lg border\" placeholder=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -2014,7 +2014,7 @@ func ImportQuestionsModal(quizID string, quizTitle string, t locales.Translator)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 160, "</button></div><div class=\"border-t pt-4\"><label class=\"block mb-1 text-sm font-medium text-gray-700\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 160, "</button></div><div class=\"pt-4 border-t\"><label class=\"block mb-1 text-sm font-medium text-gray-700\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -2053,7 +2053,7 @@ func ImportQuestionsModal(quizID string, quizTitle string, t locales.Translator)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 163, "</label> <textarea id=\"manualJSONInput\" rows=\"8\" class=\"py-2 px-3 w-full rounded-lg border focus:ring-2 focus:ring-indigo-500 font-mono text-sm\" placeholder=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 163, "</label> <textarea id=\"manualJSONInput\" rows=\"8\" class=\"py-2 px-3 w-full font-mono text-sm rounded-lg border focus:ring-2 focus:ring-indigo-500\" placeholder=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -2125,7 +2125,7 @@ func fillSegmentsPreview(correctAnswer string) string {
 		if seg.Type == "text" {
 			result += seg.Content
 		} else if seg.Type == "gap" {
-			result += fmt.Sprintf(`<span class="mx-1 px-2 py-0.5 bg-indigo-100 border border-indigo-300 rounded text-indigo-700">%s</span>`, seg.Content)
+			result += fmt.Sprintf(`<span class="py-0.5 px-2 mx-1 text-indigo-700 bg-indigo-100 rounded border border-indigo-300">%s</span>`, seg.Content)
 		}
 	}
 	return result
