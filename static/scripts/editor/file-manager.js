@@ -14,7 +14,7 @@ export async function initOPFS() {
 
       const fileHandle = await filesDirHandle.getFileHandle(DEFAULT_FILE, { create: true });
       const writable = await fileHandle.createWritable();
-      await writable.write('# Welcome to Typst Editor\n\nStart typing your document here.\n');
+      await writable.write('= Welcome to Typst Editor\n\nStart typing your document here.\n');
       await writable.close();
 
       useOPFS = true;
@@ -31,7 +31,7 @@ export async function initOPFS() {
 function initLocalStorage() {
   if (!localStorage.getItem(STORAGE_KEY)) {
     const initialFiles = {};
-    initialFiles[DEFAULT_FILE] = '# Welcome to Typst Editor\n\nStart typing your document here.\n';
+    initialFiles[DEFAULT_FILE] = '= Welcome to Typst Editor\n\nStart typing your document here.\n';
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initialFiles));
   }
 }

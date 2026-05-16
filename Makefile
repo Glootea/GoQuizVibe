@@ -1,6 +1,7 @@
 .PHONY: dev build
 .PHONY: dc-up dc-down templ-generate rustywind tw-build tw-watch templ-watch
 .PHONY: monitoring-up monitoring-down
+.PHONY: typst-copy-wasm typst-bundle editor-bundle
 
 # dev: start full development environment
 # runs: containers + one-time generation + parallel file watchers
@@ -9,9 +10,9 @@ dev: dc-up
 	rustywind --write .
 	@make -j 2 tw-watch templ-watch
 
-# generate: one-time generation of all assets (no watching)
-# runs: templ generation -> gettextgocodegen -> rustywind -> tailwind build
-generate: gettext-generate templ-generate tw-build rustywind
+# generate: one-time generation of all assets
+# runs: typst-copy-wasm -> typst-bundle -> editor-bundle -> gettext -> templ -> tailwind -> rustywind
+generate: typst-copy-wasm typst-bundle editor-bundle gettext-generate templ-generate tw-build rustywind
 
 # gettext-generate: generate locales/locales.go from .po files
 gettext-generate:
@@ -21,7 +22,6 @@ gettext-generate:
 build: templ-generate gettext-generate go-run
 
 # dc-up: start docker containers in detached mode
-# podman compose up -d is idempotent - won't restart already running containers
 dc-up:
 	@echo "Starting docker containers..."
 	podman compose up -d
@@ -65,3 +65,20 @@ templ-watch:
 
 go-run:
 	go run main.go
+
+# typst-copy-wasm: copy WASM modules to static/wasm/
+typst-copy-wasm:
+	@echo "Copying WASM modules..."
+	@mkdir -p static/wasm
+	cp /Users/glootea/Documents/Dev/Projects/GoQuizVibe.worktrees/typst/static/scripts/editor/node_modules/.pnpm/@myriaddreamin+typst-ts-web-compiler@0.7.0-rc2/node_modules/@myriaddreamin/typst-ts-web-compiler/pkg/*.wasm static/wasm/
+	cp /Users/glootea/Documents/Dev/Projects/GoQuizVibe.worktrees/typst/static/scripts/editor/node_modules/.pnpm/@myriaddreamin+typst-ts-renderer@0.7.0-rc2/node_modules/@myriaddreamin/typst-ts-renderer/pkg/*.wasm static/wasm/
+	@echo "WASM modules copied"
+	@ls -la static/wasm/
+
+# typst-bundle: build typst.ts ES module bundle
+typst-bundle:
+	cd static/scripts/editor && pnpm run typst-bundle
+
+# editor-bundle: build editor IIFE bundle
+editor-bundle:
+	cd static/scripts/editor && pnpm run editor-bundle

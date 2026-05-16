@@ -65,7 +65,7 @@ const typstLanguage = StreamLanguage.define({
 });
 
 import * as fileManager from './file-manager.js';
-import * as compiler from './compiler.js';
+import * as compiler from './compiler.mjs';
 
 let editorView = null;
 let currentFile = null;

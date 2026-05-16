@@ -8,6 +8,7 @@ export default {
     format: 'iife',
     name: 'editor',
     sourcemap: false,
+    inlineDynamicImports: true,
   },
   plugins: [
     resolve({
@@ -20,5 +21,4 @@ export default {
       },
     }),
   ],
-  inlineDynamicImports: true,
 };

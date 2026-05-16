@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/andybalholm/brotli"
@@ -56,7 +57,14 @@ func (m *CompressionMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 
 		w.Header().Set("Vary", "Accept-Encoding")
 		w.Header().Set("Content-Encoding", enc)
-		w.Header().Set("Content-Type", "text/html")
+
+		ext := path.Ext(r.URL.Path)
+		switch ext {
+		case ".wasm":
+			w.Header().Set("Content-Type", "application/wasm")
+		default:
+			w.Header().Set("Content-Type", "text/html")
+		}
 
 		compressed := encFn(w)
 
@@ -74,7 +82,7 @@ func (m *CompressionMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 
 func (m *CompressionMiddleware) bestEncoding(r *http.Request) string {
 	ae := r.Header.Get("Accept-Encoding")
-	for _, enc := range []string{"zstd", "br", "gzip"} {
+	for _, enc := range []string{"br", "zstd", "gzip"} {
 		if strings.Contains(ae, enc) {
 			return enc
 		}

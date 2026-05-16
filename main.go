@@ -151,6 +151,10 @@ func main() {
 	}
 
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
+	wasmDir := http.Dir("./static/wasm")
+	mux.Handle("GET /wasm/", compressionMiddleware(http.StripPrefix("/wasm/", http.FileServer(wasmDir))))
+
 	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)
 	})
