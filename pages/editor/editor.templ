@@ -15,9 +15,6 @@ templ EditorPage() {
 				<aside id="files-panel" class="files-panel">
 					<div class="files-header">
 						<span>Files</span>
-						<button id="toggle-files" class="btn-toggle" title="Toggle files panel">
-							<i class="fas fa-chevron-left"></i>
-						</button>
 					</div>
 					<div id="file-actions" class="file-actions">
 						<button id="new-file" class="btn-action" title="New file">
@@ -31,13 +28,16 @@ templ EditorPage() {
 				</aside>
 				<div class="resize-handler-v" data-resize="files"></div>
 				<div class="main-area">
-					<div class="editor-panel">
-						<div id="editor-container"></div>
+					<div class="middle-row">
+						<div class="editor-panel">
+							<div id="editor-container"></div>
+						</div>
+						<div class="resize-handler-v" data-resize="editor-preview"></div>
+						<div class="preview-panel">
+							<div id="preview-container"></div>
+						</div>
 					</div>
-					<div class="resize-handler-h" data-resize="editor-preview"></div>
-					<div class="preview-panel">
-						<div id="preview-container"></div>
-					</div>
+					<div class="resize-handler-h" data-resize="errors"></div>
 					<div class="errors-panel">
 						<div class="errors-header">
 							<i class="fas fa-exclamation-circle"></i>

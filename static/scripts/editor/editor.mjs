@@ -85,7 +85,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   initEditor();
   await loadFileList();
   setupResizeHandlers();
-  setupTogglePanel();
   setupFileActions();
 });
 
@@ -243,10 +242,30 @@ function setupResizeHandlers() {
   handlers.forEach((handler) => {
     let isResizing = false;
     let startPos = 0;
+    let initialWidth = 0;
+    let initialMiddleRowHeight = 0;
+    let initialErrorsHeight = 0;
+    let initialEditorWidth = 0;
 
     handler.addEventListener('mousedown', (e) => {
       isResizing = true;
       startPos = handler.classList.contains('resize-handler-v') ? e.clientX : e.clientY;
+
+      const resizeType = handler.dataset.resize;
+
+      if (resizeType === 'files') {
+        const filesPanel = document.getElementById('files-panel');
+        initialWidth = filesPanel.offsetWidth;
+      } else if (resizeType === 'editor-preview') {
+        const editorPanel = document.querySelector('.editor-panel');
+        initialEditorWidth = editorPanel.offsetWidth;
+      } else if (resizeType === 'errors') {
+        const middleRow = document.querySelector('.middle-row');
+        const errorsPanel = document.querySelector('.errors-panel');
+        initialMiddleRowHeight = middleRow.offsetHeight;
+        initialErrorsHeight = errorsPanel.offsetHeight;
+      }
+
       document.body.style.cursor = handler.classList.contains('resize-handler-v') ? 'col-resize' : 'row-resize';
       document.body.style.userSelect = 'none';
     });
@@ -254,12 +273,32 @@ function setupResizeHandlers() {
     document.addEventListener('mousemove', (e) => {
       if (!isResizing) return;
 
-      if (handler.classList.contains('resize-handler-v')) {
+      const resizeType = handler.dataset.resize;
+
+      if (resizeType === 'files') {
         const filesPanel = document.getElementById('files-panel');
         const delta = e.clientX - startPos;
-        const newWidth = Math.max(120, Math.min(400, filesPanel.offsetWidth + delta));
+        const newWidth = Math.max(40, Math.min(400, initialWidth + delta));
         filesPanel.style.width = newWidth + 'px';
-        startPos = e.clientX;
+      } else if (resizeType === 'editor-preview') {
+        const editorPanel = document.querySelector('.editor-panel');
+        const previewPanel = document.querySelector('.preview-panel');
+        const delta = e.clientX - startPos;
+        const newEditorWidth = Math.max(100, initialEditorWidth + delta);
+        const newPreviewWidth = Math.max(100, previewPanel.offsetWidth - delta);
+        if (newEditorWidth >= 100 && newPreviewWidth >= 100) {
+          editorPanel.style.flex = '0 0 ' + newEditorWidth + 'px';
+        }
+      } else if (resizeType === 'errors') {
+        const middleRow = document.querySelector('.middle-row');
+        const errorsPanel = document.querySelector('.errors-panel');
+        const delta = e.clientY - startPos;
+        const newMiddleRowHeight = Math.max(100, initialMiddleRowHeight + delta);
+        const newErrorsHeight = Math.max(60, initialErrorsHeight - delta);
+        if (newMiddleRowHeight >= 100 && newErrorsHeight >= 60) {
+          middleRow.style.flex = '0 0 ' + newMiddleRowHeight + 'px';
+          errorsPanel.style.height = newErrorsHeight + 'px';
+        }
       }
     });
 
@@ -270,18 +309,6 @@ function setupResizeHandlers() {
         document.body.style.userSelect = '';
       }
     });
-  });
-}
-
-function setupTogglePanel() {
-  const toggleBtn = document.getElementById('toggle-files');
-  const filesPanel = document.getElementById('files-panel');
-
-  toggleBtn.addEventListener('click', () => {
-    filesPanel.classList.toggle('collapsed');
-    const icon = toggleBtn.querySelector('i');
-    icon.classList.toggle('fa-chevron-left');
-    icon.classList.toggle('fa-chevron-right');
   });
 }
 
