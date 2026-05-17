@@ -1,0 +1,30 @@
+package admin
+
+import (
+	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/pages/components"
+	"github.com/goquizvibe/types"
+)
+
+templ LearningMaterialsListPage(user *db.User, materials []types.MaterialWithURL, t locales.Translator) {
+	@BaseAdmin(t.LearningMaterials(), user, t) {
+		<div class="flex justify-between items-center mb-8">
+			<h1 class="text-3xl font-bold">{ t.LearningMaterials() }</h1>
+			<a href="/admin/learning-materials/new" class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700">
+				<i class="mr-2 fas fa-plus"></i>{ t.CreateLearningMaterial() }
+			</a>
+		</div>
+		if len(materials) == 0 {
+			<div class="p-12 text-center bg-white rounded-xl shadow-sm">
+				<i class="mb-4 text-6xl text-gray-300 fas fa-folder-open"></i>
+				<p class="text-lg text-gray-500">{ t.NoLearningMaterialsAvailable() }</p>
+				<a href="/admin/learning-materials/new" class="mt-4 text-indigo-600 hover:text-indigo-800">
+					<i class="mr-1 fas fa-plus"></i>{ t.CreateFirstLearningMaterial() }
+				</a>
+			</div>
+		} else {
+			@components.MaterialCardGrid(materials, t, true)
+		}
+	}
+}

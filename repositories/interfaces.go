@@ -63,3 +63,13 @@ type StatsRepository interface {
 	GetSubjectDistribution(ctx context.Context) ([]byte, error)
 	GetLastActiveDate(ctx context.Context, userID uuid.UUID) (any, error)
 }
+
+type LearningMaterialRepository interface {
+	CreateLearningMaterial(ctx context.Context, params db.CreateLearningMaterialParams) (db.LearningMaterial, error)
+	GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (db.LearningMaterial, error)
+	GetLearningMaterials(ctx context.Context) ([]db.LearningMaterial, error)
+	GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.UUID) ([]db.LearningMaterial, error)
+	UpdateLearningMaterial(ctx context.Context, params db.UpdateLearningMaterialParams) (db.LearningMaterial, error)
+	DeleteLearningMaterial(ctx context.Context, id uuid.UUID) error
+	GetRecentLearningMaterials(ctx context.Context, limit int32) ([]db.LearningMaterial, error)
+}

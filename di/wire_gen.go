@@ -37,10 +37,13 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 	promptGenerator := ProvidePromptGenerator(cacheService)
+	typstCompiler := ProvideTypstCompiler()
+	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstCompiler)
 	authHandler := ProvideAuthHandler(queries, authService, service)
 	dashboardHandler := ProvideDashboardHandler(dashboardService)
 	quizHandler := ProvideQuizHandler(queries, quizService, quizSessionService, authService)
 	adminHandler := ProvideAdminHandler(adminService, authService, service, promptGenerator)
+	learningMaterialsHandler := ProvideLearningMaterialsHandler(learningMaterialService, adminService, service)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	compressionMiddleware := ProvideCompressionMiddleware()
@@ -57,10 +60,12 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		GamificationService:     gamificationService,
 		StorageService:          storageService,
 		CacheService:            cacheService,
+		LearningMaterialService: learningMaterialService,
 		AuthHandler:             authHandler,
 		DashboardHandler:        dashboardHandler,
 		QuizHandler:             quizHandler,
 		AdminHandler:            adminHandler,
+		LearningMaterialsHandler: learningMaterialsHandler,
 		RequireAuthMiddleware:   requireAuthMiddleware,
 		RequireRoleMiddleware:   requireRoleMiddleware,
 		CompressionMiddleware:   compressionMiddleware,

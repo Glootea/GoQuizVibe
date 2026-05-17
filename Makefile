@@ -52,11 +52,11 @@ rustywind:
 
 # tw-build: one-time Tailwind CSS build (no watch mode)
 tw-build:
-	tailwindcss -i ./pages/styles/app.css -o ./static/style/app.css
+	npx tailwindcss -i ./pages/styles/app.css -o ./static/style/app.css
 
 # tw-watch: Tailwind CSS with file watching and auto-rebuild
 tw-watch:
-	tailwindcss -i ./pages/styles/app.css -o ./static/style/app.css --watch
+	npx tailwindcss -i ./pages/styles/app.css -o ./static/style/app.css --watch
 
 # templ-watch: Go templ with file watching and auto-regeneration
 # runs main.go when templ files change

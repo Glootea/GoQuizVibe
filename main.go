@@ -124,6 +124,13 @@ func main() {
 		{"GET", "/admin/questions/schema", app.AdminHandler.GetSchema},
 		{"GET", "/admin/questions/prompt", app.AdminHandler.GetPrompt},
 		{"POST", "/admin/quizzes/{id}/questions/import", app.AdminHandler.ImportQuestions},
+		{"GET", "/admin/learning-materials", app.LearningMaterialsHandler.List},
+		{"GET", "/admin/learning-materials/new", app.LearningMaterialsHandler.New},
+		{"POST", "/admin/learning-materials/new", app.LearningMaterialsHandler.New},
+		{"GET", "/admin/learning-materials/{id}", app.LearningMaterialsHandler.View},
+		{"DELETE", "/admin/learning-materials/{id}", app.LearningMaterialsHandler.Delete},
+		{"GET", "/admin/learning-materials/{id}/preview", app.LearningMaterialsHandler.Preview},
+		{"POST", "/admin/learning-materials/{id}/compile", app.LearningMaterialsHandler.Compile},
 	}
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap

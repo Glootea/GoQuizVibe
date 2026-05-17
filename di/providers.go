@@ -21,21 +21,23 @@ import (
 type App struct {
 	Config *config.Config
 
-	AuthService         *services.AuthService
-	QuizService         *services.QuizService
-	QuizSessionService  *services.QuizSessionService
-	QuizTimerService    *services.QuizTimerService
-	AdminService        *services.AdminService
-	DashboardService    *services.DashboardService
-	GamificationService *services.GamificationService
-	StorageService      *services.StorageService
-	CacheService        *services.CacheService
+	AuthService             *services.AuthService
+	QuizService             *services.QuizService
+	QuizSessionService      *services.QuizSessionService
+	QuizTimerService        *services.QuizTimerService
+	AdminService            *services.AdminService
+	DashboardService        *services.DashboardService
+	GamificationService     *services.GamificationService
+	StorageService          *services.StorageService
+	CacheService            *services.CacheService
+	LearningMaterialService *services.LearningMaterialService
 
-	AuthHandler      *handlers.AuthHandler
-	DashboardHandler *handlers.DashboardHandler
-	QuizHandler      *handlers.QuizHandler
-	AdminHandler     *handlers.AdminHandler
-	EditorHandler    *handlers.EditorHandler
+	AuthHandler              *handlers.AuthHandler
+	DashboardHandler         *handlers.DashboardHandler
+	QuizHandler              *handlers.QuizHandler
+	AdminHandler             *handlers.AdminHandler
+	LearningMaterialsHandler *handlers.LearningMaterialsHandler
+	EditorHandler            *handlers.EditorHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -93,7 +95,7 @@ func ProvideAdminService(
 	storageService *services.StorageService,
 	cacheService *services.CacheService,
 ) *services.AdminService {
-	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
+	return services.NewAdminService(queries, queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
 }
 
 func ProvideQuizSessionService(
@@ -166,6 +168,26 @@ func ProvidePromptGenerator(cacheService *services.CacheService) *services.Promp
 	return services.NewPromptGenerator(schemaService)
 }
 
+func ProvideTypstCompiler() *services.TypstCompiler {
+	return services.NewTypstCompiler()
+}
+
+func ProvideLearningMaterialService(
+	queries *db.Queries,
+	storageService *services.StorageService,
+	typstCompiler *services.TypstCompiler,
+) *services.LearningMaterialService {
+	return services.NewLearningMaterialService(queries, storageService, typstCompiler)
+}
+
+func ProvideLearningMaterialsHandler(
+	materialService *services.LearningMaterialService,
+	adminService *services.AdminService,
+	localeService *locales.Service,
+) *handlers.LearningMaterialsHandler {
+	return handlers.NewLearningMaterialsHandler(materialService, adminService, localeService)
+}
+
 func ProvideEditorHandler() *handlers.EditorHandler {
 	return handlers.NewEditor()
 }
@@ -207,6 +229,8 @@ var ServiceSet = wire.NewSet(
 	ProvideLocaleService,
 	ProvideAuthenticator,
 	ProvideTimeProvider,
+	ProvideTypstCompiler,
+	ProvideLearningMaterialService,
 )
 
 var HandlerSet = wire.NewSet(
@@ -216,6 +240,7 @@ var HandlerSet = wire.NewSet(
 	ProvideAdminHandler,
 	ProvideEditorHandler,
 	ProvidePromptGenerator,
+	ProvideLearningMaterialsHandler,
 )
 
 var MiddlewareSet = wire.NewSet(
@@ -230,5 +255,5 @@ var AppSet = wire.NewSet(
 	ServiceSet,
 	HandlerSet,
 	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
+	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
 )

@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server .
 
 FROM alpine:3.23.4
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache typst ca-certificates tzdata
 
 WORKDIR /app
 
@@ -20,6 +20,6 @@ COPY --from=builder /app/static ./static
 COPY --from=builder /app/initial_data ./initial_data
 COPY --from=builder /app/locales ./locales
 
-EXPOSE 443
+EXPOSE 7890
 
 CMD ["./server"]

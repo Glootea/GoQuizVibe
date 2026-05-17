@@ -1,6 +1,7 @@
 **.exe
 .vscode
 node_modules
+pnpm-lock.yaml
 output.txt
 tmp/
 .DS_Store

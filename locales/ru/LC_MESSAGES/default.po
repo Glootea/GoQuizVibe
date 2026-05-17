@@ -663,3 +663,119 @@ msgstr "order_index (целое число) — позиция в тесте (н
 
 msgid "JSON Schema for question object"
 msgstr "JSON Schema для объекта вопроса"
+
+# Learning Materials
+
+msgid "Learning Materials"
+msgstr "Обучающие материалы"
+
+msgid "View All"
+msgstr "Показать все"
+
+msgid "No Materials Yet"
+msgstr "Пока нет материалов"
+
+msgid "Create Learning Material"
+msgstr "Создать материал"
+
+msgid "No Learning Materials Available"
+msgstr "Нет доступных материалов"
+
+msgid "Create First Learning Material"
+msgstr "Создать первый материал"
+
+msgid "Learning Material Title Placeholder"
+msgstr "Введите название материала"
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Learning Material Description Placeholder"
+msgstr "Введите описание (необязательно)"
+
+msgid "Material Type"
+msgstr "Тип материала"
+
+msgid "Typst Source"
+msgstr "Typst файл"
+
+msgid "Typst Source Description"
+msgstr "Загрузите typst файлы для компиляции в SVG"
+
+msgid "Ready Resource"
+msgstr "Готовый ресурс"
+
+msgid "Ready Resource Description"
+msgstr "Загрузите готовые файлы (JPG, PDF)"
+
+msgid "Typst Files"
+msgstr "Typst файлы"
+
+msgid "Typst Files Help"
+msgstr "Загрузите main.typ и файлы изображений"
+
+msgid "Resource File"
+msgstr "Файл ресурса"
+
+msgid "Resource File Help"
+msgstr "Загрузите JPG или PDF файл"
+
+msgid "Preview"
+msgstr "Предпросмотр"
+
+msgid "Open"
+msgstr "Открыть"
+
+msgid "No Preview Available"
+msgstr "Предпросмотр недоступен"
+
+msgid "Back to List"
+msgstr "Назад к списку"
+
+msgid "Created At"
+msgstr "Создано"
+
+msgid "Updated At"
+msgstr "Обновлено"
+
+msgid "File Size"
+msgstr "Размер файла"
+
+msgid "Mime Type"
+msgstr "Тип контента"
+
+msgid "Open in New Tab"
+msgstr "Открыть в новой вкладке"
+
+msgid "Recompile"
+msgstr "Перекомпилировать"
+
+msgid "PDF Preview"
+msgstr "Предпросмотр PDF"
+
+msgid "Preview Not Available"
+msgstr "Предпросмотр недоступен"
+
+msgid "Resource"
+msgstr "Ресурс"
+
+msgid "Open Resource"
+msgstr "Открыть ресурс"
+
+msgid "Back to Edit"
+msgstr "Вернуться к редактированию"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "Are you sure you want to delete this material?"
+msgstr "Вы уверены, что хотите удалить этот материал?"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Create"
+msgstr "Создать"
+
+msgid "Title"
+msgstr "Название"
