@@ -1,0 +1,78 @@
+package components
+
+import (
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/types"
+)
+
+templ MaterialCard(m types.MaterialWithURL, t locales.Translator, showActions bool) {
+	<div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+		<div class="p-6">
+			<div class="flex items-start justify-between mb-4">
+				<div>
+					<span class={ "px-2 py-1 rounded text-xs " + GetMaterialTypeClass(m.Type) }>
+						{ m.Type }
+					</span>
+				</div>
+				if showActions {
+					<button
+						hx-delete={ "/admin/learning-materials/" + m.Material.ID.String() }
+						hx-confirm={ t.AreYouSureThisActionIsReversible() }
+						class="text-gray-400 hover:text-red-600 transition"
+					>
+						<i class="fas fa-trash"></i>
+					</button>
+				}
+			</div>
+			<a href={ templ.URL("/admin/learning-materials/" + m.Material.ID.String()) } class="block">
+			<h3 class="text-lg font-semibold mb-2 hover:text-indigo-600 transition">{ m.Material.Title }</h3>
+		</a>
+			if m.Material.Description != "" {
+				<p class="text-sm text-gray-500 mb-4">{ m.Material.Description }</p>
+			}
+			<div class="flex items-center justify-between">
+				if m.Type == "typst" && m.PublicURL != "" {
+					<a
+						href={ templ.URL("/admin/learning-materials/" + m.Material.ID.String() + "/preview") }
+						class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+						target="_blank"
+					>
+						<i class="mr-1 fas fa-eye"></i>{ t.Preview() }
+					</a>
+				} else if m.PublicURL != "" {
+					<a
+						href={ templ.URL(m.PublicURL) }
+						class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+						target="_blank"
+					>
+						<i class="mr-1 fas fa-download"></i>{ t.Open() }
+					</a>
+				} else {
+					<span class="text-gray-400 text-sm">{ t.NoPreviewAvailable() }</span>
+				}
+				<span class="text-xs text-gray-400">
+					{ m.Material.CreatedAt.Format("2006-01-02") }
+				</span>
+			</div>
+		</div>
+	</div>
+}
+
+func GetMaterialTypeClass(materialType string) string {
+	switch materialType {
+	case "typst":
+		return "bg-purple-100 text-purple-700"
+	case "resource":
+		return "bg-green-100 text-green-700"
+	default:
+		return "bg-gray-100 text-gray-700"
+	}
+}
+
+templ MaterialCardGrid(materials []types.MaterialWithURL, t locales.Translator, showActions bool) {
+	<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+		for _, m := range materials {
+			@MaterialCard(m, t, showActions)
+		}
+	</div>
+}

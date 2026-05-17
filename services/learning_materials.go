@@ -64,9 +64,12 @@ func (s *LearningMaterialService) UploadTypstMaterial(ctx context.Context, owner
 
 		filename := filepath.Base(file.Filename)
 		if filename == "main.typ" {
-			mainTypst = fileData
+			mainTypst = make([]byte, len(fileData))
+			copy(mainTypst, fileData)
 		} else {
-			dependencies[filename] = fileData
+			depData := make([]byte, len(fileData))
+			copy(depData, fileData)
+			dependencies[filename] = depData
 		}
 	}
 
@@ -74,21 +77,31 @@ func (s *LearningMaterialService) UploadTypstMaterial(ctx context.Context, owner
 		return nil, fmt.Errorf("main.typ not found")
 	}
 
+	mainTypstPath := fmt.Sprintf("%s/%s/main.typ", typstDir, materialID.String())
+	var mainBuf bytes.Buffer
+	mainBuf.Write(mainTypst)
+	_, err := s.storageService.client.PutObject(ctx, s.storageService.bucket, mainTypstPath, &mainBuf, int64(mainBuf.Len()), minio.PutObjectOptions{
+		ContentType: "application/typst",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("upload main.typ: %w", err)
+	}
+
 	sourcePath := fmt.Sprintf("%s/%s", typstDir, materialID.String())
 
-	svgContent, err := s.typstCompiler.CompileTypst(ctx, mainTypst, dependencies)
+	pdfContent, err := s.typstCompiler.CompileTypst(ctx, mainTypst, dependencies)
 	if err != nil {
 		return nil, fmt.Errorf("compile typst: %w", err)
 	}
 
 	var buf bytes.Buffer
-	buf.Write(svgContent)
-	svgPath := fmt.Sprintf("%s/%s.svg", compiledDir, materialID.String())
-	_, err = s.storageService.client.PutObject(ctx, s.storageService.bucket, svgPath, &buf, int64(buf.Len()), minio.PutObjectOptions{
-		ContentType: "image/svg+xml",
+	buf.Write(pdfContent)
+	pdfPath := fmt.Sprintf("%s/%s.pdf", compiledDir, materialID.String())
+	_, err = s.storageService.client.PutObject(ctx, s.storageService.bucket, pdfPath, &buf, int64(buf.Len()), minio.PutObjectOptions{
+		ContentType: "application/pdf",
 	})
 	if err != nil {
-		return nil, fmt.Errorf("upload svg: %w", err)
+		return nil, fmt.Errorf("upload pdf: %w", err)
 	}
 
 	for name, data := range dependencies {
@@ -113,7 +126,7 @@ func (s *LearningMaterialService) UploadTypstMaterial(ctx context.Context, owner
 		MaterialType:    db.LearningMaterialTypeTypst,
 		OwnerID:         ownerID,
 		SourcePath:      sourcePath,
-		CompiledSvgPath: svgPath,
+		CompiledPath:    pdfPath,
 		ResourcePath:    "",
 		FileSize:        pgtype.Int8{Int64: totalSize, Valid: true},
 		MimeType:        "application/typst",
@@ -173,7 +186,7 @@ func (s *LearningMaterialService) UploadResourceMaterial(ctx context.Context, ow
 		MaterialType:    db.LearningMaterialTypeResource,
 		OwnerID:         ownerID,
 		SourcePath:      "",
-		CompiledSvgPath: "",
+		CompiledPath: "",
 		ResourcePath:    resourcePath,
 		FileSize:        pgtype.Int8{Int64: file.Size, Valid: true},
 		MimeType:        contentType,
@@ -200,8 +213,8 @@ func (s *LearningMaterialService) DeleteMaterial(ctx context.Context, materialID
 	if material.SourcePath != "" {
 		s.deleteFolder(ctx, material.SourcePath)
 	}
-	if material.CompiledSvgPath != "" {
-		s.storageService.client.RemoveObject(ctx, s.storageService.bucket, material.CompiledSvgPath, minio.RemoveObjectOptions{})
+	if material.CompiledPath != "" {
+		s.storageService.client.RemoveObject(ctx, s.storageService.bucket, material.CompiledPath, minio.RemoveObjectOptions{})
 	}
 	if material.ResourcePath != "" {
 		s.storageService.client.RemoveObject(ctx, s.storageService.bucket, material.ResourcePath, minio.RemoveObjectOptions{})
@@ -245,8 +258,8 @@ func (s *LearningMaterialService) GetMaterialByID(ctx context.Context, materialI
 func (s *LearningMaterialService) GetMaterialURL(ctx context.Context, material db.LearningMaterial) (string, error) {
 	var objectPath string
 	if material.MaterialType == db.LearningMaterialTypeTypst {
-		if material.CompiledSvgPath != "" {
-			objectPath = material.CompiledSvgPath
+		if material.CompiledPath != "" {
+			objectPath = material.CompiledPath
 		} else if material.SourcePath != "" {
 			objectPath = material.SourcePath + "/main.typ"
 		}
@@ -303,19 +316,19 @@ func (s *LearningMaterialService) CompileTypst(ctx context.Context, materialID, 
 		}
 	}
 
-	svgContent, err := s.typstCompiler.CompileTypst(ctx, mainTypst, dependencies)
+	pdfContent, err := s.typstCompiler.CompileTypst(ctx, mainTypst, dependencies)
 	if err != nil {
 		return nil, fmt.Errorf("compile typst: %w", err)
 	}
 
-	svgPath := fmt.Sprintf("%s/%s.svg", compiledDir, materialID.String())
+	pdfPath := fmt.Sprintf("%s/%s.pdf", compiledDir, materialID.String())
 	var buf bytes.Buffer
-	buf.Write(svgContent)
-	_, err = s.storageService.client.PutObject(ctx, s.storageService.bucket, svgPath, &buf, int64(buf.Len()), minio.PutObjectOptions{
-		ContentType: "image/svg+xml",
+	buf.Write(pdfContent)
+	_, err = s.storageService.client.PutObject(ctx, s.storageService.bucket, pdfPath, &buf, int64(buf.Len()), minio.PutObjectOptions{
+		ContentType: "application/pdf",
 	})
 	if err != nil {
-		return nil, fmt.Errorf("upload svg: %w", err)
+		return nil, fmt.Errorf("upload pdf: %w", err)
 	}
 
 	now := time.Now()
@@ -324,7 +337,7 @@ func (s *LearningMaterialService) CompileTypst(ctx context.Context, materialID, 
 		Title:           material.Title,
 		Description:     material.Description,
 		SourcePath:      material.SourcePath,
-		CompiledSvgPath: svgPath,
+		CompiledPath:    pdfPath,
 		ResourcePath:    material.ResourcePath,
 		FileSize:        material.FileSize,
 		MimeType:        material.MimeType,
@@ -345,10 +358,4 @@ func (s *LearningMaterialService) getFileFromMinIO(ctx context.Context, objectPa
 	defer obj.Close()
 
 	return io.ReadAll(obj)
-}
-
-type MaterialWithURL struct {
-	Material  db.LearningMaterial
-	PublicURL string
-	Type      string
 }

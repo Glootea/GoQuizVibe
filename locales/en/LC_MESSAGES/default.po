@@ -666,6 +666,12 @@ msgstr "JSON Schema for question object"
 msgid "Learning Materials"
 msgstr "Learning Materials"
 
+msgid "View All"
+msgstr "View All"
+
+msgid "No Materials Yet"
+msgstr "No Materials Yet"
+
 msgid "Create Learning Material"
 msgstr "Create Learning Material"
 
@@ -741,8 +747,8 @@ msgstr "Open in New Tab"
 msgid "Recompile"
 msgstr "Recompile"
 
-msgid "SVG Preview"
-msgstr "SVG Preview"
+msgid "PDF Preview"
+msgstr "PDF Preview"
 
 msgid "Preview Not Available"
 msgstr "Preview not available"

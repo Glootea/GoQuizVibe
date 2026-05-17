@@ -11,12 +11,13 @@ import (
 	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/pages/admin"
 	"github.com/goquizvibe/services"
+	"github.com/goquizvibe/types"
 )
 
 type LearningMaterialsHandler struct {
 	materialService *services.LearningMaterialService
 	adminService    *services.AdminService
-	localeSvc      *locales.Service
+	localeSvc       *locales.Service
 }
 
 func NewLearningMaterialsHandler(
@@ -27,7 +28,7 @@ func NewLearningMaterialsHandler(
 	return &LearningMaterialsHandler{
 		materialService: materialService,
 		adminService:    adminService,
-		localeSvc:      localeSvc,
+		localeSvc:       localeSvc,
 	}
 }
 
@@ -46,10 +47,10 @@ func (h *LearningMaterialsHandler) List(w http.ResponseWriter, r *http.Request) 
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
-	materialsWithURLs := make([]services.MaterialWithURL, 0, len(materials))
+	materialsWithURLs := make([]types.MaterialWithURL, 0, len(materials))
 	for _, m := range materials {
 		url, _ := h.materialService.GetMaterialURL(r.Context(), m)
-		materialsWithURLs = append(materialsWithURLs, services.MaterialWithURL{
+		materialsWithURLs = append(materialsWithURLs, types.MaterialWithURL{
 			Material:  m,
 			PublicURL: url,
 			Type:      string(m.MaterialType),

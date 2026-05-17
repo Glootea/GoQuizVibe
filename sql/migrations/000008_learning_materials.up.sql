@@ -9,7 +9,7 @@ CREATE TABLE learning_materials (
     material_type learning_material_type NOT NULL,
     owner_id UUID REFERENCES users(id),
     source_path TEXT,
-    compiled_svg_path TEXT,
+    compiled_path TEXT,
     resource_path TEXT,
     file_size BIGINT,
     mime_type TEXT,

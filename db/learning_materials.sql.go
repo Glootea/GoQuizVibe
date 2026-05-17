@@ -14,24 +14,24 @@ import (
 )
 
 const createLearningMaterial = `-- name: CreateLearningMaterial :one
-INSERT INTO learning_materials (id, title, description, material_type, owner_id, source_path, compiled_svg_path, resource_path, file_size, mime_type, created_at, updated_at)
+INSERT INTO learning_materials (id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, title, description, material_type, owner_id, source_path, compiled_svg_path, resource_path, file_size, mime_type, created_at, updated_at
+RETURNING id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at
 `
 
 type CreateLearningMaterialParams struct {
-	ID              uuid.UUID            `json:"id"`
-	Title           string               `json:"title"`
-	Description     string               `json:"description"`
-	MaterialType    LearningMaterialType `json:"material_type"`
-	OwnerID         uuid.UUID            `json:"owner_id"`
-	SourcePath      string               `json:"source_path"`
-	CompiledSvgPath string               `json:"compiled_svg_path"`
-	ResourcePath    string               `json:"resource_path"`
-	FileSize        pgtype.Int8          `json:"file_size"`
-	MimeType        string               `json:"mime_type"`
-	CreatedAt       time.Time            `json:"created_at"`
-	UpdatedAt       time.Time            `json:"updated_at"`
+	ID           uuid.UUID            `json:"id"`
+	Title        string               `json:"title"`
+	Description  string               `json:"description"`
+	MaterialType LearningMaterialType `json:"material_type"`
+	OwnerID      uuid.UUID            `json:"owner_id"`
+	SourcePath   string               `json:"source_path"`
+	CompiledPath string               `json:"compiled_path"`
+	ResourcePath string               `json:"resource_path"`
+	FileSize     pgtype.Int8          `json:"file_size"`
+	MimeType     string               `json:"mime_type"`
+	CreatedAt    time.Time            `json:"created_at"`
+	UpdatedAt    time.Time            `json:"updated_at"`
 }
 
 func (q *Queries) CreateLearningMaterial(ctx context.Context, arg CreateLearningMaterialParams) (LearningMaterial, error) {
@@ -42,7 +42,7 @@ func (q *Queries) CreateLearningMaterial(ctx context.Context, arg CreateLearning
 		arg.MaterialType,
 		arg.OwnerID,
 		arg.SourcePath,
-		arg.CompiledSvgPath,
+		arg.CompiledPath,
 		arg.ResourcePath,
 		arg.FileSize,
 		arg.MimeType,
@@ -57,7 +57,7 @@ func (q *Queries) CreateLearningMaterial(ctx context.Context, arg CreateLearning
 		&i.MaterialType,
 		&i.OwnerID,
 		&i.SourcePath,
-		&i.CompiledSvgPath,
+		&i.CompiledPath,
 		&i.ResourcePath,
 		&i.FileSize,
 		&i.MimeType,
@@ -77,7 +77,7 @@ func (q *Queries) DeleteLearningMaterial(ctx context.Context, id uuid.UUID) erro
 }
 
 const getLearningMaterialByID = `-- name: GetLearningMaterialByID :one
-SELECT id, title, description, material_type, owner_id, source_path, compiled_svg_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials WHERE id = $1
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials WHERE id = $1
 `
 
 func (q *Queries) GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (LearningMaterial, error) {
@@ -90,7 +90,7 @@ func (q *Queries) GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (Le
 		&i.MaterialType,
 		&i.OwnerID,
 		&i.SourcePath,
-		&i.CompiledSvgPath,
+		&i.CompiledPath,
 		&i.ResourcePath,
 		&i.FileSize,
 		&i.MimeType,
@@ -101,7 +101,7 @@ func (q *Queries) GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (Le
 }
 
 const getLearningMaterials = `-- name: GetLearningMaterials :many
-SELECT id, title, description, material_type, owner_id, source_path, compiled_svg_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC
 `
 
 func (q *Queries) GetLearningMaterials(ctx context.Context) ([]LearningMaterial, error) {
@@ -120,7 +120,7 @@ func (q *Queries) GetLearningMaterials(ctx context.Context) ([]LearningMaterial,
 			&i.MaterialType,
 			&i.OwnerID,
 			&i.SourcePath,
-			&i.CompiledSvgPath,
+			&i.CompiledPath,
 			&i.ResourcePath,
 			&i.FileSize,
 			&i.MimeType,
@@ -138,7 +138,7 @@ func (q *Queries) GetLearningMaterials(ctx context.Context) ([]LearningMaterial,
 }
 
 const getLearningMaterialsByOwner = `-- name: GetLearningMaterialsByOwner :many
-SELECT id, title, description, material_type, owner_id, source_path, compiled_svg_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials WHERE owner_id = $1 ORDER BY created_at DESC
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials WHERE owner_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.UUID) ([]LearningMaterial, error) {
@@ -157,7 +157,44 @@ func (q *Queries) GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.
 			&i.MaterialType,
 			&i.OwnerID,
 			&i.SourcePath,
-			&i.CompiledSvgPath,
+			&i.CompiledPath,
+			&i.ResourcePath,
+			&i.FileSize,
+			&i.MimeType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRecentLearningMaterials = `-- name: GetRecentLearningMaterials :many
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC LIMIT $1
+`
+
+func (q *Queries) GetRecentLearningMaterials(ctx context.Context, limit int32) ([]LearningMaterial, error) {
+	rows, err := q.db.Query(ctx, getRecentLearningMaterials, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LearningMaterial{}
+	for rows.Next() {
+		var i LearningMaterial
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.MaterialType,
+			&i.OwnerID,
+			&i.SourcePath,
+			&i.CompiledPath,
 			&i.ResourcePath,
 			&i.FileSize,
 			&i.MimeType,
@@ -176,21 +213,21 @@ func (q *Queries) GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.
 
 const updateLearningMaterial = `-- name: UpdateLearningMaterial :one
 UPDATE learning_materials
-SET title = $2, description = $3, source_path = $4, compiled_svg_path = $5, resource_path = $6, file_size = $7, mime_type = $8, updated_at = $9
+SET title = $2, description = $3, source_path = $4, compiled_path = $5, resource_path = $6, file_size = $7, mime_type = $8, updated_at = $9
 WHERE id = $1
-RETURNING id, title, description, material_type, owner_id, source_path, compiled_svg_path, resource_path, file_size, mime_type, created_at, updated_at
+RETURNING id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at
 `
 
 type UpdateLearningMaterialParams struct {
-	ID              uuid.UUID   `json:"id"`
-	Title           string      `json:"title"`
-	Description     string      `json:"description"`
-	SourcePath      string      `json:"source_path"`
-	CompiledSvgPath string      `json:"compiled_svg_path"`
-	ResourcePath    string      `json:"resource_path"`
-	FileSize        pgtype.Int8 `json:"file_size"`
-	MimeType        string      `json:"mime_type"`
-	UpdatedAt       time.Time   `json:"updated_at"`
+	ID           uuid.UUID   `json:"id"`
+	Title        string      `json:"title"`
+	Description  string      `json:"description"`
+	SourcePath   string      `json:"source_path"`
+	CompiledPath string      `json:"compiled_path"`
+	ResourcePath string      `json:"resource_path"`
+	FileSize     pgtype.Int8 `json:"file_size"`
+	MimeType     string      `json:"mime_type"`
+	UpdatedAt    time.Time   `json:"updated_at"`
 }
 
 func (q *Queries) UpdateLearningMaterial(ctx context.Context, arg UpdateLearningMaterialParams) (LearningMaterial, error) {
@@ -199,7 +236,7 @@ func (q *Queries) UpdateLearningMaterial(ctx context.Context, arg UpdateLearning
 		arg.Title,
 		arg.Description,
 		arg.SourcePath,
-		arg.CompiledSvgPath,
+		arg.CompiledPath,
 		arg.ResourcePath,
 		arg.FileSize,
 		arg.MimeType,
@@ -213,7 +250,7 @@ func (q *Queries) UpdateLearningMaterial(ctx context.Context, arg UpdateLearning
 		&i.MaterialType,
 		&i.OwnerID,
 		&i.SourcePath,
-		&i.CompiledSvgPath,
+		&i.CompiledPath,
 		&i.ResourcePath,
 		&i.FileSize,
 		&i.MimeType,

@@ -37,7 +37,7 @@ func (c *TypstCompiler) CompileTypst(ctx context.Context, typstContent []byte, d
 		}
 	}
 
-	outputPath := filepath.Join(tempDir, "output.svg")
+	outputPath := filepath.Join(tempDir, "output.pdf")
 
 	cmd := exec.CommandContext(ctx, "typst", "compile", mainTypstPath, outputPath)
 	var stderr bytes.Buffer
@@ -47,10 +47,10 @@ func (c *TypstCompiler) CompileTypst(ctx context.Context, typstContent []byte, d
 		return nil, fmt.Errorf("typst compile: %w, stderr: %s", err, stderr.String())
 	}
 
-	svgContent, err := os.ReadFile(outputPath)
+	pdfContent, err := os.ReadFile(outputPath)
 	if err != nil {
 		return nil, fmt.Errorf("read output: %w", err)
 	}
 
-	return svgContent, nil
+	return pdfContent, nil
 }

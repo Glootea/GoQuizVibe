@@ -186,18 +186,18 @@ func (ns NullRole) Value() (driver.Value, error) {
 }
 
 type LearningMaterial struct {
-	ID              uuid.UUID            `json:"id"`
-	Title           string               `json:"title"`
-	Description     string               `json:"description"`
-	MaterialType    LearningMaterialType `json:"material_type"`
-	OwnerID         uuid.UUID            `json:"owner_id"`
-	SourcePath      string               `json:"source_path"`
-	CompiledSvgPath string               `json:"compiled_svg_path"`
-	ResourcePath    string               `json:"resource_path"`
-	FileSize        pgtype.Int8          `json:"file_size"`
-	MimeType        string               `json:"mime_type"`
-	CreatedAt       time.Time            `json:"created_at"`
-	UpdatedAt       time.Time            `json:"updated_at"`
+	ID           uuid.UUID            `json:"id"`
+	Title        string               `json:"title"`
+	Description  string               `json:"description"`
+	MaterialType LearningMaterialType `json:"material_type"`
+	OwnerID      uuid.UUID            `json:"owner_id"`
+	SourcePath   string               `json:"source_path"`
+	CompiledPath string               `json:"compiled_path"`
+	ResourcePath string               `json:"resource_path"`
+	FileSize     pgtype.Int8          `json:"file_size"`
+	MimeType     string               `json:"mime_type"`
+	CreatedAt    time.Time            `json:"created_at"`
+	UpdatedAt    time.Time            `json:"updated_at"`
 }
 
 type Question struct {

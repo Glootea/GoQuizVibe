@@ -20,6 +20,6 @@ COPY --from=builder /app/static ./static
 COPY --from=builder /app/initial_data ./initial_data
 COPY --from=builder /app/locales ./locales
 
-EXPOSE 443
+EXPOSE 7890
 
 CMD ["./server"]

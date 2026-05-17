@@ -26,6 +26,7 @@ type AdminService struct {
 	images         r.ImageRepository
 	attempts       r.AttemptRepository
 	stats          r.StatsRepository
+	materials      r.LearningMaterialRepository
 	authService    *AuthService
 	storageService *StorageService
 	cache          *CacheService
@@ -38,6 +39,7 @@ func NewAdminService(
 	images r.ImageRepository,
 	attempts r.AttemptRepository,
 	stats r.StatsRepository,
+	materials r.LearningMaterialRepository,
 	auth *AuthService,
 	storage *StorageService,
 	cache *CacheService,
@@ -49,6 +51,7 @@ func NewAdminService(
 		images:         images,
 		attempts:       attempts,
 		stats:          stats,
+		materials:      materials,
 		authService:    auth,
 		storageService: storage,
 		cache:          cache,
@@ -119,15 +122,35 @@ func (s *AdminService) GetDashboardData(ctx context.Context, userID uuid.UUID) (
 		})
 	}
 
+	recentMaterials, err := s.materials.GetRecentLearningMaterials(ctx, 3)
+	if err != nil {
+		return nil, fmt.Errorf("get recent materials: %w", err)
+	}
+
+	materialsWithURL := make([]types.MaterialWithURL, 0, len(recentMaterials))
+	for _, m := range recentMaterials {
+		publicURL := ""
+		if m.ResourcePath != "" {
+			publicURL = "/materials/" + m.ID.String() + "/view"
+		}
+		materialsWithURL = append(materialsWithURL, types.MaterialWithURL{
+			Material:  m,
+			PublicURL: publicURL,
+			Type:      string(m.MaterialType),
+		})
+	}
+
 	avgScore := extractFloat(stats.AvgScore)
 
 	return &types.AdminDashboardData{
-		User:           &user,
-		QuizCount:      len(quizzes),
-		StudentCount:   int(studentCount),
-		AttemptCount:   int(stats.TotalAttempts),
-		AvgScore:       avgScore,
-		RecentActivity: recentAttempts,
+		User:            &user,
+		QuizCount:       len(quizzes),
+		StudentCount:    int(studentCount),
+		AttemptCount:    int(stats.TotalAttempts),
+		AvgScore:        avgScore,
+		MaterialCount:   len(recentMaterials),
+		RecentActivity:  recentAttempts,
+		RecentMaterials: materialsWithURL,
 	}, nil
 }
 

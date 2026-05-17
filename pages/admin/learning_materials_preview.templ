@@ -6,14 +6,14 @@ import (
 )
 
 templ LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, url string, t locales.Translator) {
-	@BaseAdmin(t.SvgPreview()+" - "+material.Title, user, t) {
+	@BaseAdmin(t.PdfPreview()+" - "+material.Title, user, t) {
 		<div class="min-h-screen bg-gray-100 p-8">
 			<div class="max-w-6xl mx-auto">
 				<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
 					<div class="flex items-center justify-between">
 						<div>
 							<h1 class="text-2xl font-bold">{ material.Title }</h1>
-							<p class="text-gray-500">{ t.SvgPreview() }</p>
+							<p class="text-gray-500">{ t.PdfPreview() }</p>
 						</div>
 						<a
 							href={ "/admin/learning-materials/" + templ.URL(material.ID.String()) }
@@ -25,11 +25,10 @@ templ LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial,
 				</div>
 				<div class="bg-white rounded-xl shadow-sm p-8 flex items-center justify-center">
 					if url != "" {
-						<img
+						<iframe
 							src={ templ.URL(url) }
-							alt={ t.SvgPreview() }
-							class="max-w-full"
-						/>
+							class="w-full h-dvh"
+						></iframe>
 					} else {
 						<div class="text-center text-gray-500">
 							<i class="mb-4 text-6xl text-gray-300 fas fa-file-code"></i>

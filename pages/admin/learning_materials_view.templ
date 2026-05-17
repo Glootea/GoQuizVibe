@@ -5,6 +5,7 @@ import (
 
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/pages/components"
 )
 
 templ LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url string, t locales.Translator) {
@@ -20,7 +21,7 @@ templ LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, ur
 					<div>
 						<div class="flex items-center gap-3 mb-2">
 							<h1 class="text-2xl font-bold">{ material.Title }</h1>
-							<span class={ "px-2 py-1 rounded text-xs " + getMaterialTypeClass(string(material.MaterialType)) }>
+							<span class={ "px-2 py-1 rounded text-xs " + components.GetMaterialTypeClass(string(material.MaterialType)) }>
 								{ string(material.MaterialType) }
 							</span>
 						</div>
@@ -80,12 +81,10 @@ templ LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, ur
 						</div>
 					</div>
 					<div class="border border-gray-200 rounded-lg overflow-hidden">
-						<img
+						<iframe
 							src={ templ.URL(url) }
-							alt={ t.SvgPreview() }
-							class="max-w-full h-auto"
-							onerror="this.parentElement.innerHTML='<div class=\'p-8 text-center text-gray-500\'><i class=\'fas fa-exclamation-triangle mr-2\'></i>' + { t.PreviewNotAvailable() } + '</div>'"
-						/>
+							class="w-full  h-dvh"
+						></iframe>
 					</div>
 				</div>
 			} else if url != "" {

@@ -254,6 +254,8 @@ type Translator interface {
 	NoDataYet() string
 	// "No Learning Materials Available"
 	NoLearningMaterialsAvailable() string
+	// "No Materials Yet"
+	NoMaterialsYet() string
 	// "No participants yet"
 	NoParticipantsYet() string
 	// "No Preview Available"
@@ -284,6 +286,8 @@ type Translator interface {
 	PageNotFound() string
 	// "Password"
 	Password() string
+	// "PDF Preview"
+	PdfPreview() string
 	// "Physics: Mechanics, electricity, optics"
 	PhysicsMechanicsElectricityOptics() string
 	// "Points"
@@ -406,8 +410,6 @@ type Translator interface {
 	SuccessRate() string
 	// "Summary Statistics"
 	SummaryStatistics() string
-	// "SVG Preview"
-	SvgPreview() string
 	// "Test already active"
 	TestAlreadyActive() string
 	// "Test conflict"
@@ -462,6 +464,8 @@ type Translator interface {
 	Upload() string
 	// "Upload JSON file"
 	UploadJsonFile() string
+	// "View All"
+	ViewAll() string
 	// "View student answers"
 	ViewStudentAnswers() string
 	// "Why GoQuizVibe?"
@@ -958,6 +962,10 @@ func (t *translator) NoLearningMaterialsAvailable() string {
 	return t.locale.Get("No Learning Materials Available")
 }
 
+func (t *translator) NoMaterialsYet() string {
+	return t.locale.Get("No Materials Yet")
+}
+
 func (t *translator) NoParticipantsYet() string {
 	return t.locale.Get("No participants yet")
 }
@@ -1016,6 +1024,10 @@ func (t *translator) PageNotFound() string {
 
 func (t *translator) Password() string {
 	return t.locale.Get("Password")
+}
+
+func (t *translator) PdfPreview() string {
+	return t.locale.Get("PDF Preview")
 }
 
 func (t *translator) PhysicsMechanicsElectricityOptics() string {
@@ -1262,10 +1274,6 @@ func (t *translator) SummaryStatistics() string {
 	return t.locale.Get("Summary Statistics")
 }
 
-func (t *translator) SvgPreview() string {
-	return t.locale.Get("SVG Preview")
-}
-
 func (t *translator) TestAlreadyActive() string {
 	return t.locale.Get("Test already active")
 }
@@ -1372,6 +1380,10 @@ func (t *translator) Upload() string {
 
 func (t *translator) UploadJsonFile() string {
 	return t.locale.Get("Upload JSON file")
+}
+
+func (t *translator) ViewAll() string {
+	return t.locale.Get("View All")
 }
 
 func (t *translator) ViewStudentAnswers() string {

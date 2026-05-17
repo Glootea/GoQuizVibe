@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 
+	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/models"
 
 	"github.com/google/uuid"
@@ -113,7 +114,9 @@ type AdminDashboardData struct {
 	StudentCount   int
 	AttemptCount   int
 	AvgScore       float64
+	MaterialCount  int
 	RecentActivity []*RecentAttempt
+	RecentMaterials []MaterialWithURL
 }
 
 type RecentAttempt struct {
@@ -123,6 +126,12 @@ type RecentAttempt struct {
 	Score       int
 	MaxScore    int
 	CompletedAt string
+}
+
+type MaterialWithURL struct {
+	Material  db.LearningMaterial
+	PublicURL string
+	Type      string
 }
 
 type AdminQuizListData struct {

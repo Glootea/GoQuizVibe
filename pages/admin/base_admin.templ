@@ -41,6 +41,9 @@ templ AdminNavbar(user *models.User, t locales.Translator) {
 						<a href="/admin/quizzes" class="transition hover:text-indigo-300">
 							<i class="mr-1 fas fa-list"></i>{ t.Quizzes() }
 						</a>
+						<a href="/admin/learning-materials" class="transition hover:text-indigo-300">
+							<i class="mr-1 fas fa-book"></i>{ t.LearningMaterials() }
+						</a>
 						<a href="/admin/results" class="transition hover:text-indigo-300">
 							<i class="mr-1 fas fa-chart-bar"></i>{ t.Results() }
 						</a>

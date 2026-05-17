@@ -71,4 +71,5 @@ type LearningMaterialRepository interface {
 	GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.UUID) ([]db.LearningMaterial, error)
 	UpdateLearningMaterial(ctx context.Context, params db.UpdateLearningMaterialParams) (db.LearningMaterial, error)
 	DeleteLearningMaterial(ctx context.Context, id uuid.UUID) error
+	GetRecentLearningMaterials(ctx context.Context, limit int32) ([]db.LearningMaterial, error)
 }

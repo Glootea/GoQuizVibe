@@ -10,6 +10,7 @@ import (
 	"github.com/goquizvibe/db"
 	"github.com/goquizvibe/mocks/servicestest"
 	"github.com/goquizvibe/services"
+	"github.com/goquizvibe/types"
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/mock/gomock"
 )
@@ -43,7 +44,7 @@ func TestMaterialWithURL(t *testing.T) {
 		MaterialType: db.LearningMaterialTypeTypst,
 	}
 
-	mwu := services.MaterialWithURL{
+	mwu := types.MaterialWithURL{
 		Material:  material,
 		PublicURL: "http://example.com",
 		Type:      string(db.LearningMaterialTypeTypst),

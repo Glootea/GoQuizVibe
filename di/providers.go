@@ -94,7 +94,7 @@ func ProvideAdminService(
 	storageService *services.StorageService,
 	cacheService *services.CacheService,
 ) *services.AdminService {
-	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
+	return services.NewAdminService(queries, queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
 }
 
 func ProvideQuizSessionService(

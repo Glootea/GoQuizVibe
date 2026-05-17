@@ -669,6 +669,12 @@ msgstr "JSON Schema для объекта вопроса"
 msgid "Learning Materials"
 msgstr "Обучающие материалы"
 
+msgid "View All"
+msgstr "Показать все"
+
+msgid "No Materials Yet"
+msgstr "Пока нет материалов"
+
 msgid "Create Learning Material"
 msgstr "Создать материал"
 
@@ -744,8 +750,8 @@ msgstr "Открыть в новой вкладке"
 msgid "Recompile"
 msgstr "Перекомпилировать"
 
-msgid "SVG Preview"
-msgstr "Предпросмотр SVG"
+msgid "PDF Preview"
+msgstr "Предпросмотр PDF"
 
 msgid "Preview Not Available"
 msgstr "Предпросмотр недоступен"
