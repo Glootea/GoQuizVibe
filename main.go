@@ -131,6 +131,7 @@ func main() {
 		{"DELETE", "/admin/learning-materials/{id}", app.LearningMaterialsHandler.Delete},
 		{"GET", "/admin/learning-materials/{id}/preview", app.LearningMaterialsHandler.Preview},
 		{"POST", "/admin/learning-materials/{id}/compile", app.LearningMaterialsHandler.Compile},
+		{"POST", "/api/typst/compile", app.TypstHandler.Compile},
 	}
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap
@@ -158,9 +159,6 @@ func main() {
 	}
 
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-
-	wasmDir := http.Dir("./static/wasm")
-	mux.Handle("GET /wasm/", compressionMiddleware(http.StripPrefix("/wasm/", http.FileServer(wasmDir))))
 
 	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
 		promhttp.Handler().ServeHTTP(w, r)

@@ -38,6 +38,7 @@ type App struct {
 	AdminHandler             *handlers.AdminHandler
 	LearningMaterialsHandler *handlers.LearningMaterialsHandler
 	EditorHandler            *handlers.EditorHandler
+	TypstHandler            *handlers.TypstHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -188,8 +189,15 @@ func ProvideLearningMaterialsHandler(
 	return handlers.NewLearningMaterialsHandler(materialService, adminService, localeService)
 }
 
-func ProvideEditorHandler() *handlers.EditorHandler {
-	return handlers.NewEditor()
+func ProvideEditorHandler(materialService *services.LearningMaterialService) *handlers.EditorHandler {
+	return handlers.NewEditor(materialService)
+}
+
+func ProvideTypstHandler(
+	materialService *services.LearningMaterialService,
+	adminService *services.AdminService,
+) *handlers.TypstHandler {
+	return handlers.NewTypstHandler(materialService, adminService)
 }
 
 func ProvideRequireAuthMiddleware(authService *services.AuthService) middleware.RequireAuthMiddleware {
@@ -239,6 +247,7 @@ var HandlerSet = wire.NewSet(
 	ProvideQuizHandler,
 	ProvideAdminHandler,
 	ProvideEditorHandler,
+	ProvideTypstHandler,
 	ProvidePromptGenerator,
 	ProvideLearningMaterialsHandler,
 )
@@ -255,5 +264,5 @@ var AppSet = wire.NewSet(
 	ServiceSet,
 	HandlerSet,
 	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
+	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "TypstHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
 )

@@ -8,7 +8,7 @@ package editor
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func EditorPage() templ.Component {
+func EditorPage(materialID string, initialSource string, pdfURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,7 +29,46 @@ func EditorPage() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Typst Editor</title><link href=\"/static/style/editor.css\" rel=\"stylesheet\"><link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"></head><body><div class=\"editor-container\"><aside id=\"files-panel\" class=\"files-panel\"><div class=\"files-header\"><span>Files</span></div><div id=\"file-actions\" class=\"file-actions\"><button id=\"new-file\" class=\"btn-action\" title=\"New file\"><i class=\"fas fa-plus\"></i></button> <button id=\"delete-file\" class=\"btn-action\" title=\"Delete file\" disabled><i class=\"fas fa-trash\"></i></button></div><div id=\"file-list\" class=\"file-list\"></div></aside><div class=\"resize-handler-v\" data-resize=\"files\"></div><div class=\"main-area\"><div class=\"middle-row\"><div class=\"editor-panel\"><div id=\"editor-container\"></div></div><div class=\"resize-handler-v\" data-resize=\"editor-preview\"></div><div class=\"preview-panel\"><div id=\"preview-container\"></div></div></div><div class=\"resize-handler-h\" data-resize=\"errors\"></div><div class=\"errors-panel\"><div class=\"errors-header\"><i class=\"fas fa-exclamation-circle\"></i> <span>Errors</span></div><div id=\"errors-list\" class=\"errors-list\"></div></div></div></div><script src=\"/static/scripts/typst/typst.bundle.js\" type=\"module\"></script><script src=\"/static/scripts/editor/editor.bundle.js\" type=\"module\"></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Typst Editor</title><link href=\"/static/style/editor.css\" rel=\"stylesheet\"><link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"></head><body><div id=\"editor-data\" data-material-id=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(materialID)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/editor/editor.templ`, Line: 16, Col: 33}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" data-initial-source=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(initialSource)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/editor/editor.templ`, Line: 17, Col: 39}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" data-pdf-url=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(pdfURL)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/editor/editor.templ`, Line: 18, Col: 25}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"></div><script>\n\t\t\t\tconst editorData = document.getElementById('editor-data');\n\t\t\t\twindow.MATERIAL_ID = editorData.dataset.materialId || '';\n\t\t\t\twindow.INITIAL_SOURCE = editorData.dataset.initialSource || '';\n\t\t\t\twindow.PDF_URL = editorData.dataset.pdfUrl || '';\n\t\t\t</script><div class=\"editor-container\"><aside id=\"files-panel\" class=\"files-panel\"><div class=\"files-header\"><span>Files</span></div><div class=\"file-list\"><div class=\"file-item active\"><i class=\"fas fa-file-code\"></i><span>main.typ</span></div></div></aside><div class=\"resize-handler-v\" data-resize=\"files\"></div><div class=\"main-area\"><div class=\"middle-row\"><div class=\"editor-panel\"><div id=\"editor-container\"></div></div><div class=\"resize-handler-v\" data-resize=\"editor-preview\"></div><div class=\"preview-panel\"><iframe id=\"preview-frame\" style=\"display: none;\"></iframe><div id=\"preview-placeholder\" class=\"flex items-center justify-center h-full text-gray-400\"><span>No preview available</span></div></div></div><div class=\"resize-handler-h\" data-resize=\"errors\"></div><div class=\"errors-panel\"><div class=\"errors-header\"><i class=\"fas fa-exclamation-circle\"></i> <span>Errors</span></div><div id=\"errors-list\" class=\"errors-list\"></div></div></div></div><script src=\"/static/scripts/editor/editor.bundle.js\" type=\"module\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

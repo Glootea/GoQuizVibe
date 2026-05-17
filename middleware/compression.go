@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"path"
 	"strings"
 
 	"github.com/andybalholm/brotli"
@@ -57,14 +56,7 @@ func (m *CompressionMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 
 		w.Header().Set("Vary", "Accept-Encoding")
 		w.Header().Set("Content-Encoding", enc)
-
-		ext := path.Ext(r.URL.Path)
-		switch ext {
-		case ".wasm":
-			w.Header().Set("Content-Type", "application/wasm")
-		default:
-			w.Header().Set("Content-Type", "text/html")
-		}
+		w.Header().Set("Content-Type", "text/html")
 
 		compressed := encFn(w)
 

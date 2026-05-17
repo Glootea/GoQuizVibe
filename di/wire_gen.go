@@ -2,15 +2,12 @@
 
 //go:generate go run -mod=mod github.com/goforj/wire/cmd/wire
 //go:build !wireinject
-// +build !wireinject
 
 package di
 
 import (
 	"context"
 )
-
-// Injectors from wire.go:
 
 func InitializeApp(ctx context.Context) (*App, error) {
 	config := ProvideConfig()
@@ -43,6 +40,8 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	dashboardHandler := ProvideDashboardHandler(dashboardService)
 	quizHandler := ProvideQuizHandler(queries, quizService, quizSessionService, authService)
 	adminHandler := ProvideAdminHandler(adminService, authService, service, promptGenerator)
+	editorHandler := ProvideEditorHandler(learningMaterialService)
+	typstHandler := ProvideTypstHandler(learningMaterialService, adminService)
 	learningMaterialsHandler := ProvideLearningMaterialsHandler(learningMaterialService, adminService, service)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
@@ -65,6 +64,8 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		DashboardHandler:        dashboardHandler,
 		QuizHandler:             quizHandler,
 		AdminHandler:            adminHandler,
+		EditorHandler:           editorHandler,
+		TypstHandler:            typstHandler,
 		LearningMaterialsHandler: learningMaterialsHandler,
 		RequireAuthMiddleware:   requireAuthMiddleware,
 		RequireRoleMiddleware:   requireRoleMiddleware,

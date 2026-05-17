@@ -350,6 +350,42 @@ func (s *LearningMaterialService) CompileTypst(ctx context.Context, materialID, 
 	return &updated, nil
 }
 
+func (s *LearningMaterialService) GetSource(ctx context.Context, materialID uuid.UUID) ([]byte, error) {
+	material, err := s.repo.GetLearningMaterialByID(ctx, materialID)
+	if err != nil {
+		return nil, fmt.Errorf("get material: %w", err)
+	}
+	return s.getFileFromMinIO(ctx, material.SourcePath+"/main.typ")
+}
+
+func (s *LearningMaterialService) CompileAndGetURL(ctx context.Context, materialID uuid.UUID, source []byte) (string, error) {
+	material, err := s.repo.GetLearningMaterialByID(ctx, materialID)
+	if err != nil {
+		return "", fmt.Errorf("get material: %w", err)
+	}
+
+	sourcePath := material.SourcePath + "/main.typ"
+	var buf bytes.Buffer
+	buf.Write(source)
+	if _, err := s.storageService.client.PutObject(ctx, s.storageService.bucket, sourcePath, &buf, int64(buf.Len()), minio.PutObjectOptions{ContentType: "application/typst"}); err != nil {
+		return "", fmt.Errorf("upload source: %w", err)
+	}
+
+	pdfContent, err := s.typstCompiler.CompileTypst(ctx, source, nil)
+	if err != nil {
+		return "", fmt.Errorf("compile: %w", err)
+	}
+
+	pdfPath := fmt.Sprintf("%s/%s.pdf", compiledDir, materialID.String())
+	buf.Reset()
+	buf.Write(pdfContent)
+	if _, err := s.storageService.client.PutObject(ctx, s.storageService.bucket, pdfPath, &buf, int64(buf.Len()), minio.PutObjectOptions{ContentType: "application/pdf"}); err != nil {
+		return "", fmt.Errorf("upload pdf: %w", err)
+	}
+
+	return s.storageService.GetPresignedURL(pdfPath), nil
+}
+
 func (s *LearningMaterialService) getFileFromMinIO(ctx context.Context, objectPath string) ([]byte, error) {
 	obj, err := s.storageService.client.GetObject(ctx, s.storageService.bucket, objectPath, minio.GetObjectOptions{})
 	if err != nil {

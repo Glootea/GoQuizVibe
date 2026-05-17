@@ -1,6 +1,6 @@
 package editor
 
-templ EditorPage() {
+templ EditorPage(materialID string, initialSource string, pdfURL string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -11,20 +11,28 @@ templ EditorPage() {
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 		</head>
 		<body>
+			<div
+				id="editor-data"
+				data-material-id={ materialID }
+				data-initial-source={ initialSource }
+				data-pdf-url={ pdfURL }
+			></div>
+			<script>
+				const editorData = document.getElementById('editor-data');
+				window.MATERIAL_ID = editorData.dataset.materialId || '';
+				window.INITIAL_SOURCE = editorData.dataset.initialSource || '';
+				window.PDF_URL = editorData.dataset.pdfUrl || '';
+			</script>
 			<div class="editor-container">
 				<aside id="files-panel" class="files-panel">
 					<div class="files-header">
 						<span>Files</span>
 					</div>
-					<div id="file-actions" class="file-actions">
-						<button id="new-file" class="btn-action" title="New file">
-							<i class="fas fa-plus"></i>
-						</button>
-						<button id="delete-file" class="btn-action" title="Delete file" disabled>
-							<i class="fas fa-trash"></i>
-						</button>
+					<div class="file-list">
+						<div class="file-item active">
+							<i class="fas fa-file-code"></i><span>main.typ</span>
+						</div>
 					</div>
-					<div id="file-list" class="file-list"></div>
 				</aside>
 				<div class="resize-handler-v" data-resize="files"></div>
 				<div class="main-area">
@@ -34,7 +42,10 @@ templ EditorPage() {
 						</div>
 						<div class="resize-handler-v" data-resize="editor-preview"></div>
 						<div class="preview-panel">
-							<div id="preview-container"></div>
+							<iframe id="preview-frame" style="display: none;"></iframe>
+							<div id="preview-placeholder" class="flex items-center justify-center h-full text-gray-400">
+								<span>No preview available</span>
+							</div>
 						</div>
 					</div>
 					<div class="resize-handler-h" data-resize="errors"></div>
@@ -48,7 +59,6 @@ templ EditorPage() {
 				</div>
 			</div>
 
-			<script src="/static/scripts/typst/typst.bundle.js" type="module"></script>
 			<script src="/static/scripts/editor/editor.bundle.js" type="module"></script>
 		</body>
 	</html>

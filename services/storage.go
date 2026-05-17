@@ -86,6 +86,10 @@ func (s *StorageService) DeleteImage(ctx context.Context, objectName string) err
 	return nil
 }
 
+func (s *StorageService) GetPresignedURL(objectName string) string {
+	return s.presignedURL(objectName)
+}
+
 func (s *StorageService) presignedURL(objectName string) string {
 	presignedURL, err := s.client.PresignedGetObject(context.Background(), s.bucket, objectName, 24*time.Hour, nil)
 	if err != nil {

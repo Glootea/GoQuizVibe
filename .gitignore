@@ -7,6 +7,4 @@ tmp/
 .DS_Store
 goquizvibe
 
-# typst.ts WASM modules (large binary files)
-static/wasm/*.wasm
-static/scripts/typst/*.wasm
+
