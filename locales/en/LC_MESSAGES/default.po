@@ -660,3 +660,113 @@ msgstr "order_index (integer) - position in the quiz (0-based)"
 
 msgid "JSON Schema for question object"
 msgstr "JSON Schema for question object"
+
+# Learning Materials
+
+msgid "Learning Materials"
+msgstr "Learning Materials"
+
+msgid "Create Learning Material"
+msgstr "Create Learning Material"
+
+msgid "No Learning Materials Available"
+msgstr "No Learning Materials Available"
+
+msgid "Create First Learning Material"
+msgstr "Create First Learning Material"
+
+msgid "Learning Material Title Placeholder"
+msgstr "Enter learning material title"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Learning Material Description Placeholder"
+msgstr "Enter description (optional)"
+
+msgid "Material Type"
+msgstr "Material Type"
+
+msgid "Typst Source"
+msgstr "Typst Source"
+
+msgid "Typst Source Description"
+msgstr "Upload typst files to compile into SVG"
+
+msgid "Ready Resource"
+msgstr "Ready Resource"
+
+msgid "Ready Resource Description"
+msgstr "Upload ready files (JPG, PDF)"
+
+msgid "Typst Files"
+msgstr "Typst Files"
+
+msgid "Typst Files Help"
+msgstr "Upload main.typ and any image dependencies"
+
+msgid "Resource File"
+msgstr "Resource File"
+
+msgid "Resource File Help"
+msgstr "Upload JPG or PDF file"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Open"
+msgstr "Open"
+
+msgid "No Preview Available"
+msgstr "No preview available"
+
+msgid "Back to List"
+msgstr "Back to List"
+
+msgid "Created At"
+msgstr "Created At"
+
+msgid "Updated At"
+msgstr "Updated At"
+
+msgid "File Size"
+msgstr "File Size"
+
+msgid "Mime Type"
+msgstr "Content Type"
+
+msgid "Open in New Tab"
+msgstr "Open in New Tab"
+
+msgid "Recompile"
+msgstr "Recompile"
+
+msgid "SVG Preview"
+msgstr "SVG Preview"
+
+msgid "Preview Not Available"
+msgstr "Preview not available"
+
+msgid "Resource"
+msgstr "Resource"
+
+msgid "Open Resource"
+msgstr "Open Resource"
+
+msgid "Back to Edit"
+msgstr "Back to Edit"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Are you sure you want to delete this material?"
+msgstr "Are you sure you want to delete this material?"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Create"
+msgstr "Create"
+
+msgid "Title"
+msgstr "Title"

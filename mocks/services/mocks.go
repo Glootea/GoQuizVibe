@@ -297,6 +297,21 @@ func (mr *MockQuestionRepositoryMockRecorder) DeleteQuestion(ctx, id any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteQuestion", reflect.TypeOf((*MockQuestionRepository)(nil).DeleteQuestion), ctx, id)
 }
 
+// GetMaxOrderIndex mocks base method.
+func (m *MockQuestionRepository) GetMaxOrderIndex(ctx context.Context, quizID uuid.UUID) (any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaxOrderIndex", ctx, quizID)
+	ret0, _ := ret[0].(any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMaxOrderIndex indicates an expected call of GetMaxOrderIndex.
+func (mr *MockQuestionRepositoryMockRecorder) GetMaxOrderIndex(ctx, quizID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxOrderIndex", reflect.TypeOf((*MockQuestionRepository)(nil).GetMaxOrderIndex), ctx, quizID)
+}
+
 // GetQuestionByID mocks base method.
 func (m *MockQuestionRepository) GetQuestionByID(ctx context.Context, id uuid.UUID) (db.Question, error) {
 	m.ctrl.T.Helper()
@@ -340,21 +355,6 @@ func (m *MockQuestionRepository) UpdateQuestion(ctx context.Context, params db.U
 func (mr *MockQuestionRepositoryMockRecorder) UpdateQuestion(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestion", reflect.TypeOf((*MockQuestionRepository)(nil).UpdateQuestion), ctx, params)
-}
-
-// GetMaxOrderIndex mocks base method.
-func (m *MockQuestionRepository) GetMaxOrderIndex(ctx context.Context, quizID uuid.UUID) (interface{}, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMaxOrderIndex", ctx, quizID)
-	ret0, _ := ret[0].(interface{})
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMaxOrderIndex indicates an expected call of GetMaxOrderIndex.
-func (mr *MockQuestionRepositoryMockRecorder) GetMaxOrderIndex(ctx, quizID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxOrderIndex", reflect.TypeOf((*MockQuestionRepository)(nil).GetMaxOrderIndex), ctx, quizID)
 }
 
 // MockAttemptRepository is a mock of AttemptRepository interface.
@@ -741,4 +741,117 @@ func (m *MockStatsRepository) GetUserStats(ctx context.Context, userID uuid.UUID
 func (mr *MockStatsRepositoryMockRecorder) GetUserStats(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserStats", reflect.TypeOf((*MockStatsRepository)(nil).GetUserStats), ctx, userID)
+}
+
+// MockLearningMaterialRepository is a mock of LearningMaterialRepository interface.
+type MockLearningMaterialRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockLearningMaterialRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockLearningMaterialRepositoryMockRecorder is the mock recorder for MockLearningMaterialRepository.
+type MockLearningMaterialRepositoryMockRecorder struct {
+	mock *MockLearningMaterialRepository
+}
+
+// NewMockLearningMaterialRepository creates a new mock instance.
+func NewMockLearningMaterialRepository(ctrl *gomock.Controller) *MockLearningMaterialRepository {
+	mock := &MockLearningMaterialRepository{ctrl: ctrl}
+	mock.recorder = &MockLearningMaterialRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockLearningMaterialRepository) EXPECT() *MockLearningMaterialRepositoryMockRecorder {
+	return m.recorder
+}
+
+// CreateLearningMaterial mocks base method.
+func (m *MockLearningMaterialRepository) CreateLearningMaterial(ctx context.Context, params db.CreateLearningMaterialParams) (db.LearningMaterial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateLearningMaterial", ctx, params)
+	ret0, _ := ret[0].(db.LearningMaterial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateLearningMaterial indicates an expected call of CreateLearningMaterial.
+func (mr *MockLearningMaterialRepositoryMockRecorder) CreateLearningMaterial(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateLearningMaterial", reflect.TypeOf((*MockLearningMaterialRepository)(nil).CreateLearningMaterial), ctx, params)
+}
+
+// DeleteLearningMaterial mocks base method.
+func (m *MockLearningMaterialRepository) DeleteLearningMaterial(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLearningMaterial", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteLearningMaterial indicates an expected call of DeleteLearningMaterial.
+func (mr *MockLearningMaterialRepositoryMockRecorder) DeleteLearningMaterial(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLearningMaterial", reflect.TypeOf((*MockLearningMaterialRepository)(nil).DeleteLearningMaterial), ctx, id)
+}
+
+// GetLearningMaterialByID mocks base method.
+func (m *MockLearningMaterialRepository) GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (db.LearningMaterial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLearningMaterialByID", ctx, id)
+	ret0, _ := ret[0].(db.LearningMaterial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLearningMaterialByID indicates an expected call of GetLearningMaterialByID.
+func (mr *MockLearningMaterialRepositoryMockRecorder) GetLearningMaterialByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLearningMaterialByID", reflect.TypeOf((*MockLearningMaterialRepository)(nil).GetLearningMaterialByID), ctx, id)
+}
+
+// GetLearningMaterials mocks base method.
+func (m *MockLearningMaterialRepository) GetLearningMaterials(ctx context.Context) ([]db.LearningMaterial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLearningMaterials", ctx)
+	ret0, _ := ret[0].([]db.LearningMaterial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLearningMaterials indicates an expected call of GetLearningMaterials.
+func (mr *MockLearningMaterialRepositoryMockRecorder) GetLearningMaterials(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLearningMaterials", reflect.TypeOf((*MockLearningMaterialRepository)(nil).GetLearningMaterials), ctx)
+}
+
+// GetLearningMaterialsByOwner mocks base method.
+func (m *MockLearningMaterialRepository) GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.UUID) ([]db.LearningMaterial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLearningMaterialsByOwner", ctx, ownerID)
+	ret0, _ := ret[0].([]db.LearningMaterial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLearningMaterialsByOwner indicates an expected call of GetLearningMaterialsByOwner.
+func (mr *MockLearningMaterialRepositoryMockRecorder) GetLearningMaterialsByOwner(ctx, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLearningMaterialsByOwner", reflect.TypeOf((*MockLearningMaterialRepository)(nil).GetLearningMaterialsByOwner), ctx, ownerID)
+}
+
+// UpdateLearningMaterial mocks base method.
+func (m *MockLearningMaterialRepository) UpdateLearningMaterial(ctx context.Context, params db.UpdateLearningMaterialParams) (db.LearningMaterial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLearningMaterial", ctx, params)
+	ret0, _ := ret[0].(db.LearningMaterial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateLearningMaterial indicates an expected call of UpdateLearningMaterial.
+func (mr *MockLearningMaterialRepositoryMockRecorder) UpdateLearningMaterial(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLearningMaterial", reflect.TypeOf((*MockLearningMaterialRepository)(nil).UpdateLearningMaterial), ctx, params)
 }

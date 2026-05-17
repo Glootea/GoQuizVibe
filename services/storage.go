@@ -22,6 +22,8 @@ type MinioClient interface {
 	MakeBucket(ctx context.Context, bucket string, opts minio.MakeBucketOptions) error
 	SetBucketPolicy(ctx context.Context, bucket, policy string) error
 	EndpointURL() *url.URL
+	GetObject(ctx context.Context, bucket, object string, opts minio.GetObjectOptions) (*minio.Object, error)
+	ListObjects(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo
 }
 
 type StorageService struct {

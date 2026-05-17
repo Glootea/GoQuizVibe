@@ -27,7 +27,7 @@ require (
 require (
 	cel.dev/expr v0.25.1 // indirect
 	filippo.io/edwards25519 v1.1.1 // indirect
-	github.com/Glootea/gettextgocodegen v0.0.0-20260509070224-4ff1f9cc274e // indirect
+	github.com/Glootea/gettextgocodegen v0.0.0-20260515195814-005425908ffb // indirect
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect

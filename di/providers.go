@@ -30,11 +30,13 @@ type App struct {
 	GamificationService *services.GamificationService
 	StorageService      *services.StorageService
 	CacheService        *services.CacheService
+	LearningMaterialService *services.LearningMaterialService
 
-	AuthHandler      *handlers.AuthHandler
-	DashboardHandler *handlers.DashboardHandler
-	QuizHandler      *handlers.QuizHandler
-	AdminHandler     *handlers.AdminHandler
+	AuthHandler           *handlers.AuthHandler
+	DashboardHandler      *handlers.DashboardHandler
+	QuizHandler           *handlers.QuizHandler
+	AdminHandler          *handlers.AdminHandler
+	LearningMaterialsHandler *handlers.LearningMaterialsHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -165,6 +167,26 @@ func ProvidePromptGenerator(cacheService *services.CacheService) *services.Promp
 	return services.NewPromptGenerator(schemaService)
 }
 
+func ProvideTypstCompiler() *services.TypstCompiler {
+	return services.NewTypstCompiler()
+}
+
+func ProvideLearningMaterialService(
+	queries *db.Queries,
+	storageService *services.StorageService,
+	typstCompiler *services.TypstCompiler,
+) *services.LearningMaterialService {
+	return services.NewLearningMaterialService(queries, storageService, typstCompiler)
+}
+
+func ProvideLearningMaterialsHandler(
+	materialService *services.LearningMaterialService,
+	adminService *services.AdminService,
+	localeService *locales.Service,
+) *handlers.LearningMaterialsHandler {
+	return handlers.NewLearningMaterialsHandler(materialService, adminService, localeService)
+}
+
 func ProvideRequireAuthMiddleware(authService *services.AuthService) middleware.RequireAuthMiddleware {
 	return middleware.NewRequireAuthMiddleware(authService)
 }
@@ -202,6 +224,8 @@ var ServiceSet = wire.NewSet(
 	ProvideLocaleService,
 	ProvideAuthenticator,
 	ProvideTimeProvider,
+	ProvideTypstCompiler,
+	ProvideLearningMaterialService,
 )
 
 var HandlerSet = wire.NewSet(
@@ -210,6 +234,7 @@ var HandlerSet = wire.NewSet(
 	ProvideQuizHandler,
 	ProvideAdminHandler,
 	ProvidePromptGenerator,
+	ProvideLearningMaterialsHandler,
 )
 
 var MiddlewareSet = wire.NewSet(
@@ -224,5 +249,5 @@ var AppSet = wire.NewSet(
 	ServiceSet,
 	HandlerSet,
 	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
+	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "LearningMaterialsHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
 )

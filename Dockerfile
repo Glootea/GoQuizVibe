@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server .
 
 FROM alpine:3.23.4
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache typst ca-certificates tzdata
 
 WORKDIR /app
 

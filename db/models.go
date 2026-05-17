@@ -11,7 +11,50 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type LearningMaterialType string
+
+const (
+	LearningMaterialTypeTypst    LearningMaterialType = "typst"
+	LearningMaterialTypeResource LearningMaterialType = "resource"
+)
+
+func (e *LearningMaterialType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LearningMaterialType(s)
+	case string:
+		*e = LearningMaterialType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LearningMaterialType: %T", src)
+	}
+	return nil
+}
+
+type NullLearningMaterialType struct {
+	LearningMaterialType LearningMaterialType `json:"learning_material_type"`
+	Valid                bool                 `json:"valid"` // Valid is true if LearningMaterialType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLearningMaterialType) Scan(value interface{}) error {
+	if value == nil {
+		ns.LearningMaterialType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LearningMaterialType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLearningMaterialType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LearningMaterialType), nil
+}
 
 type QuestionType string
 
@@ -140,6 +183,21 @@ func (ns NullRole) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.Role), nil
+}
+
+type LearningMaterial struct {
+	ID              uuid.UUID            `json:"id"`
+	Title           string               `json:"title"`
+	Description     string               `json:"description"`
+	MaterialType    LearningMaterialType `json:"material_type"`
+	OwnerID         uuid.UUID            `json:"owner_id"`
+	SourcePath      string               `json:"source_path"`
+	CompiledSvgPath string               `json:"compiled_svg_path"`
+	ResourcePath    string               `json:"resource_path"`
+	FileSize        pgtype.Int8          `json:"file_size"`
+	MimeType        string               `json:"mime_type"`
+	CreatedAt       time.Time            `json:"created_at"`
+	UpdatedAt       time.Time            `json:"updated_at"`
 }
 
 type Question struct {

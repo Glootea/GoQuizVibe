@@ -1,0 +1,89 @@
+package admin
+
+import (
+	"github.com/goquizvibe/db"
+	"github.com/goquizvibe/locales"
+	"github.com/goquizvibe/services"
+)
+
+templ LearningMaterialsListPage(user *db.User, materials []services.MaterialWithURL, t locales.Translator) {
+	@BaseAdmin(t.LearningMaterials(), user, t) {
+		<div class="flex justify-between items-center mb-8">
+			<h1 class="text-3xl font-bold">{ t.LearningMaterials() }</h1>
+			<a href="/admin/learning-materials/new" class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700">
+				<i class="mr-2 fas fa-plus"></i>{ t.CreateLearningMaterial() }
+			</a>
+		</div>
+		if len(materials) == 0 {
+			<div class="p-12 text-center bg-white rounded-xl shadow-sm">
+				<i class="mb-4 text-6xl text-gray-300 fas fa-folder-open"></i>
+				<p class="text-lg text-gray-500">{ t.NoLearningMaterialsAvailable() }</p>
+				<a href="/admin/learning-materials/new" class="mt-4 text-indigo-600 hover:text-indigo-800">
+					<i class="mr-1 fas fa-plus"></i>{ t.CreateFirstLearningMaterial() }
+				</a>
+			</div>
+		} else {
+			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+				for _, m := range materials {
+					<div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+						<div class="p-6">
+							<div class="flex items-start justify-between mb-4">
+								<div>
+									<span class={ "px-2 py-1 rounded text-xs " + getMaterialTypeClass(m.Type) }>
+										{ m.Type }
+									</span>
+								</div>
+								<button
+									hx-delete={ "/admin/learning-materials/" + m.Material.ID.String() }
+									hx-confirm={ t.AreYouSureThisActionIsReversible() }
+									class="text-gray-400 hover:text-red-600 transition"
+								>
+									<i class="fas fa-trash"></i>
+								</button>
+							</div>
+							<h3 class="text-lg font-semibold mb-2">{ m.Material.Title }</h3>
+							if m.Material.Description != "" {
+								<p class="text-sm text-gray-500 mb-4">{ m.Material.Description }</p>
+							}
+							<div class="flex items-center justify-between">
+								if m.Type == "typst" && m.PublicURL != "" {
+									<a
+										href={ templ.URL("/admin/learning-materials/" + m.Material.ID.String() + "/preview") }
+										class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+										target="_blank"
+									>
+										<i class="mr-1 fas fa-eye"></i>{ t.Preview() }
+									</a>
+								} else if m.PublicURL != "" {
+									<a
+										href={ templ.URL(m.PublicURL) }
+										class="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+										target="_blank"
+									>
+										<i class="mr-1 fas fa-download"></i>{ t.Open() }
+									</a>
+								} else {
+									<span class="text-gray-400 text-sm">{ t.NoPreviewAvailable() }</span>
+								}
+								<span class="text-xs text-gray-400">
+									{ m.Material.CreatedAt.Format("2006-01-02") }
+								</span>
+							</div>
+						</div>
+					</div>
+				}
+			</div>
+		}
+	}
+}
+
+func getMaterialTypeClass(materialType string) string {
+	switch materialType {
+	case "typst":
+		return "bg-purple-100 text-purple-700"
+	case "resource":
+		return "bg-green-100 text-green-700"
+	default:
+		return "bg-gray-100 text-gray-700"
+	}
+}

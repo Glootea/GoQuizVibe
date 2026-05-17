@@ -13,8 +13,8 @@ type Locale string
 
 const (
 	LocaleInvalid Locale = ""
-	LocaleEn      Locale = "en"
-	LocaleRu      Locale = "ru"
+	LocaleEn Locale = "en"
+	LocaleRu Locale = "ru"
 )
 
 type Translator interface {
@@ -52,6 +52,8 @@ type Translator interface {
 	Archived() string
 	// "Are you sure? This action is reversible."
 	AreYouSureThisActionIsReversible() string
+	// "Are you sure you want to delete this material?"
+	AreYouSureYouWantToDeleteThisMaterial() string
 	// "Assigned"
 	Assigned() string
 	// "Attempts"
@@ -68,8 +70,12 @@ type Translator interface {
 	Back() string
 	// "Back to %s"
 	BackTo(param1 string) string
+	// "Back to Edit"
+	BackToEdit() string
 	// "Back to Home"
 	BackToHome() string
+	// "Back to List"
+	BackToList() string
 	// "Back to Quizzes"
 	BackToQuizzes() string
 	// "Cancel"
@@ -102,10 +108,16 @@ type Translator interface {
 	CorrectAnswerStringCorrectAnswer() string
 	// "Create"
 	Create() string
+	// "Create First Learning Material"
+	CreateFirstLearningMaterial() string
 	// "Create first quiz"
 	CreateFirstQuiz() string
+	// "Create Learning Material"
+	CreateLearningMaterial() string
 	// "Create Quiz"
 	CreateQuiz() string
+	// "Created At"
+	CreatedAt() string
 	// "Danger Zone"
 	DangerZone() string
 	// "Dashboard"
@@ -114,6 +126,8 @@ type Translator interface {
 	Date() string
 	// "day streak"
 	DayStreak() string
+	// "Delete"
+	Delete() string
 	// "Delete image?"
 	DeleteImage() string
 	// "Delete question?"
@@ -150,6 +164,8 @@ type Translator interface {
 	ExplanationStringExplanationForTheAnswer() string
 	// "Failed to import questions"
 	FailedToImportQuestions() string
+	// "File Size"
+	FileSize() string
 	// "Fill"
 	Fill() string
 	// "Filter by Quiz"
@@ -192,14 +208,24 @@ type Translator interface {
 	Leaders() string
 	// "Learn Through Play"
 	LearnThroughPlay() string
+	// "Learning Material Description Placeholder"
+	LearningMaterialDescriptionPlaceholder() string
+	// "Learning Material Title Placeholder"
+	LearningMaterialTitlePlaceholder() string
+	// "Learning Materials"
+	LearningMaterials() string
 	// "Loading..."
 	Loading() string
 	// "Log In"
 	LogIn() string
 	// "made"
 	Made() string
+	// "Material Type"
+	MaterialType() string
 	// "Math: From basic arithmetic to algebra"
 	MathFromBasicArithmeticToAlgebra() string
+	// "Mime Type"
+	MimeType() string
 	// "min"
 	Min() string
 	// "Minimum 6 characters"
@@ -226,8 +252,12 @@ type Translator interface {
 	NoActivityYet() string
 	// "No data yet"
 	NoDataYet() string
+	// "No Learning Materials Available"
+	NoLearningMaterialsAvailable() string
 	// "No participants yet"
 	NoParticipantsYet() string
+	// "No Preview Available"
+	NoPreviewAvailable() string
 	// "No questions yet"
 	NoQuestionsYet() string
 	// "No quizzes available yet"
@@ -236,6 +266,10 @@ type Translator interface {
 	NoResultsYet() string
 	// "Open"
 	Open() string
+	// "Open in New Tab"
+	OpenInNewTab() string
+	// "Open Resource"
+	OpenResource() string
 	// "Options:"
 	Options() string
 	// "options (array of strings) - answer options for choice type, empty for others"
@@ -258,6 +292,10 @@ type Translator interface {
 	PointsIntegerPointValueForTheQuestionDefault10() string
 	// "Practice daily to keep your streak. Consistency is the key to success!"
 	PracticeDailyToKeepYourStreakConsistencyIsTheKeyToSuccess() string
+	// "Preview"
+	Preview() string
+	// "Preview Not Available"
+	PreviewNotAvailable() string
 	// "Prompt for LLM question generation"
 	PromptForLlmQuestionGeneration() string
 	// "Question %d"
@@ -290,12 +328,24 @@ type Translator interface {
 	Quizzes() string
 	// "Quizzes Completed"
 	QuizzesCompleted() string
+	// "Ready Resource"
+	ReadyResource() string
+	// "Ready Resource Description"
+	ReadyResourceDescription() string
 	// "Ready to Start?"
 	ReadyToStart() string
 	// "Recent Activity"
 	RecentActivity() string
+	// "Recompile"
+	Recompile() string
 	// "Registration"
 	Registration() string
+	// "Resource"
+	Resource() string
+	// "Resource File"
+	ResourceFile() string
+	// "Resource File Help"
+	ResourceFileHelp() string
 	// "Response must be a VALID JSON array of objects. No additional text."
 	ResponseMustBeAValidJsonArrayOfObjectsNoAdditionalText() string
 	// "Response must be in JSON format"
@@ -356,6 +406,8 @@ type Translator interface {
 	SuccessRate() string
 	// "Summary Statistics"
 	SummaryStatistics() string
+	// "SVG Preview"
+	SvgPreview() string
 	// "Test already active"
 	TestAlreadyActive() string
 	// "Test conflict"
@@ -394,8 +446,18 @@ type Translator interface {
 	Type() string
 	// "type (string) - one of: choice, open, fill"
 	TypeStringOneOfChoiceOpenFill() string
+	// "Typst Files"
+	TypstFiles() string
+	// "Typst Files Help"
+	TypstFilesHelp() string
+	// "Typst Source"
+	TypstSource() string
+	// "Typst Source Description"
+	TypstSourceDescription() string
 	// "Unsatisfactory"
 	Unsatisfactory() string
+	// "Updated At"
+	UpdatedAt() string
 	// "Upload"
 	Upload() string
 	// "Upload JSON file"
@@ -492,6 +554,10 @@ func (t *translator) AreYouSureThisActionIsReversible() string {
 	return t.locale.Get("Are you sure? This action is reversible.")
 }
 
+func (t *translator) AreYouSureYouWantToDeleteThisMaterial() string {
+	return t.locale.Get("Are you sure you want to delete this material?")
+}
+
 func (t *translator) Assigned() string {
 	return t.locale.Get("Assigned")
 }
@@ -524,8 +590,16 @@ func (t *translator) BackTo(param1 string) string {
 	return t.locale.Get("Back to %s", param1)
 }
 
+func (t *translator) BackToEdit() string {
+	return t.locale.Get("Back to Edit")
+}
+
 func (t *translator) BackToHome() string {
 	return t.locale.Get("Back to Home")
+}
+
+func (t *translator) BackToList() string {
+	return t.locale.Get("Back to List")
 }
 
 func (t *translator) BackToQuizzes() string {
@@ -592,12 +666,24 @@ func (t *translator) Create() string {
 	return t.locale.Get("Create")
 }
 
+func (t *translator) CreateFirstLearningMaterial() string {
+	return t.locale.Get("Create First Learning Material")
+}
+
 func (t *translator) CreateFirstQuiz() string {
 	return t.locale.Get("Create first quiz")
 }
 
+func (t *translator) CreateLearningMaterial() string {
+	return t.locale.Get("Create Learning Material")
+}
+
 func (t *translator) CreateQuiz() string {
 	return t.locale.Get("Create Quiz")
+}
+
+func (t *translator) CreatedAt() string {
+	return t.locale.Get("Created At")
 }
 
 func (t *translator) DangerZone() string {
@@ -614,6 +700,10 @@ func (t *translator) Date() string {
 
 func (t *translator) DayStreak() string {
 	return t.locale.Get("day streak")
+}
+
+func (t *translator) Delete() string {
+	return t.locale.Get("Delete")
 }
 
 func (t *translator) DeleteImage() string {
@@ -686,6 +776,10 @@ func (t *translator) ExplanationStringExplanationForTheAnswer() string {
 
 func (t *translator) FailedToImportQuestions() string {
 	return t.locale.Get("Failed to import questions")
+}
+
+func (t *translator) FileSize() string {
+	return t.locale.Get("File Size")
 }
 
 func (t *translator) Fill() string {
@@ -772,6 +866,18 @@ func (t *translator) LearnThroughPlay() string {
 	return t.locale.Get("Learn Through Play")
 }
 
+func (t *translator) LearningMaterialDescriptionPlaceholder() string {
+	return t.locale.Get("Learning Material Description Placeholder")
+}
+
+func (t *translator) LearningMaterialTitlePlaceholder() string {
+	return t.locale.Get("Learning Material Title Placeholder")
+}
+
+func (t *translator) LearningMaterials() string {
+	return t.locale.Get("Learning Materials")
+}
+
 func (t *translator) Loading() string {
 	return t.locale.Get("Loading...")
 }
@@ -784,8 +890,16 @@ func (t *translator) Made() string {
 	return t.locale.Get("made")
 }
 
+func (t *translator) MaterialType() string {
+	return t.locale.Get("Material Type")
+}
+
 func (t *translator) MathFromBasicArithmeticToAlgebra() string {
 	return t.locale.Get("Math: From basic arithmetic to algebra")
+}
+
+func (t *translator) MimeType() string {
+	return t.locale.Get("Mime Type")
 }
 
 func (t *translator) Min() string {
@@ -840,8 +954,16 @@ func (t *translator) NoDataYet() string {
 	return t.locale.Get("No data yet")
 }
 
+func (t *translator) NoLearningMaterialsAvailable() string {
+	return t.locale.Get("No Learning Materials Available")
+}
+
 func (t *translator) NoParticipantsYet() string {
 	return t.locale.Get("No participants yet")
+}
+
+func (t *translator) NoPreviewAvailable() string {
+	return t.locale.Get("No Preview Available")
 }
 
 func (t *translator) NoQuestionsYet() string {
@@ -858,6 +980,14 @@ func (t *translator) NoResultsYet() string {
 
 func (t *translator) Open() string {
 	return t.locale.Get("Open")
+}
+
+func (t *translator) OpenInNewTab() string {
+	return t.locale.Get("Open in New Tab")
+}
+
+func (t *translator) OpenResource() string {
+	return t.locale.Get("Open Resource")
 }
 
 func (t *translator) Options() string {
@@ -902,6 +1032,14 @@ func (t *translator) PointsIntegerPointValueForTheQuestionDefault10() string {
 
 func (t *translator) PracticeDailyToKeepYourStreakConsistencyIsTheKeyToSuccess() string {
 	return t.locale.Get("Practice daily to keep your streak. Consistency is the key to success!")
+}
+
+func (t *translator) Preview() string {
+	return t.locale.Get("Preview")
+}
+
+func (t *translator) PreviewNotAvailable() string {
+	return t.locale.Get("Preview Not Available")
 }
 
 func (t *translator) PromptForLlmQuestionGeneration() string {
@@ -968,6 +1106,14 @@ func (t *translator) QuizzesCompleted() string {
 	return t.locale.Get("Quizzes Completed")
 }
 
+func (t *translator) ReadyResource() string {
+	return t.locale.Get("Ready Resource")
+}
+
+func (t *translator) ReadyResourceDescription() string {
+	return t.locale.Get("Ready Resource Description")
+}
+
 func (t *translator) ReadyToStart() string {
 	return t.locale.Get("Ready to Start?")
 }
@@ -976,8 +1122,24 @@ func (t *translator) RecentActivity() string {
 	return t.locale.Get("Recent Activity")
 }
 
+func (t *translator) Recompile() string {
+	return t.locale.Get("Recompile")
+}
+
 func (t *translator) Registration() string {
 	return t.locale.Get("Registration")
+}
+
+func (t *translator) Resource() string {
+	return t.locale.Get("Resource")
+}
+
+func (t *translator) ResourceFile() string {
+	return t.locale.Get("Resource File")
+}
+
+func (t *translator) ResourceFileHelp() string {
+	return t.locale.Get("Resource File Help")
 }
 
 func (t *translator) ResponseMustBeAValidJsonArrayOfObjectsNoAdditionalText() string {
@@ -1100,6 +1262,10 @@ func (t *translator) SummaryStatistics() string {
 	return t.locale.Get("Summary Statistics")
 }
 
+func (t *translator) SvgPreview() string {
+	return t.locale.Get("SVG Preview")
+}
+
 func (t *translator) TestAlreadyActive() string {
 	return t.locale.Get("Test already active")
 }
@@ -1176,8 +1342,28 @@ func (t *translator) TypeStringOneOfChoiceOpenFill() string {
 	return t.locale.Get("type (string) - one of: choice, open, fill")
 }
 
+func (t *translator) TypstFiles() string {
+	return t.locale.Get("Typst Files")
+}
+
+func (t *translator) TypstFilesHelp() string {
+	return t.locale.Get("Typst Files Help")
+}
+
+func (t *translator) TypstSource() string {
+	return t.locale.Get("Typst Source")
+}
+
+func (t *translator) TypstSourceDescription() string {
+	return t.locale.Get("Typst Source Description")
+}
+
 func (t *translator) Unsatisfactory() string {
 	return t.locale.Get("Unsatisfactory")
+}
+
+func (t *translator) UpdatedAt() string {
+	return t.locale.Get("Updated At")
 }
 
 func (t *translator) Upload() string {
@@ -1207,3 +1393,4 @@ func (t *translator) YouHaveNoMistakesYetKeepItUp() string {
 func (t *translator) YourAnswer() string {
 	return t.locale.Get("Your answer:")
 }
+

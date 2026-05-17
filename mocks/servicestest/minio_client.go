@@ -119,4 +119,29 @@ func (mr *MockMinioClientMockRecorder) EndpointURL() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EndpointURL", reflect.TypeOf((*MockMinioClient)(nil).EndpointURL))
 }
 
+func (m *MockMinioClient) GetObject(ctx context.Context, bucket, object string, opts minio.GetObjectOptions) (*minio.Object, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetObject", ctx, bucket, object, opts)
+	ret0, _ := ret[0].(*minio.Object)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockMinioClientMockRecorder) GetObject(ctx, bucket, object, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObject", reflect.TypeOf((*MockMinioClient)(nil).GetObject), ctx, bucket, object, opts)
+}
+
+func (m *MockMinioClient) ListObjects(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListObjects", ctx, bucket, opts)
+	ret0, _ := ret[0].(<-chan minio.ObjectInfo)
+	return ret0
+}
+
+func (mr *MockMinioClientMockRecorder) ListObjects(ctx, bucket, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListObjects", reflect.TypeOf((*MockMinioClient)(nil).ListObjects), ctx, bucket, opts)
+}
+
 var _ services.MinioClient = (*MockMinioClient)(nil)
