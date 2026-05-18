@@ -17,10 +17,10 @@ type DatabaseConfig struct {
 	DBName   string
 }
 
-func (d *DatabaseConfig) DSN() string {
+func (c DatabaseConfig) DSN() string {
 	return fmt.Sprintf(
-		"host=127.0.0.1 user=%s password=%s dbname=%s port=%s sslmode=disable",
-		d.User, d.Password, d.DBName, d.Port,
+		"postgres://%s:%s@%s:5432/%s?sslmode=disable",
+		c.User, c.Password, c.Host, c.DBName,
 	)
 }
 
@@ -32,6 +32,7 @@ type MinioConfig struct {
 }
 
 type RedisConfig struct {
+	Host              string
 	Password          string
 	CacheTTL          time.Duration
 	TimerCronInterval time.Duration
@@ -60,9 +61,9 @@ func Load() *Config {
 		secret = "goquizvibe-secret-key-change-in-production"
 	}
 
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		dbHost = "localhost"
+	db_host := os.Getenv("POSTGRES_HOST")
+	if db_host == "" {
+		db_host = "localhost"
 	}
 
 	dbPort := os.Getenv("DB_PORT")
@@ -88,6 +89,10 @@ func Load() *Config {
 	if redis_pass == "" {
 		panic("Failed to get env for redis")
 	}
+	redis_host := os.Getenv("REDIS_HOST")
+	if redis_host == "" {
+		redis_host = "localhost"
+	}
 
 	redisCacheTTL := 5 * time.Minute
 	if ttl := os.Getenv("REDIS_CACHE_TTL"); ttl != "" {
@@ -111,7 +116,7 @@ func Load() *Config {
 		ServerPort: port,
 		JWTSecret:  secret,
 		Database: DatabaseConfig{
-			Host:     dbHost,
+			Host:     db_host,
 			Port:     dbPort,
 			User:     dbUser,
 			Password: dbPassword,
@@ -123,6 +128,6 @@ func Load() *Config {
 			SecretKey: os.Getenv("MINIO_ROOT_PASSWORD"),
 			Bucket:    os.Getenv("MINIO_BUCKET"),
 		},
-		Redis: RedisConfig{Password: redis_pass, CacheTTL: redisCacheTTL, TimerCronInterval: timerCronInterval},
+		Redis: RedisConfig{Host: redis_host, Password: redis_pass, CacheTTL: redisCacheTTL, TimerCronInterval: timerCronInterval},
 	}
 }

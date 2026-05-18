@@ -22,50 +22,73 @@ import (
 )
 
 func Connect(ctx context.Context, c config.Config) (*pgxpool.Pool, error) {
-	connStr := fmt.Sprintf(
-		"postgres://%s:%s@localhost:5433/%s?sslmode=disable",
-		c.Database.User, c.Database.Password, c.Database.DBName,
-	)
+	fmt.Printf("Connecting to database at %s:%s...\n", c.Database, c.Database.Port)
+	for i := range 5 {
+		connStr := c.Database.DSN()
 
-	pool, err := pgxpool.New(ctx, connStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create pool: %w", err)
+		pool, err := pgxpool.New(ctx, connStr)
+		if i < 5 && err != nil {
+			fmt.Printf("Failed to connect to database, retrying %d...\n", i)
+			time.Sleep(time.Second * 2)
+			continue
+		}
+
+		if i < 5 && err != nil {
+			fmt.Print("Failed to connect to database, retrying2...\n")
+			time.Sleep(time.Second * 2)
+			continue
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to create pool: %w", err)
+		}
+
+		err = pool.Ping(ctx)
+		if i < 5 && err != nil {
+			fmt.Print("Failed to connect to database, retrying3...\n")
+			time.Sleep(time.Second * 2)
+			continue
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to ping database retrying %d: %w", i, err)
+		}
+
+		err = runMigrations(c)
+		if i < 5 && err != nil {
+			fmt.Printf("Failed to connect to database, retrying44...%s\n", err)
+			time.Sleep(time.Second * 2)
+			continue
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to run migrations: %w", err)
+		}
+
+		return pool, nil
 	}
-
-	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	if err := runMigrations(); err != nil {
-		return nil, fmt.Errorf("failed to run migrations: %w", err)
-	}
-
-	return pool, nil
+	return nil, fmt.Errorf("failed to connect to database after multiple attempts")
 }
 
-func runMigrations() error {
-	connStr := fmt.Sprintf(
-		"postgres://%s:%s@localhost:5433/%s?sslmode=disable",
-		"goquizvibe", "goquizvibe", "goquizvibe",
-	)
+func runMigrations(c config.Config) error {
+	connStr := c.Database.DSN()
 	m, err := migrate.New("file://sql/migrations", connStr)
 	if err != nil {
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
 	defer m.Close()
 
-if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		if strings.Contains(err.Error(), "Dirty database version") {
 			parts := strings.Split(err.Error(), " ")
 			if len(parts) >= 5 {
 				ver := strings.TrimSuffix(parts[4], ".")
 				forceVer, parseErr := strconv.Atoi(ver)
 				if parseErr == nil {
-					log.Printf("Fixing dirty migration state, forcing version %d...", forceVer)
+					log.Printf("Fixing dirty migration state, forcing version %d...\n", forceVer)
 					if fErr := m.Force(forceVer); fErr != nil {
 						return fmt.Errorf("failed to force migration: %w", fErr)
 					}
-					log.Printf("Forced to version %d, retrying migrations...", forceVer)
+					log.Printf("Forced to version %d, retrying migrations...\n", forceVer)
 					if retryErr := m.Up(); retryErr != nil && retryErr != migrate.ErrNoChange {
 						return fmt.Errorf("failed to run migrations after force: %w", retryErr)
 					}
@@ -89,7 +112,7 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 		return nil
 	}
 
-	log.Println("Seeding initial data...")
+	log.Println("Seeding initial data...\n")
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte("teacher123"), bcrypt.DefaultCost)
 	teacherID := uuid.MustParse("11111111-1111-1111-1111-111111111111")

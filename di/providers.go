@@ -2,6 +2,7 @@ package di
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/goquizvibe/config"
@@ -38,7 +39,7 @@ type App struct {
 	AdminHandler             *handlers.AdminHandler
 	LearningMaterialsHandler *handlers.LearningMaterialsHandler
 	EditorHandler            *handlers.EditorHandler
-	TypstHandler            *handlers.TypstHandler
+	TypstHandler             *handlers.TypstHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -63,7 +64,7 @@ func ProvideDB(pool *pgxpool.Pool) *db.Queries {
 
 func ProvideRedis(cfg *config.Config) *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     fmt.Sprintf("%s:6379", cfg.Redis.Host),
 		Password: cfg.Redis.Password,
 		DB:       0,
 	})

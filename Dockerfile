@@ -15,7 +15,7 @@ RUN apk add --no-cache typst ca-certificates tzdata
 
 WORKDIR /app
 
-COPY --from=builder /app/server .
+COPY --from=builder /app .
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/initial_data ./initial_data
 COPY --from=builder /app/locales ./locales
