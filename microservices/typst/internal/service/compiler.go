@@ -1,4 +1,4 @@
-package services
+package service
 
 import (
 	"bytes"
@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 )
 
-type TypstCompiler struct{}
+type Compiler struct{}
 
-func NewTypstCompiler() *TypstCompiler {
-	return &TypstCompiler{}
+func NewCompiler() *Compiler {
+	return &Compiler{}
 }
 
-func (c *TypstCompiler) CompileTypst(ctx context.Context, typstContent []byte, dependencies map[string][]byte) ([]byte, error) {
+func (c *Compiler) Compile(ctx context.Context, source []byte, dependencies map[string][]byte) ([]byte, error) {
 	tempDir, err := os.MkdirTemp("", "typst-compile-*")
 	if err != nil {
 		return nil, fmt.Errorf("create temp dir: %w", err)
@@ -23,7 +23,7 @@ func (c *TypstCompiler) CompileTypst(ctx context.Context, typstContent []byte, d
 	defer os.RemoveAll(tempDir)
 
 	mainTypstPath := filepath.Join(tempDir, "main.typ")
-	if err := os.WriteFile(mainTypstPath, typstContent, 0644); err != nil {
+	if err := os.WriteFile(mainTypstPath, source, 0644); err != nil {
 		return nil, fmt.Errorf("write main.typ: %w", err)
 	}
 
@@ -44,7 +44,7 @@ func (c *TypstCompiler) CompileTypst(ctx context.Context, typstContent []byte, d
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("typst compile: %w, stderr: %s", err, stderr.String())
+		return nil, fmt.Errorf("%w: %s", err, stderr.String())
 	}
 
 	pdfContent, err := os.ReadFile(outputPath)

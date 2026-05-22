@@ -5,8 +5,6 @@ filippo.io/edwards25519 v1.1.1/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25UVaW/CKtUDjefjrs0SPonmDGUVOYP0=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/Glootea/gettextgocodegen v0.0.0-20260509070224-4ff1f9cc274e h1:RIQYz6d1nIEjpMypC7caS7gvlqcjWL5zWbaVN2HF8bg=
-github.com/Glootea/gettextgocodegen v0.0.0-20260509070224-4ff1f9cc274e/go.mod h1:+X/Id6430dfdsUenqeIoPX3B2WtaneRUi6CljD2iS98=
 github.com/Glootea/gettextgocodegen v0.0.0-20260515195814-005425908ffb h1:BISdLMtiEsFMh5HkpiTH89L5AdyVaqeTd1B4G52wZsI=
 github.com/Glootea/gettextgocodegen v0.0.0-20260515195814-005425908ffb/go.mod h1:+X/Id6430dfdsUenqeIoPX3B2WtaneRUi6CljD2iS98=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=

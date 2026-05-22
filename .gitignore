@@ -6,5 +6,6 @@ output.txt
 tmp/
 .DS_Store
 goquizvibe
-
+microservices/typst/bin
+microservices/typst/typst
 

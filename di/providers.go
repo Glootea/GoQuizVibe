@@ -170,16 +170,16 @@ func ProvidePromptGenerator(cacheService *services.CacheService) *services.Promp
 	return services.NewPromptGenerator(schemaService)
 }
 
-func ProvideTypstCompiler() *services.TypstCompiler {
-	return services.NewTypstCompiler()
+func ProvideTypstGRPCClient(cfg *config.Config) (*services.TypstGRPCClient, error) {
+	return services.NewTypstGRPCClient(cfg)
 }
 
 func ProvideLearningMaterialService(
 	queries *db.Queries,
 	storageService *services.StorageService,
-	typstCompiler *services.TypstCompiler,
+	typstClient *services.TypstGRPCClient,
 ) *services.LearningMaterialService {
-	return services.NewLearningMaterialService(queries, storageService, typstCompiler)
+	return services.NewLearningMaterialService(queries, storageService, typstClient)
 }
 
 func ProvideLearningMaterialsHandler(
@@ -238,7 +238,7 @@ var ServiceSet = wire.NewSet(
 	ProvideLocaleService,
 	ProvideAuthenticator,
 	ProvideTimeProvider,
-	ProvideTypstCompiler,
+	ProvideTypstGRPCClient,
 	ProvideLearningMaterialService,
 )
 

@@ -109,13 +109,13 @@ type RegisterError struct {
 }
 
 type AdminDashboardData struct {
-	User           *models.User
-	QuizCount      int
-	StudentCount   int
-	AttemptCount   int
-	AvgScore       float64
-	MaterialCount  int
-	RecentActivity []*RecentAttempt
+	User            *models.User
+	QuizCount       int
+	StudentCount    int
+	AttemptCount    int
+	AvgScore        float64
+	MaterialCount   int
+	RecentActivity  []*RecentAttempt
 	RecentMaterials []MaterialWithURL
 }
 

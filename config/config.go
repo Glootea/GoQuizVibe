@@ -31,6 +31,10 @@ type MinioConfig struct {
 	Bucket    string
 }
 
+type ServiceConfig struct {
+	TypstServiceAddr string
+}
+
 type RedisConfig struct {
 	Host              string
 	Password          string
@@ -39,11 +43,12 @@ type RedisConfig struct {
 }
 
 type Config struct {
-	ServerPort string
-	JWTSecret  string
-	Database   DatabaseConfig
-	Minio      MinioConfig
-	Redis      RedisConfig
+	ServerPort    string
+	JWTSecret     string
+	Database      DatabaseConfig
+	Minio         MinioConfig
+	Redis         RedisConfig
+	ServiceConfig ServiceConfig
 }
 
 func Load() *Config {
@@ -129,5 +134,8 @@ func Load() *Config {
 			Bucket:    os.Getenv("MINIO_BUCKET"),
 		},
 		Redis: RedisConfig{Host: redis_host, Password: redis_pass, CacheTTL: redisCacheTTL, TimerCronInterval: timerCronInterval},
+		ServiceConfig: ServiceConfig{
+			TypstServiceAddr: os.Getenv("TYPST_SERVICE_ADDR"),
+		},
 	}
 }

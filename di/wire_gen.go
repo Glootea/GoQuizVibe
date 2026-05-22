@@ -27,6 +27,10 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	typstClient, err := ProvideTypstGRPCClient(config)
+	if err != nil {
+		return nil, err
+	}
 	adminService := ProvideAdminService(queries, authService, storageService, cacheService)
 	dashboardService := ProvideDashboardService(queries, gamificationService, authService, quizSessionService, cacheService)
 	service, err := ProvideLocaleService()
@@ -34,8 +38,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 	promptGenerator := ProvidePromptGenerator(cacheService)
-	typstCompiler := ProvideTypstCompiler()
-	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstCompiler)
+	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstClient)
 	authHandler := ProvideAuthHandler(queries, authService, service)
 	dashboardHandler := ProvideDashboardHandler(dashboardService)
 	quizHandler := ProvideQuizHandler(queries, quizService, quizSessionService, authService)
@@ -64,7 +67,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		DashboardHandler:        dashboardHandler,
 		QuizHandler:             quizHandler,
 		AdminHandler:            adminHandler,
-		EditorHandler:           editorHandler,
+		EditorHandler:            editorHandler,
 		TypstHandler:            typstHandler,
 		LearningMaterialsHandler: learningMaterialsHandler,
 		RequireAuthMiddleware:   requireAuthMiddleware,
@@ -72,7 +75,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		CompressionMiddleware:   compressionMiddleware,
 		CommonHeadersMiddleware: commonHeaders,
 		LocaleMiddleware:        localeMiddleware,
-		LocaleService:           service,
+		LocaleService:            service,
 	}
 	return app, nil
 }

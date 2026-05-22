@@ -1,4 +1,25 @@
 services:
+  typst:
+    build:
+      context: .
+      dockerfile: microservices/typst/Dockerfile
+    ports:
+      - "9091:9090"
+    environment:
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      GRPC_PORT: "9090"
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9090"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   server:
     image: server:latest
     pull_policy: never
@@ -6,6 +27,9 @@ services:
     profiles: ["with-server"]     
     ports:
       - "7890:7890"
+    depends_on:
+      typst:
+        condition: service_healthy
 
   db:
     image: docker.io/library/postgres:18.3-alpine
