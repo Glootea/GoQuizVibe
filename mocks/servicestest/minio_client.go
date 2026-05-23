@@ -99,15 +99,36 @@ func (mr *MockMinioClientMockRecorder) GetPresignedURL(ctx, path, expiry any) *g
 }
 
 func (m *MockMinioClient) Bucket() string {
-	return ""
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Bucket")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+func (mr *MockMinioClientMockRecorder) Bucket() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bucket", reflect.TypeOf((*MockMinioClient)(nil).Bucket))
 }
 
 func (m *MockMinioClient) Endpoint() string {
-	return ""
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Endpoint")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+func (mr *MockMinioClientMockRecorder) Endpoint() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Endpoint", reflect.TypeOf((*MockMinioClient)(nil).Endpoint))
 }
 
 func (m *MockMinioClient) SetBucketPolicy(ctx context.Context, bucket, policy string) error {
-	return nil
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetBucketPolicy", ctx, bucket, policy)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+func (mr *MockMinioClientMockRecorder) SetBucketPolicy(ctx, bucket, policy any) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBucketPolicy", reflect.TypeOf((*MockMinioClient)(nil).SetBucketPolicy), ctx, bucket, policy)
 }
 
 var _ storage.Storage = (*MockMinioClient)(nil)

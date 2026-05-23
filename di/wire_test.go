@@ -13,6 +13,7 @@ import (
 	"github.com/goquizvibe/locales"
 	"github.com/goquizvibe/middleware"
 	"github.com/goquizvibe/models"
+	r "github.com/goquizvibe/repositories"
 	"github.com/goquizvibe/services"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -191,12 +192,18 @@ func ProvideTestQuizService(queries *db.Queries, cacheService *services.CacheSer
 }
 
 func ProvideTestAdminService(
-	queries *db.Queries,
+	users r.UserRepository,
+	quizzes r.QuizRepository,
+	questions r.QuestionRepository,
+	images r.ImageRepository,
+	attempts r.AttemptRepository,
+	stats r.StatsRepository,
+	materials r.LearningMaterialRepository,
 	authService *services.AuthService,
 	storageService *services.StorageService,
 	cacheService *services.CacheService,
 ) *services.AdminService {
-	return services.NewAdminService(queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
+	return services.NewAdminService(users, quizzes, questions, images, attempts, stats, materials, authService, storageService, cacheService)
 }
 
 func ProvideTestQuizSessionService(

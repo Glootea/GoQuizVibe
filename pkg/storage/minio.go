@@ -19,12 +19,15 @@ type MinioConfig struct {
 }
 
 type Storage interface {
+	Bucket() string
+	Endpoint() string
 	PutObject(ctx context.Context, path string, data []byte, contentType string) error
 	GetObject(ctx context.Context, path string) ([]byte, error)
 	RemoveObject(ctx context.Context, path string) error
 	ListObjects(ctx context.Context, prefix string) ([]string, error)
 	EnsureBucket(ctx context.Context) error
 	GetPresignedURL(ctx context.Context, path string, expiry time.Duration) (string, error)
+	SetBucketPolicy(ctx context.Context, bucket, policy string) error
 }
 
 type MinioClient struct {

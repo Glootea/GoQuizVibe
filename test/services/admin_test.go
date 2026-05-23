@@ -9,7 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -19,7 +18,6 @@ import (
 	mocks "github.com/goquizvibe/mocks/services"
 	"github.com/goquizvibe/mocks/servicestest"
 	"github.com/goquizvibe/services"
-	"github.com/minio/minio-go/v7"
 	"go.uber.org/mock/gomock"
 )
 
@@ -574,8 +572,8 @@ func TestAdminService_AddQuestion(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 	mockMaterials := mocks.NewMockLearningMaterialRepository(ctrl)
 	mockMinio := servicestest.NewMockMinioClient(ctrl)
-
-	storageSvc := services.NewStorageService(mockMinio, "test-bucket")
+	mockMinio.EXPECT().Bucket().Return("test-bucket")
+	storageSvc := services.NewStorageService(mockMinio)
 	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, mockMaterials, nil, storageSvc, nil)
 
 	t.Run("create question error", func(t *testing.T) {
@@ -624,8 +622,8 @@ func TestAdminService_AddQuestion(t *testing.T) {
 
 		mockQuestions.EXPECT().CreateQuestion(gomock.Any(), gomock.Any()).Return(db.Question{ID: uuid.New(), QuizID: quizID}, nil)
 		mockImages.EXPECT().GetImageCountByQuestionID(gomock.Any(), gomock.Any()).Return(int64(0), nil)
-		mockMinio.EXPECT().PutObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, nil)
-		mockMinio.EXPECT().PresignedGetObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any()).Return(&url.URL{}, nil)
+		mockMinio.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockMinio.EXPECT().GetPresignedURL(gomock.Any(), gomock.Any(), gomock.Any()).Return("http://example.com/image.jpg", nil)
 		mockImages.EXPECT().CreateQuestionImage(gomock.Any(), gomock.Any()).Return(db.QuestionImage{}, nil)
 
 		file := createTestFileHeader("test.jpg", "image/jpeg", []byte("fake image content"))
@@ -661,7 +659,7 @@ func TestAdminService_AddQuestion(t *testing.T) {
 
 		mockQuestions.EXPECT().CreateQuestion(gomock.Any(), gomock.Any()).Return(db.Question{ID: uuid.New(), QuizID: quizID}, nil)
 		mockImages.EXPECT().GetImageCountByQuestionID(gomock.Any(), gomock.Any()).Return(int64(0), nil)
-		mockMinio.EXPECT().PutObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, errors.New("upload error"))
+		mockMinio.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("upload error"))
 
 		file := createTestFileHeader("test.jpg", "image/jpeg", []byte("fake"))
 
@@ -679,10 +677,10 @@ func TestAdminService_AddQuestion(t *testing.T) {
 
 		mockQuestions.EXPECT().CreateQuestion(gomock.Any(), gomock.Any()).Return(db.Question{ID: uuid.New(), QuizID: quizID}, nil)
 		mockImages.EXPECT().GetImageCountByQuestionID(gomock.Any(), gomock.Any()).Return(int64(0), nil)
-		mockMinio.EXPECT().PutObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, nil)
-		mockMinio.EXPECT().PresignedGetObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any()).Return(&url.URL{}, nil)
+		mockMinio.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockMinio.EXPECT().GetPresignedURL(gomock.Any(), gomock.Any(), gomock.Any()).Return("http://example.com/image.jpg", nil)
 		mockImages.EXPECT().CreateQuestionImage(gomock.Any(), gomock.Any()).Return(db.QuestionImage{}, errors.New("db error"))
-		mockMinio.EXPECT().RemoveObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any()).Return(nil)
+		mockMinio.EXPECT().RemoveObject(gomock.Any(), gomock.Any()).Return(nil)
 
 		file := createTestFileHeader("test.jpg", "image/jpeg", []byte("fake"))
 
@@ -846,8 +844,8 @@ func TestAdminService_UploadQuestionImage(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 	mockMaterials := mocks.NewMockLearningMaterialRepository(ctrl)
 	mockMinio := servicestest.NewMockMinioClient(ctrl)
-
-	storageSvc := services.NewStorageService(mockMinio, "test-bucket")
+	mockMinio.EXPECT().Bucket().Return("test-bucket")
+	storageSvc := services.NewStorageService(mockMinio)
 	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, mockMaterials, nil, storageSvc, nil)
 
 	t.Run("get question error", func(t *testing.T) {
@@ -926,7 +924,7 @@ func TestAdminService_UploadQuestionImage(t *testing.T) {
 		quizID, questionID := uuid.New(), uuid.New()
 		mockQuestions.EXPECT().GetQuestionByID(gomock.Any(), questionID).Return(db.Question{ID: questionID, QuizID: quizID}, nil)
 		mockImages.EXPECT().GetImageCountByQuestionID(gomock.Any(), questionID).Return(int64(0), nil)
-		mockMinio.EXPECT().PutObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, errors.New("upload failed"))
+		mockMinio.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("upload failed"))
 
 		file := createTestFileHeader("test.jpg", "image/jpeg", []byte("content"))
 		err := svc.UploadQuestionImage(context.Background(), quizID, questionID, file)
@@ -939,10 +937,10 @@ func TestAdminService_UploadQuestionImage(t *testing.T) {
 		quizID, questionID := uuid.New(), uuid.New()
 		mockQuestions.EXPECT().GetQuestionByID(gomock.Any(), questionID).Return(db.Question{ID: questionID, QuizID: quizID}, nil)
 		mockImages.EXPECT().GetImageCountByQuestionID(gomock.Any(), questionID).Return(int64(0), nil)
-		mockMinio.EXPECT().PutObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, nil)
-		mockMinio.EXPECT().PresignedGetObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any()).Return(&url.URL{}, nil)
+		mockMinio.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockMinio.EXPECT().GetPresignedURL(gomock.Any(), gomock.Any(), gomock.Any()).Return("http://example.com/image.jpg", nil)
 		mockImages.EXPECT().CreateQuestionImage(gomock.Any(), gomock.Any()).Return(db.QuestionImage{}, errors.New("db error"))
-		mockMinio.EXPECT().RemoveObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any()).Return(nil)
+		mockMinio.EXPECT().RemoveObject(gomock.Any(), gomock.Any()).Return(nil)
 
 		file := createTestFileHeader("test.jpg", "image/jpeg", []byte("content"))
 		err := svc.UploadQuestionImage(context.Background(), quizID, questionID, file)
@@ -955,8 +953,8 @@ func TestAdminService_UploadQuestionImage(t *testing.T) {
 		quizID, questionID := uuid.New(), uuid.New()
 		mockQuestions.EXPECT().GetQuestionByID(gomock.Any(), questionID).Return(db.Question{ID: questionID, QuizID: quizID}, nil)
 		mockImages.EXPECT().GetImageCountByQuestionID(gomock.Any(), questionID).Return(int64(0), nil)
-		mockMinio.EXPECT().PutObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, nil)
-		mockMinio.EXPECT().PresignedGetObject(gomock.Any(), "test-bucket", gomock.Any(), gomock.Any(), gomock.Any()).Return(&url.URL{}, nil)
+		mockMinio.EXPECT().PutObject(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockMinio.EXPECT().GetPresignedURL(gomock.Any(), gomock.Any(), gomock.Any()).Return("http://example.com/image.jpg", nil)
 		mockImages.EXPECT().CreateQuestionImage(gomock.Any(), gomock.Any()).Return(db.QuestionImage{ID: uuid.New()}, nil)
 
 		file := createTestFileHeader("test.jpg", "image/jpeg", []byte("content"))
@@ -980,8 +978,8 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 	mockStats := mocks.NewMockStatsRepository(ctrl)
 	mockMaterials := mocks.NewMockLearningMaterialRepository(ctrl)
 	mockMinio := servicestest.NewMockMinioClient(ctrl)
-
-	storageSvc := services.NewStorageService(mockMinio, "test-bucket")
+	mockMinio.EXPECT().Bucket().Return("test-bucket")
+	storageSvc := services.NewStorageService(mockMinio)
 	svc := services.NewAdminService(mockUsers, mockQuizzes, mockQuestions, mockImages, mockAttempts, mockStats, mockMaterials, nil, storageSvc, nil)
 
 	t.Run("get image error", func(t *testing.T) {
@@ -1020,7 +1018,7 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 		imageID, questionID := uuid.New(), uuid.New()
 		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, Url: "http://storage/img.jpg"}, nil)
 		mockImages.EXPECT().DeleteQuestionImage(gomock.Any(), imageID).Return(nil)
-		mockMinio.EXPECT().RemoveObject(gomock.Any(), "test-bucket", "img.jpg", gomock.Any()).Return(errors.New("storage error"))
+		mockMinio.EXPECT().RemoveObject(gomock.Any(), "img.jpg").Return(errors.New("storage error"))
 
 		err := svc.DeleteQuestionImage(context.Background(), imageID, questionID)
 		if err == nil {
@@ -1032,7 +1030,7 @@ func TestAdminService_DeleteQuestionImage(t *testing.T) {
 		imageID, questionID := uuid.New(), uuid.New()
 		mockImages.EXPECT().GetQuestionImageByID(gomock.Any(), imageID).Return(db.QuestionImage{ID: imageID, QuestionID: questionID, Url: "http://storage/img.jpg"}, nil)
 		mockImages.EXPECT().DeleteQuestionImage(gomock.Any(), imageID).Return(nil)
-		mockMinio.EXPECT().RemoveObject(gomock.Any(), "test-bucket", "img.jpg", gomock.Any()).Return(nil)
+		mockMinio.EXPECT().RemoveObject(gomock.Any(), "img.jpg").Return(nil)
 
 		err := svc.DeleteQuestionImage(context.Background(), imageID, questionID)
 		if err != nil {

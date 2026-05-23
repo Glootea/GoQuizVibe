@@ -112,7 +112,7 @@ func SeedData(ctx context.Context, pool *pgxpool.Pool) error {
 		return nil
 	}
 
-	log.Println("Seeding initial data...\n")
+	log.Println("Seeding initial data...")
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte("teacher123"), bcrypt.DefaultCost)
 	teacherID := uuid.MustParse("11111111-1111-1111-1111-111111111111")

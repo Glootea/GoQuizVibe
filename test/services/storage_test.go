@@ -6,8 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"strings"
 	"testing"
 	"time"
 
@@ -16,13 +14,11 @@ import (
 	"github.com/goquizvibe/config"
 	servicestest "github.com/goquizvibe/mocks/servicestest"
 	"github.com/goquizvibe/services"
-	"github.com/minio/minio-go/v7"
 	"go.uber.org/mock/gomock"
 )
 
 func TestStorageService_UploadImage(t *testing.T) {
 	ctx := context.Background()
-	bucket := "test-bucket"
 
 	t.Run("successful upload", func(t *testing.T) {
 		t.Parallel()
@@ -30,11 +26,12 @@ func TestStorageService_UploadImage(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
 		header := createTestFileHeaderForStorage(t, "test.jpg", "image/jpeg")
-		mockClient.EXPECT().PutObject(ctx, bucket, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, nil)
-		mockClient.EXPECT().PresignedGetObject(ctx, bucket, gomock.Any(), 24*time.Hour, nil).Return(&url.URL{Scheme: "http", Host: "localhost:9000", Path: "/bucket/object"}, nil)
+		mockClient.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		mockClient.EXPECT().GetPresignedURL(ctx, gomock.Any(), 24*time.Hour).Return("http://localhost:9000/bucket/object", nil)
 
 		result, err := svc.UploadImage(ctx, header)
 		if err != nil {
@@ -51,10 +48,11 @@ func TestStorageService_UploadImage(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
 		header := createTestFileHeaderForStorage(t, "test.jpg", "image/jpeg")
-		mockClient.EXPECT().PutObject(ctx, bucket, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, errors.New("upload failed"))
+		mockClient.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("upload failed"))
 
 		_, err := svc.UploadImage(ctx, header)
 		if err == nil {
@@ -68,11 +66,12 @@ func TestStorageService_UploadImage(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
 		header := createTestFileHeaderForStorage(t, "test.jpg", "")
-		mockClient.EXPECT().PutObject(ctx, bucket, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(minio.UploadInfo{}, nil)
-		mockClient.EXPECT().PresignedGetObject(ctx, bucket, gomock.Any(), 24*time.Hour, nil).Return(&url.URL{Scheme: "http", Host: "localhost:9000"}, nil)
+		mockClient.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), "application/octet-stream").Return(nil)
+		mockClient.EXPECT().GetPresignedURL(ctx, gomock.Any(), 24*time.Hour).Return("http://localhost:9000/bucket/object", nil)
 
 		_, err := svc.UploadImage(ctx, header)
 		if err != nil {
@@ -83,7 +82,6 @@ func TestStorageService_UploadImage(t *testing.T) {
 
 func TestStorageService_DeleteImage(t *testing.T) {
 	ctx := context.Background()
-	bucket := "test-bucket"
 
 	t.Run("successful delete", func(t *testing.T) {
 		t.Parallel()
@@ -91,9 +89,10 @@ func TestStorageService_DeleteImage(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().RemoveObject(ctx, bucket, "object-name", gomock.Any()).Return(nil)
+		mockClient.EXPECT().RemoveObject(ctx, "object-name").Return(nil)
 
 		err := svc.DeleteImage(ctx, "object-name")
 		if err != nil {
@@ -107,9 +106,10 @@ func TestStorageService_DeleteImage(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().RemoveObject(ctx, bucket, "object-name", gomock.Any()).Return(errors.New("delete failed"))
+		mockClient.EXPECT().RemoveObject(ctx, "object-name").Return(errors.New("delete failed"))
 
 		err := svc.DeleteImage(ctx, "object-name")
 		if err == nil {
@@ -118,25 +118,21 @@ func TestStorageService_DeleteImage(t *testing.T) {
 	})
 }
 
-func TestStorageService_GetImageURL(t *testing.T) {
-	bucket := "test-bucket"
-
+func TestStorageService_GetPresignedURL(t *testing.T) {
 	t.Run("presigned URL success", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().PresignedGetObject(context.Background(), bucket, "object-name", 24*time.Hour, nil).Return(&url.URL{Scheme: "http", Host: "localhost:9000", Path: "/bucket/object"}, nil)
+		mockClient.EXPECT().GetPresignedURL(context.Background(), "object-name", 24*time.Hour).Return("http://localhost:9000/bucket/object-name", nil)
 
-		result := svc.GetImageURL("object-name")
+		result := svc.GetPresignedURL("object-name")
 		if result == "" {
-			t.Error("GetImageURL() returned empty string")
-		}
-		if !strings.HasPrefix(result, "http") {
-			t.Errorf("GetImageURL() = %v, want URL", result)
+			t.Error("GetPresignedURL() returned empty string")
 		}
 	})
 
@@ -146,22 +142,22 @@ func TestStorageService_GetImageURL(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().PresignedGetObject(context.Background(), bucket, "object-name", 24*time.Hour, nil).Return(nil, errors.New("presign error"))
-		mockClient.EXPECT().EndpointURL().Return(&url.URL{Host: "localhost:9000"})
+		mockClient.EXPECT().GetPresignedURL(context.Background(), "object-name", 24*time.Hour).Return("", errors.New("presign error"))
+		mockClient.EXPECT().Endpoint().Return("localhost:9000")
 
-		result := svc.GetImageURL("object-name")
+		result := svc.GetPresignedURL("object-name")
 		expected := "http://localhost:9000/test-bucket/object-name"
 		if result != expected {
-			t.Errorf("GetImageURL() = %v, want %v", result, expected)
+			t.Errorf("GetPresignedURL() = %v, want %v", result, expected)
 		}
 	})
 }
 
 func TestStorageService_EnsureBucket(t *testing.T) {
 	ctx := context.Background()
-	bucket := "test-bucket"
 
 	t.Run("bucket already exists", func(t *testing.T) {
 		t.Parallel()
@@ -169,28 +165,11 @@ func TestStorageService_EnsureBucket(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().BucketExists(ctx, bucket).Return(true, nil)
-		mockClient.EXPECT().SetBucketPolicy(ctx, bucket, gomock.Any()).Return(nil)
-
-		err := svc.EnsureBucket(ctx)
-		if err != nil {
-			t.Fatalf("EnsureBucket() error = %v, want nil", err)
-		}
-	})
-
-	t.Run("create bucket and set policy", func(t *testing.T) {
-		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
-
-		mockClient.EXPECT().BucketExists(ctx, bucket).Return(false, nil)
-		mockClient.EXPECT().MakeBucket(ctx, bucket, gomock.Any()).Return(nil)
-		mockClient.EXPECT().SetBucketPolicy(ctx, bucket, gomock.Any()).Return(nil)
+		mockClient.EXPECT().EnsureBucket(ctx).Return(nil)
+		mockClient.EXPECT().SetBucketPolicy(ctx, "test-bucket", gomock.Any()).Return(nil)
 
 		err := svc.EnsureBucket(ctx)
 		if err != nil {
@@ -198,32 +177,16 @@ func TestStorageService_EnsureBucket(t *testing.T) {
 		}
 	})
 
-	t.Run("BucketExists error", func(t *testing.T) {
+	t.Run("EnsureBucket error", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().BucketExists(ctx, bucket).Return(false, errors.New("bucket check failed"))
-
-		err := svc.EnsureBucket(ctx)
-		if err == nil {
-			t.Fatal("EnsureBucket() error = nil, want error")
-		}
-	})
-
-	t.Run("MakeBucket error", func(t *testing.T) {
-		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
-
-		mockClient.EXPECT().BucketExists(ctx, bucket).Return(false, nil)
-		mockClient.EXPECT().MakeBucket(ctx, bucket, gomock.Any()).Return(errors.New("make bucket failed"))
+		mockClient.EXPECT().EnsureBucket(ctx).Return(errors.New("bucket check failed"))
 
 		err := svc.EnsureBucket(ctx)
 		if err == nil {
@@ -237,10 +200,11 @@ func TestStorageService_EnsureBucket(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := servicestest.NewMockMinioClient(ctrl)
-		svc := services.NewStorageService(mockClient, bucket)
+		mockClient.EXPECT().Bucket().Return("test-bucket")
+		svc := services.NewStorageService(mockClient)
 
-		mockClient.EXPECT().BucketExists(ctx, bucket).Return(true, nil)
-		mockClient.EXPECT().SetBucketPolicy(ctx, bucket, gomock.Any()).Return(errors.New("policy failed"))
+		mockClient.EXPECT().EnsureBucket(ctx).Return(nil)
+		mockClient.EXPECT().SetBucketPolicy(ctx, "test-bucket", gomock.Any()).Return(errors.New("policy failed"))
 
 		err := svc.EnsureBucket(ctx)
 		if err == nil {

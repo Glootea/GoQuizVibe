@@ -13,11 +13,11 @@ import (
 )
 
 type StorageService struct {
-	client *storage.MinioClient
+	client storage.Storage
 	bucket string
 }
 
-func NewStorageService(client *storage.MinioClient) *StorageService {
+func NewStorageService(client storage.Storage) *StorageService {
 	return &StorageService{
 		client: client,
 		bucket: client.Bucket(),

@@ -338,3 +338,79 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		}
 	})
 }
+
+func TestCheckFillAnswer(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		userAnswers   []string
+		correctAnswer string
+		expected      bool
+	}{
+		{
+			name:          "correct single gap",
+			userAnswers:   []string{"4"},
+			correctAnswer: `[{"type":"text","content":"2 + 2 = "},{"type":"gap","content":"4"}]`,
+			expected:      true,
+		},
+		{
+			name:          "correct multiple gaps",
+			userAnswers:   []string{"water", "CO2"},
+			correctAnswer: `[{"type":"text","content":"Products: "},{"type":"gap","content":"water"},{"type":"text","content":" and "},{"type":"gap","content":"CO2"}]`,
+			expected:      true,
+		},
+		{
+			name:          "wrong answer",
+			userAnswers:   []string{"5"},
+			correctAnswer: `[{"type":"text","content":"2 + 2 = "},{"type":"gap","content":"4"}]`,
+			expected:      false,
+		},
+		{
+			name:          "wrong number of answers",
+			userAnswers:   []string{"water", "CO2", "extra"},
+			correctAnswer: `[{"type":"text","content":"Products: "},{"type":"gap","content":"water"},{"type":"gap","content":"CO2"}]`,
+			expected:      false,
+		},
+		{
+			name:          "case insensitive",
+			userAnswers:   []string{"ANSWER"},
+			correctAnswer: `[{"type":"text","content":"The answer is "},{"type":"gap","content":"answer"}]`,
+			expected:      true,
+		},
+		{
+			name:          "empty user answers",
+			userAnswers:   []string{},
+			correctAnswer: `[{"type":"gap","content":"something"}]`,
+			expected:      false,
+		},
+		{
+			name:          "no gaps in answer",
+			userAnswers:   []string{"answer"},
+			correctAnswer: `[{"type":"text","content":"Just text"}]`,
+			expected:      false,
+		},
+		{
+			name:          "invalid json",
+			userAnswers:   []string{"answer"},
+			correctAnswer: "not json",
+			expected:      false,
+		},
+		{
+			name:          "trim trailing dots",
+			userAnswers:   []string{"answer"},
+			correctAnswer: `[{"type":"text","content":"The answer is "},{"type":"gap","content":"answer."}]`,
+			expected:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := services.CheckFillAnswer(tt.userAnswers, tt.correctAnswer)
+			if result != tt.expected {
+				t.Errorf("CheckFillAnswer(%v, %q) = %v, want %v", tt.userAnswers, tt.correctAnswer, result, tt.expected)
+			}
+		})
+	}
+}
