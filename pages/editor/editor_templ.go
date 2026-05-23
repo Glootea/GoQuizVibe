@@ -68,7 +68,20 @@ func EditorPage(materialID string, initialSource string, pdfURL string) templ.Co
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"></div><script>\n\t\t\t\tconst editorData = document.getElementById('editor-data');\n\t\t\t\twindow.MATERIAL_ID = editorData.dataset.materialId || '';\n\t\t\t\twindow.INITIAL_SOURCE = editorData.dataset.initialSource || '';\n\t\t\t\twindow.PDF_URL = editorData.dataset.pdfUrl || '';\n\t\t\t</script><div class=\"editor-container\"><aside id=\"files-panel\" class=\"files-panel\"><div class=\"files-header\"><span>Files</span></div><div class=\"file-list\"><div class=\"file-item active\"><i class=\"fas fa-file-code\"></i><span>main.typ</span></div></div></aside><div class=\"resize-handler-v\" data-resize=\"files\"></div><div class=\"main-area\"><div class=\"middle-row\"><div class=\"editor-panel\"><div id=\"editor-container\"></div></div><div class=\"resize-handler-v\" data-resize=\"editor-preview\"></div><div class=\"preview-panel\"><iframe id=\"preview-frame\" style=\"display: none;\"></iframe><div id=\"preview-placeholder\" class=\"flex items-center justify-center h-full text-gray-400\"><span>No preview available</span></div></div></div><div class=\"resize-handler-h\" data-resize=\"errors\"></div><div class=\"errors-panel\"><div class=\"errors-header\"><i class=\"fas fa-exclamation-circle\"></i> <span>Errors</span></div><div id=\"errors-list\" class=\"errors-list\"></div></div></div></div><script src=\"/static/scripts/editor/editor.bundle.js\" type=\"module\"></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"></div><script>\n\t\t\t\tconst editorData = document.getElementById('editor-data');\n\t\t\t\twindow.MATERIAL_ID = editorData.dataset.materialId || '';\n\t\t\t\twindow.INITIAL_SOURCE = editorData.dataset.initialSource || '';\n\t\t\t\twindow.PDF_URL = editorData.dataset.pdfUrl || '';\n\t\t\t</script><div class=\"editor-container\"><aside id=\"files-panel\" class=\"files-panel\"><div class=\"files-header\"><a id=\"back-to-resource\" href=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 templ.SafeURL
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs("/admin/learning-materials/" + materialID)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pages/editor/editor.templ`, Line: 29, Col: 79}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"back-btn\"><i class=\"fas fa-arrow-left\"></i></a> <span>Files</span></div><div class=\"file-list\"><div class=\"file-item active\"><i class=\"fas fa-file-code\"></i><span>main.typ</span></div></div></aside><div class=\"resize-handler-v\" data-resize=\"files\"></div><div class=\"main-area\"><div class=\"middle-row\"><div class=\"editor-panel\"><div id=\"editor-container\"></div></div><div class=\"resize-handler-v\" data-resize=\"editor-preview\"></div><div class=\"preview-panel\"><iframe id=\"preview-frame\" style=\"display: none;\"></iframe><div id=\"preview-placeholder\" class=\"flex justify-center items-center h-full text-gray-400\"><span>No preview available</span></div></div></div><div class=\"resize-handler-h\" data-resize=\"errors\"></div><div class=\"errors-panel\"><div class=\"errors-header\"><i class=\"fas fa-exclamation-circle\"></i> <span>Errors</span></div><div id=\"errors-list\" class=\"errors-list\"></div></div></div></div><script src=\"/static/scripts/editor/editor.bundle.js\" type=\"module\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

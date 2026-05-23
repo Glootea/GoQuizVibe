@@ -77,6 +77,24 @@ func (h *LearningMaterialsHandler) New(w http.ResponseWriter, r *http.Request) e
 		}
 
 		if materialType == "typst" {
+			typstAction := r.FormValue("typst_action")
+
+			if typstAction == "template" {
+				material, err := h.materialService.CreateTypstMaterialFromTemplate(r.Context(), user.ID, title, description)
+				if err != nil {
+					return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+				}
+
+				if IsHTMXRequest(r) {
+					w.Header().Set("HX-Redirect", "/editor?material_id="+material.ID.String())
+					w.WriteHeader(http.StatusOK)
+					return nil
+				}
+
+				http.Redirect(w, r, "/editor?material_id="+material.ID.String(), http.StatusFound)
+				return nil
+			}
+
 			if err := r.ParseMultipartForm(50 << 20); err != nil {
 				return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 			}

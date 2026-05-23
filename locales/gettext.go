@@ -112,6 +112,8 @@ type Translator interface {
 	CreateFirstLearningMaterial() string
 	// "Create first quiz"
 	CreateFirstQuiz() string
+	// "Create from Template"
+	CreateFromTemplate() string
 	// "Create Learning Material"
 	CreateLearningMaterial() string
 	// "Create Quiz"
@@ -280,6 +282,8 @@ type Translator interface {
 	OrEnterJsonManually() string
 	// "order_index (integer) - position in the quiz (0-based)"
 	OrderIndexIntegerPositionInTheQuiz0Based() string
+	// "OrUploadOrCreate"
+	Oruploadorcreate() string
 	// "Overview"
 	Overview() string
 	// "Page Not Found"
@@ -410,6 +414,8 @@ type Translator interface {
 	SuccessRate() string
 	// "Summary Statistics"
 	SummaryStatistics() string
+	// "Template Description"
+	TemplateDescription() string
 	// "Test already active"
 	TestAlreadyActive() string
 	// "Test conflict"
@@ -676,6 +682,10 @@ func (t *translator) CreateFirstLearningMaterial() string {
 
 func (t *translator) CreateFirstQuiz() string {
 	return t.locale.Get("Create first quiz")
+}
+
+func (t *translator) CreateFromTemplate() string {
+	return t.locale.Get("Create from Template")
 }
 
 func (t *translator) CreateLearningMaterial() string {
@@ -1014,6 +1024,10 @@ func (t *translator) OrderIndexIntegerPositionInTheQuiz0Based() string {
 	return t.locale.Get("order_index (integer) - position in the quiz (0-based)")
 }
 
+func (t *translator) Oruploadorcreate() string {
+	return t.locale.Get("OrUploadOrCreate")
+}
+
 func (t *translator) Overview() string {
 	return t.locale.Get("Overview")
 }
@@ -1272,6 +1286,10 @@ func (t *translator) SuccessRate() string {
 
 func (t *translator) SummaryStatistics() string {
 	return t.locale.Get("Summary Statistics")
+}
+
+func (t *translator) TemplateDescription() string {
+	return t.locale.Get("Template Description")
 }
 
 func (t *translator) TestAlreadyActive() string {

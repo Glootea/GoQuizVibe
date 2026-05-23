@@ -1,3 +1,5 @@
+# Must be run from project root, not from microservices/typst
+
 FROM alpine:3.23.4 AS builder
 
 RUN apk add go

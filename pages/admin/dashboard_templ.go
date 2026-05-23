@@ -166,7 +166,7 @@ func DashboardPage(data types.AdminDashboardData, t locales.Translator) templ.Co
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "%</p></div><i class=\"text-4xl text-purple-200 fas fa-percentage\"></i></div></div><a href=\"/admin/learning-materials\" class=\"p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-500\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "%</p></div><i class=\"text-4xl text-purple-200 fas fa-percentage\"></i></div></div><a href=\"/admin/learning-materials\" class=\"p-6 bg-white rounded-xl shadow-sm transition hover:shadow-md\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-500\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -399,7 +399,7 @@ func DashboardPage(data types.AdminDashboardData, t locales.Translator) templ.Co
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</div></div><div class=\"mt-8 p-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center mb-4\"><h2 class=\"text-xl font-bold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</div></div><div class=\"p-6 mt-8 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center mb-4\"><h2 class=\"text-xl font-bold\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -412,7 +412,7 @@ func DashboardPage(data types.AdminDashboardData, t locales.Translator) templ.Co
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</h2><a href=\"/admin/learning-materials\" class=\"inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition\"><span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</h2><a href=\"/admin/learning-materials\" class=\"inline-flex gap-2 items-center py-2 px-4 text-teal-700 bg-teal-50 rounded-lg transition hover:bg-teal-100\"><span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

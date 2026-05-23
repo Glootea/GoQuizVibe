@@ -49,7 +49,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"max-w-4xl mx-auto\"><div class=\"mb-6\"><a href=\"/admin/learning-materials\" class=\"text-indigo-600 hover:text-indigo-800\"><i class=\"mr-1 fas fa-arrow-left\"></i>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"mx-auto max-w-4xl\"><div class=\"mb-6\"><a href=\"/admin/learning-materials\" class=\"text-indigo-600 hover:text-indigo-800\"><i class=\"mr-1 fas fa-arrow-left\"></i>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -62,7 +62,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</a></div><div class=\"bg-white rounded-xl shadow-sm p-6 mb-6\"><div class=\"flex items-start justify-between mb-6\"><div><div class=\"flex items-center gap-3 mb-2\"><h1 class=\"text-2xl font-bold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</a></div><div class=\"p-6 mb-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-start mb-6\"><div><div class=\"flex gap-3 items-center mb-2\"><h1 class=\"text-2xl font-bold\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -159,7 +159,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"py-2 px-4 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition\"><i class=\"mr-1 fas fa-trash\"></i>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"py-2 px-4 text-red-600 rounded-lg border border-red-600 transition hover:bg-red-50\"><i class=\"mr-1 fas fa-trash\"></i>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -297,7 +297,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				return templ_7745c5c3_Err
 			}
 			if string(material.MaterialType) == "typst" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div class=\"bg-white rounded-xl shadow-sm p-6\"><div class=\"flex items-center justify-between mb-4\"><h2 class=\"text-xl font-semibold\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div class=\"p-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center mb-4\"><h2 class=\"text-xl font-semibold\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -323,7 +323,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition\"><i class=\"mr-1 fas fa-edit\"></i>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\"><i class=\"mr-1 fas fa-edit\"></i>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -349,7 +349,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\" class=\"py-2 px-4 text-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-50 transition\" target=\"_blank\"><i class=\"mr-1 fas fa-external-link-alt\"></i>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\" class=\"py-2 px-4 text-indigo-600 rounded-lg border border-indigo-600 transition hover:bg-indigo-50\" target=\"_blank\"><i class=\"mr-1 fas fa-external-link-alt\"></i>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -375,7 +375,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition\"><i class=\"mr-1 fas fa-sync\"></i>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\"><i class=\"mr-1 fas fa-sync\"></i>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -388,7 +388,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</button></div></div><div class=\"border border-gray-200 rounded-lg overflow-hidden\"><iframe src=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</button></div></div><div class=\"overflow-hidden rounded-lg border border-gray-200\"><iframe src=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -406,7 +406,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 					return templ_7745c5c3_Err
 				}
 			} else if url != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<div class=\"bg-white rounded-xl shadow-sm p-6\"><h2 class=\"text-xl font-semibold mb-4\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<div class=\"p-6 bg-white rounded-xl shadow-sm\"><h2 class=\"mb-4 text-xl font-semibold\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -432,7 +432,7 @@ func LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, url
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition\" target=\"_blank\"><i class=\"mr-1 fas fa-external-link-alt\"></i>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" class=\"py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700\" target=\"_blank\"><i class=\"mr-1 fas fa-external-link-alt\"></i>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

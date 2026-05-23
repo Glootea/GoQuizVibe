@@ -26,6 +26,9 @@ templ EditorPage(materialID string, initialSource string, pdfURL string) {
 			<div class="editor-container">
 				<aside id="files-panel" class="files-panel">
 					<div class="files-header">
+						<a id="back-to-resource" href={ "/admin/learning-materials/" + materialID } class="back-btn">
+							<i class="fas fa-arrow-left"></i>
+						</a>
 						<span>Files</span>
 					</div>
 					<div class="file-list">
@@ -43,7 +46,7 @@ templ EditorPage(materialID string, initialSource string, pdfURL string) {
 						<div class="resize-handler-v" data-resize="editor-preview"></div>
 						<div class="preview-panel">
 							<iframe id="preview-frame" style="display: none;"></iframe>
-							<div id="preview-placeholder" class="flex items-center justify-center h-full text-gray-400">
+							<div id="preview-placeholder" class="flex justify-center items-center h-full text-gray-400">
 								<span>No preview available</span>
 							</div>
 						</div>

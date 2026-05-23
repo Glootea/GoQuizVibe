@@ -46,7 +46,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen bg-gray-100 p-8\"><div class=\"max-w-6xl mx-auto\"><div class=\"bg-white rounded-xl shadow-sm p-6 mb-6\"><div class=\"flex items-center justify-between\"><div><h1 class=\"text-2xl font-bold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-8 min-h-screen bg-gray-100\"><div class=\"mx-auto max-w-6xl\"><div class=\"p-6 mb-6 bg-white rounded-xl shadow-sm\"><div class=\"flex justify-between items-center\"><div><h1 class=\"text-2xl font-bold\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -85,7 +85,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" class=\"py-2 px-4 text-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-50 transition\"><i class=\"mr-1 fas fa-arrow-left\"></i>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" class=\"py-2 px-4 text-indigo-600 rounded-lg border border-indigo-600 transition hover:bg-indigo-50\"><i class=\"mr-1 fas fa-arrow-left\"></i>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -98,7 +98,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</a></div></div><div class=\"bg-white rounded-xl shadow-sm p-8 flex items-center justify-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</a></div></div><div class=\"flex justify-center items-center p-8 bg-white rounded-xl shadow-sm\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -48,7 +48,7 @@ templ DashboardPage(data types.AdminDashboardData, t locales.Translator) {
 					<i class="text-4xl text-purple-200 fas fa-percentage"></i>
 				</div>
 			</div>
-			<a href="/admin/learning-materials" class="p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition">
+			<a href="/admin/learning-materials" class="p-6 bg-white rounded-xl shadow-sm transition hover:shadow-md">
 				<div class="flex justify-between items-center">
 					<div>
 						<p class="text-sm text-gray-500">{ t.LearningMaterials() }</p>
@@ -113,10 +113,10 @@ templ DashboardPage(data types.AdminDashboardData, t locales.Translator) {
 				}
 			</div>
 		</div>
-		<div class="mt-8 p-6 bg-white rounded-xl shadow-sm">
+		<div class="p-6 mt-8 bg-white rounded-xl shadow-sm">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-xl font-bold">{ t.LearningMaterials() }</h2>
-				<a href="/admin/learning-materials" class="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition">
+				<a href="/admin/learning-materials" class="inline-flex gap-2 items-center py-2 px-4 text-teal-700 bg-teal-50 rounded-lg transition hover:bg-teal-100">
 					<span>{ t.ViewAll() }</span>
 					<i class="fas fa-arrow-right"></i>
 				</a>

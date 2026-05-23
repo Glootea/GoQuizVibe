@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -99,6 +100,55 @@ func (s *LearningMaterialService) UploadTypstMaterial(ctx context.Context, owner
 		totalSize += int64(len(d))
 	}
 
+	now := time.Now()
+	material, err := s.repo.CreateLearningMaterial(ctx, db.CreateLearningMaterialParams{
+		ID:              materialID,
+		Title:           title,
+		Description:     description,
+		MaterialType:    db.LearningMaterialTypeTypst,
+		OwnerID:         ownerID,
+		SourcePath:      storage.TypstSourceDir(materialID.String()),
+		CompiledPath:    pdfPath,
+		ResourcePath:    "",
+		FileSize:        pgtype.Int8{Int64: totalSize, Valid: true},
+		MimeType:        "application/typst",
+		CreatedAt:       now,
+		UpdatedAt:       now,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("create material: %w", err)
+	}
+
+	return &material, nil
+}
+
+func (s *LearningMaterialService) CreateTypstMaterialFromTemplate(ctx context.Context, ownerID uuid.UUID, title, description string) (*db.LearningMaterial, error) {
+	templatePath := filepath.Join("static", "templates", "typst_default.typ")
+	templateData, err := os.ReadFile(templatePath)
+	if err != nil {
+		return nil, fmt.Errorf("read template: %w", err)
+	}
+
+	materialID := uuid.New()
+	mainTypstPath := storage.TypstSourcePath(materialID.String())
+
+	if err := s.storageService.client.PutObject(ctx, mainTypstPath, templateData, "application/typst"); err != nil {
+		return nil, fmt.Errorf("upload main.typ: %w", err)
+	}
+
+	resp, err := s.typstClient.Compile(ctx, &proto.CompileRequest{
+		MaterialId: materialID.String(),
+		SourcePath: mainTypstPath,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("compile typst: %w", err)
+	}
+	if !resp.Success {
+		return nil, fmt.Errorf("compile typst failed: %s", resp.Errors)
+	}
+
+	pdfPath := resp.PdfPath
+	totalSize := int64(len(templateData))
 	now := time.Now()
 	material, err := s.repo.CreateLearningMaterial(ctx, db.CreateLearningMaterialParams{
 		ID:              materialID,

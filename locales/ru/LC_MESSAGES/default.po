@@ -714,6 +714,15 @@ msgstr "Typst файлы"
 msgid "Typst Files Help"
 msgstr "Загрузите main.typ и файлы изображений"
 
+msgid "OrUploadOrCreate"
+msgstr "или"
+
+msgid "Create from Template"
+msgstr "Создать из шаблона"
+
+msgid "Template Description"
+msgstr "Шаблон включает примеры: заголовки, списки, код, математику"
+
 msgid "Resource File"
 msgstr "Файл ресурса"
 

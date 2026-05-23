@@ -711,6 +711,15 @@ msgstr "Typst Files"
 msgid "Typst Files Help"
 msgstr "Upload main.typ and any image dependencies"
 
+msgid "OrUploadOrCreate"
+msgstr "or"
+
+msgid "Create from Template"
+msgstr "Create from Template"
+
+msgid "Template Description"
+msgstr "Template includes examples: headings, lists, code, math"
+
 msgid "Resource File"
 msgstr "Resource File"
 
