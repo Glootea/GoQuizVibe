@@ -31,6 +31,8 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	userGroupService := ProvideUserGroupService(queries)
+	permissionsService := ProvidePermissionsService(queries)
 	adminService := ProvideAdminService(queries, authService, storageService, cacheService)
 	dashboardService := ProvideDashboardService(queries, gamificationService, authService, quizSessionService, cacheService)
 	service, err := ProvideLocaleService()
@@ -46,6 +48,8 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	editorHandler := ProvideEditorHandler(learningMaterialService)
 	typstHandler := ProvideTypstHandler(learningMaterialService, adminService)
 	learningMaterialsHandler := ProvideLearningMaterialsHandler(learningMaterialService, adminService, service)
+	groupsHandler := ProvideGroupsHandler(userGroupService, authService)
+	permissionsHandler := ProvidePermissionsHandler(permissionsService, userGroupService, authService)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	compressionMiddleware := ProvideCompressionMiddleware()
@@ -55,26 +59,30 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		Config:                  config,
 		AuthService:             authService,
 		QuizService:             quizService,
-		QuizSessionService:      quizSessionService,
-		QuizTimerService:        quizTimerService,
+		QuizSessionService:       quizSessionService,
+		QuizTimerService:         quizTimerService,
 		AdminService:            adminService,
-		DashboardService:        dashboardService,
-		GamificationService:     gamificationService,
-		StorageService:          storageService,
-		CacheService:            cacheService,
-		LearningMaterialService: learningMaterialService,
-		AuthHandler:             authHandler,
-		DashboardHandler:        dashboardHandler,
-		QuizHandler:             quizHandler,
+		DashboardService:         dashboardService,
+		GamificationService:      gamificationService,
+		StorageService:           storageService,
+		CacheService:             cacheService,
+		LearningMaterialService:  learningMaterialService,
+		UserGroupService:         userGroupService,
+		PermissionsService:       permissionsService,
+		AuthHandler:              authHandler,
+		DashboardHandler:         dashboardHandler,
+		QuizHandler:              quizHandler,
 		AdminHandler:            adminHandler,
 		EditorHandler:            editorHandler,
-		TypstHandler:            typstHandler,
+		TypstHandler:             typstHandler,
 		LearningMaterialsHandler: learningMaterialsHandler,
-		RequireAuthMiddleware:   requireAuthMiddleware,
-		RequireRoleMiddleware:   requireRoleMiddleware,
+		GroupsHandler:           groupsHandler,
+		PermissionsHandler:      permissionsHandler,
+		RequireAuthMiddleware:    requireAuthMiddleware,
+		RequireRoleMiddleware:    requireRoleMiddleware,
 		CompressionMiddleware:   compressionMiddleware,
 		CommonHeadersMiddleware: commonHeaders,
-		LocaleMiddleware:        localeMiddleware,
+		LocaleMiddleware:         localeMiddleware,
 		LocaleService:            service,
 	}
 	return app, nil

@@ -502,11 +502,14 @@ func fillSegmentsPreview(correctAnswer string) string {
 
 	result := ""
 	for _, seg := range segments {
-		if seg.Type == "text" {
+		switch seg.Type {
+		case "text":
 			result += seg.Content
-		} else if seg.Type == "gap" {
+		case "gap":
 			result += fmt.Sprintf(`<span class="py-0.5 px-2 mx-1 text-indigo-700 bg-indigo-100 rounded border border-indigo-300">%s</span>`, seg.Content)
+
 		}
+
 	}
 	return result
 }

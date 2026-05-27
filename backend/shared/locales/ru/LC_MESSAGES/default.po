@@ -788,3 +788,133 @@ msgstr "Создать"
 
 msgid "Title"
 msgstr "Название"
+
+# Groups
+
+msgid "My Groups"
+msgstr "Мои группы"
+
+msgid "Create Group"
+msgstr "Создать группу"
+
+msgid "Group Name"
+msgstr "Название группы"
+
+msgid "Members"
+msgstr "Участники"
+
+msgid "Admins"
+msgstr "Админы"
+
+msgid "Add Member"
+msgstr "Добавить участника"
+
+msgid "Remove Member"
+msgstr "Удалить участника"
+
+msgid "Make Admin"
+msgstr "Назначить админом"
+
+msgid "Remove Admin"
+msgstr "Убрать из админов"
+
+msgid "Leave Group"
+msgstr "Покинуть группу"
+
+msgid "Delete Group"
+msgstr "Удалить группу"
+
+msgid "Group created"
+msgstr "Группа создана"
+
+msgid "Group updated"
+msgstr "Группа обновлена"
+
+msgid "Group deleted"
+msgstr "Группа удалена"
+
+msgid "Member added"
+msgstr "Участник добавлен"
+
+msgid "Member removed"
+msgstr "Участник удалён"
+
+msgid "Role updated"
+msgstr "Роль обновлена"
+
+msgid "Left group"
+msgstr "Покинул группу"
+
+msgid "No groups yet"
+msgstr "Пока нет групп"
+
+msgid "Group"
+msgstr "Группа"
+
+msgid "Owner"
+msgstr "Владелец"
+
+msgid "Admin"
+msgstr "Админ"
+
+msgid "Member"
+msgstr "Участник"
+
+msgid "You"
+msgstr "Вы"
+
+msgid "Search by name or email"
+msgstr "Поиск по имени или email"
+
+# Permissions
+
+msgid "Share"
+msgstr "Поделиться"
+
+msgid "Permissions"
+msgstr "Права доступа"
+
+msgid "Grant Access"
+msgstr "Выдать доступ"
+
+msgid "Revoke Access"
+msgstr "Отозвать доступ"
+
+msgid "Can View"
+msgstr "Просмотр"
+
+msgid "Can Edit"
+msgstr "Редактирование"
+
+msgid "User"
+msgstr "Пользователь"
+
+msgid "Search by email"
+msgstr "Поиск по email"
+
+msgid "Select group"
+msgstr "Выбрать группу"
+
+msgid "No permissions yet"
+msgstr "Пока нет прав доступа"
+
+msgid "Permission granted"
+msgstr "Доступ выдан"
+
+msgid "Permission revoked"
+msgstr "Доступ отозван"
+
+msgid "Access"
+msgstr "Доступ"
+
+msgid "No access"
+msgstr "Нет доступа"
+
+msgid "You have full access"
+msgstr "У вас полный доступ"
+
+msgid "You can edit"
+msgstr "Вы можете редактировать"
+
+msgid "You can view"
+msgstr "Вы можете просматривать"

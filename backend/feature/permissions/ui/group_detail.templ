@@ -1,0 +1,189 @@
+package ui
+
+import (
+	"github.com/goquizvibe/backend/feature/permissions/services"
+	"github.com/goquizvibe/backend/shared/db"
+	"github.com/goquizvibe/backend/shared/locales"
+)
+
+templ CreateGroupModal(t locales.Translator) {
+	<div id="createGroupModal" class="flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+		<div class="p-6 w-full max-w-md bg-white rounded-xl">
+			<h3 class="mb-4 text-xl font-bold">{ t.CreateGroup() }</h3>
+			<form hx-post="/admin/groups/new" hx-target="body" hx-swap="none">
+				<div class="space-y-4">
+					<div>
+						<label class="block mb-1 text-sm font-medium text-gray-700">{ t.GroupName() }</label>
+						<input type="text" name="name" required class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
+					</div>
+					<div>
+						<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Description() }</label>
+						<textarea name="description" rows="2" class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"></textarea>
+					</div>
+				</div>
+				<div class="flex gap-3 justify-end mt-6">
+					<button type="button" onclick="document.getElementById('createGroupModal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+						{ t.Cancel() }
+					</button>
+					<button type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+						{ t.Create() }
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+}
+
+func getNewRole(currentRole string) string {
+	if currentRole == "admin" {
+		return "member"
+	}
+	return "admin"
+}
+
+templ MembersList(members []services.MemberWithRole, t locales.Translator) {
+	<div class="space-y-2">
+		for _, m := range members {
+			<div class="flex items-center justify-between p-4 bg-white rounded-lg">
+				<div class="flex items-center gap-3">
+					<div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+						<i class="text-indigo-600 fas fa-user"></i>
+					</div>
+					<div>
+						<div class="flex items-center gap-2">
+							<span class="font-medium">{ m.Name }</span>
+							if m.IsOwner {
+								<span class="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">{ t.Owner() }</span>
+							}
+							if string(m.Role) == "admin" && !m.IsOwner {
+								<span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded">{ t.Admin() }</span>
+							}
+						</div>
+						<span class="text-sm text-gray-500">{ m.Email }</span>
+					</div>
+				</div>
+				<div class="flex items-center gap-2">
+					if m.CanManage && !m.IsOwner {
+						<form hx-put={ "/admin/groups/" + m.ID.String() + "/members/" + m.ID.String() + "/role" } hx-swap="none" class="inline">
+							<input type="hidden" name="role" value={ getNewRole(string(m.Role)) }/>
+							<button type="submit" class="px-3 py-1 text-sm text-indigo-600 hover:bg-indigo-50 rounded transition">
+								if string(m.Role) == "admin" {
+									{ t.RemoveAdmin() }
+								} else {
+									{ t.MakeAdmin() }
+								}
+							</button>
+						</form>
+						<button
+							hx-delete={ "/admin/groups/" + m.ID.String() + "/members/" + m.ID.String() }
+							hx-swap="none"
+							class="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded transition"
+						>
+							<i class="fas fa-trash"></i>
+						</button>
+					}
+				</div>
+			</div>
+		}
+	</div>
+}
+
+templ GroupDetailPage(group *db.UserGroup, members []services.MemberWithRole, t locales.Translator) {
+	@BaseAdmin(t.MyGroups(), nil, t) {
+		<div class="mb-6 flex items-center justify-between">
+			<div>
+				<a href="/admin/groups" class="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">
+					<i class="mr-1 fas fa-arrow-left"></i>{ t.MyGroups() }
+				</a>
+				<h1 class="text-3xl font-bold">{ group.Name }</h1>
+				if group.Description != "" {
+					<p class="text-gray-500 mt-1">{ group.Description }</p>
+				}
+			</div>
+			<div class="flex gap-2">
+				<button
+					onclick="document.getElementById('editGroupModal').classList.remove('hidden')"
+					class="px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+				>
+					<i class="mr-1 fas fa-edit"></i>{ t.Edit() }
+				</button>
+				<button
+					hx-delete={ "/admin/groups/" + group.ID.String() }
+					hx-confirm={ t.DeleteGroup() }
+					class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+				>
+					<i class="mr-1 fas fa-trash"></i>{ t.DeleteGroup() }
+				</button>
+			</div>
+		</div>
+
+		<div class="grid gap-6 lg:grid-cols-2">
+			<div class="bg-white rounded-xl shadow-sm p-6">
+				<div class="flex justify-between items-center mb-4">
+					<h2 class="text-xl font-semibold">{ t.Members() }</h2>
+					<button
+						onclick="document.getElementById('addMemberModal').classList.remove('hidden')"
+						class="px-3 py-1.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition"
+					>
+						<i class="mr-1 fas fa-plus"></i>{ t.AddMember() }
+					</button>
+				</div>
+				<div id="members-list">
+					@MembersList(members, t)
+				</div>
+			</div>
+
+			<div class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-xl font-semibold mb-4">{ t.Description() }</h2>
+				<p class="text-gray-600">{ group.Description }</p>
+				<p class="text-sm text-gray-400 mt-4">{ group.CreatedAt.Format("2006-01-02") }</p>
+			</div>
+		</div>
+
+		<div id="editGroupModal" class="flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+			<div class="p-6 w-full max-w-md bg-white rounded-xl">
+				<h3 class="mb-4 text-xl font-bold">{ t.Edit() }</h3>
+				<form hx-put={ "/admin/groups/" + group.ID.String() } hx-target="body" hx-swap="none">
+					<div class="space-y-4">
+						<div>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.GroupName() }</label>
+							<input type="text" name="name" value={ group.Name } required class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
+						</div>
+						<div>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Description() }</label>
+							<textarea name="description" rows="2" class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">{ group.Description }</textarea>
+						</div>
+					</div>
+					<div class="flex gap-3 justify-end mt-6">
+						<button type="button" onclick="document.getElementById('editGroupModal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+							{ t.Cancel() }
+						</button>
+						<button type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+							{ t.Save() }
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div id="addMemberModal" class="flex hidden fixed inset-0 z-50 justify-center items-center bg-black bg-opacity-50">
+			<div class="p-6 w-full max-w-md bg-white rounded-xl">
+				<h3 class="mb-4 text-xl font-bold">{ t.AddMember() }</h3>
+				<form hx-post={ "/admin/groups/" + group.ID.String() + "/members" } hx-target="body" hx-swap="none">
+					<div>
+						<label class="block mb-1 text-sm font-medium text-gray-700">{ t.SearchByEmail() }</label>
+						<input type="email" name="email" required class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500" placeholder="user@example.com"/>
+					</div>
+					<div class="flex gap-3 justify-end mt-6">
+						<button type="button" onclick="document.getElementById('addMemberModal').classList.add('hidden')" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+							{ t.Cancel() }
+						</button>
+						<button type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+							{ t.AddMember() }
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	}
+}

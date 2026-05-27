@@ -18,16 +18,22 @@ const (
 )
 
 type Translator interface {
+	// "Access"
+	Access() string
 	// "Actions"
 	Actions() string
 	// "Add"
 	Add() string
+	// "Add Member"
+	AddMember() string
 	// "Add Option"
 	AddOption() string
 	// "Add Question"
 	AddQuestion() string
 	// "Admin"
 	Admin() string
+	// "Admins"
+	Admins() string
 	// "All"
 	All() string
 	// "All Questions Answered! End quiz?"
@@ -78,6 +84,10 @@ type Translator interface {
 	BackToList() string
 	// "Back to Quizzes"
 	BackToQuizzes() string
+	// "Can Edit"
+	CanEdit() string
+	// "Can View"
+	CanView() string
 	// "Cancel"
 	Cancel() string
 	// "Cancel and start new"
@@ -114,6 +124,8 @@ type Translator interface {
 	CreateFirstQuiz() string
 	// "Create from Template"
 	CreateFromTemplate() string
+	// "Create Group"
+	CreateGroup() string
 	// "Create Learning Material"
 	CreateLearningMaterial() string
 	// "Create Quiz"
@@ -130,6 +142,8 @@ type Translator interface {
 	DayStreak() string
 	// "Delete"
 	Delete() string
+	// "Delete Group"
+	DeleteGroup() string
 	// "Delete image?"
 	DeleteImage() string
 	// "Delete question?"
@@ -180,8 +194,20 @@ type Translator interface {
 	GoquizvibeAdmin() string
 	// "grade"
 	Grade() string
+	// "Grant Access"
+	GrantAccess() string
 	// "Great job!"
 	GreatJob() string
+	// "Group"
+	Group() string
+	// "Group created"
+	GroupCreated() string
+	// "Group deleted"
+	GroupDeleted() string
+	// "Group Name"
+	GroupName() string
+	// "Group updated"
+	GroupUpdated() string
 	// "Images (up to 3)"
 	ImagesUpTo3() string
 	// "Import"
@@ -216,16 +242,30 @@ type Translator interface {
 	LearningMaterialTitlePlaceholder() string
 	// "Learning Materials"
 	LearningMaterials() string
+	// "Leave Group"
+	LeaveGroup() string
+	// "Left group"
+	LeftGroup() string
 	// "Loading..."
 	Loading() string
 	// "Log In"
 	LogIn() string
 	// "made"
 	Made() string
+	// "Make Admin"
+	MakeAdmin() string
 	// "Material Type"
 	MaterialType() string
 	// "Math: From basic arithmetic to algebra"
 	MathFromBasicArithmeticToAlgebra() string
+	// "Member"
+	Member() string
+	// "Member added"
+	MemberAdded() string
+	// "Member removed"
+	MemberRemoved() string
+	// "Members"
+	Members() string
 	// "Mime Type"
 	MimeType() string
 	// "min"
@@ -242,24 +282,32 @@ type Translator interface {
 	MistakesMade() string
 	// "Move to Archive"
 	MoveToArchive() string
+	// "My Groups"
+	MyGroups() string
 	// "Name"
 	Name() string
 	// "New Question"
 	NewQuestion() string
 	// "New quiz with questions"
 	NewQuizWithQuestions() string
+	// "No access"
+	NoAccess() string
 	// "No account?"
 	NoAccount() string
 	// "No activity yet"
 	NoActivityYet() string
 	// "No data yet"
 	NoDataYet() string
+	// "No groups yet"
+	NoGroupsYet() string
 	// "No Learning Materials Available"
 	NoLearningMaterialsAvailable() string
 	// "No Materials Yet"
 	NoMaterialsYet() string
 	// "No participants yet"
 	NoParticipantsYet() string
+	// "No permissions yet"
+	NoPermissionsYet() string
 	// "No Preview Available"
 	NoPreviewAvailable() string
 	// "No questions yet"
@@ -286,12 +334,20 @@ type Translator interface {
 	Oruploadorcreate() string
 	// "Overview"
 	Overview() string
+	// "Owner"
+	Owner() string
 	// "Page Not Found"
 	PageNotFound() string
 	// "Password"
 	Password() string
 	// "PDF Preview"
 	PdfPreview() string
+	// "Permission granted"
+	PermissionGranted() string
+	// "Permission revoked"
+	PermissionRevoked() string
+	// "Permissions"
+	Permissions() string
 	// "Physics: Mechanics, electricity, optics"
 	PhysicsMechanicsElectricityOptics() string
 	// "Points"
@@ -348,6 +404,10 @@ type Translator interface {
 	Recompile() string
 	// "Registration"
 	Registration() string
+	// "Remove Admin"
+	RemoveAdmin() string
+	// "Remove Member"
+	RemoveMember() string
 	// "Resource"
 	Resource() string
 	// "Resource File"
@@ -370,6 +430,10 @@ type Translator interface {
 	ResumeTest() string
 	// "Retry"
 	Retry() string
+	// "Revoke Access"
+	RevokeAccess() string
+	// "Role updated"
+	RoleUpdated() string
 	// "Satisfactory"
 	Satisfactory() string
 	// "Save"
@@ -378,8 +442,16 @@ type Translator interface {
 	SaveAll() string
 	// "Save error"
 	SaveError() string
+	// "Search by email"
+	SearchByEmail() string
+	// "Search by name or email"
+	SearchByNameOrEmail() string
 	// "See correct answers immediately after each question. Learn from your mistakes!"
 	SeeCorrectAnswersImmediatelyAfterEachQuestionLearnFromYourMistakes() string
+	// "Select group"
+	SelectGroup() string
+	// "Share"
+	Share() string
 	// "Sign In"
 	SignIn() string
 	// "Sign In to Account"
@@ -470,14 +542,24 @@ type Translator interface {
 	Upload() string
 	// "Upload JSON file"
 	UploadJsonFile() string
+	// "User"
+	User() string
 	// "View All"
 	ViewAll() string
 	// "View student answers"
 	ViewStudentAnswers() string
 	// "Why GoQuizVibe?"
 	WhyGoquizvibe() string
+	// "You"
+	You() string
 	// "You are an expert at creating test questions. Create an array of questions on the topic."
 	YouAreAnExpertAtCreatingTestQuestionsCreateAnArrayOfQuestionsOnTheTopic() string
+	// "You can edit"
+	YouCanEdit() string
+	// "You can view"
+	YouCanView() string
+	// "You have full access"
+	YouHaveFullAccess() string
 	// "You have no mistakes yet. Keep it up!"
 	YouHaveNoMistakesYetKeepItUp() string
 	// "Your answer:"
@@ -496,12 +578,20 @@ func New(locale Locale) (Translator, error) {
 	return &translator{locale: l}, nil
 }
 
+func (t *translator) Access() string {
+	return t.locale.Get("Access")
+}
+
 func (t *translator) Actions() string {
 	return t.locale.Get("Actions")
 }
 
 func (t *translator) Add() string {
 	return t.locale.Get("Add")
+}
+
+func (t *translator) AddMember() string {
+	return t.locale.Get("Add Member")
 }
 
 func (t *translator) AddOption() string {
@@ -514,6 +604,10 @@ func (t *translator) AddQuestion() string {
 
 func (t *translator) Admin() string {
 	return t.locale.Get("Admin")
+}
+
+func (t *translator) Admins() string {
+	return t.locale.Get("Admins")
 }
 
 func (t *translator) All() string {
@@ -616,6 +710,14 @@ func (t *translator) BackToQuizzes() string {
 	return t.locale.Get("Back to Quizzes")
 }
 
+func (t *translator) CanEdit() string {
+	return t.locale.Get("Can Edit")
+}
+
+func (t *translator) CanView() string {
+	return t.locale.Get("Can View")
+}
+
 func (t *translator) Cancel() string {
 	return t.locale.Get("Cancel")
 }
@@ -688,6 +790,10 @@ func (t *translator) CreateFromTemplate() string {
 	return t.locale.Get("Create from Template")
 }
 
+func (t *translator) CreateGroup() string {
+	return t.locale.Get("Create Group")
+}
+
 func (t *translator) CreateLearningMaterial() string {
 	return t.locale.Get("Create Learning Material")
 }
@@ -718,6 +824,10 @@ func (t *translator) DayStreak() string {
 
 func (t *translator) Delete() string {
 	return t.locale.Get("Delete")
+}
+
+func (t *translator) DeleteGroup() string {
+	return t.locale.Get("Delete Group")
 }
 
 func (t *translator) DeleteImage() string {
@@ -820,8 +930,32 @@ func (t *translator) Grade() string {
 	return t.locale.Get("grade")
 }
 
+func (t *translator) GrantAccess() string {
+	return t.locale.Get("Grant Access")
+}
+
 func (t *translator) GreatJob() string {
 	return t.locale.Get("Great job!")
+}
+
+func (t *translator) Group() string {
+	return t.locale.Get("Group")
+}
+
+func (t *translator) GroupCreated() string {
+	return t.locale.Get("Group created")
+}
+
+func (t *translator) GroupDeleted() string {
+	return t.locale.Get("Group deleted")
+}
+
+func (t *translator) GroupName() string {
+	return t.locale.Get("Group Name")
+}
+
+func (t *translator) GroupUpdated() string {
+	return t.locale.Get("Group updated")
 }
 
 func (t *translator) ImagesUpTo3() string {
@@ -892,6 +1026,14 @@ func (t *translator) LearningMaterials() string {
 	return t.locale.Get("Learning Materials")
 }
 
+func (t *translator) LeaveGroup() string {
+	return t.locale.Get("Leave Group")
+}
+
+func (t *translator) LeftGroup() string {
+	return t.locale.Get("Left group")
+}
+
 func (t *translator) Loading() string {
 	return t.locale.Get("Loading...")
 }
@@ -904,12 +1046,32 @@ func (t *translator) Made() string {
 	return t.locale.Get("made")
 }
 
+func (t *translator) MakeAdmin() string {
+	return t.locale.Get("Make Admin")
+}
+
 func (t *translator) MaterialType() string {
 	return t.locale.Get("Material Type")
 }
 
 func (t *translator) MathFromBasicArithmeticToAlgebra() string {
 	return t.locale.Get("Math: From basic arithmetic to algebra")
+}
+
+func (t *translator) Member() string {
+	return t.locale.Get("Member")
+}
+
+func (t *translator) MemberAdded() string {
+	return t.locale.Get("Member added")
+}
+
+func (t *translator) MemberRemoved() string {
+	return t.locale.Get("Member removed")
+}
+
+func (t *translator) Members() string {
+	return t.locale.Get("Members")
 }
 
 func (t *translator) MimeType() string {
@@ -944,6 +1106,10 @@ func (t *translator) MoveToArchive() string {
 	return t.locale.Get("Move to Archive")
 }
 
+func (t *translator) MyGroups() string {
+	return t.locale.Get("My Groups")
+}
+
 func (t *translator) Name() string {
 	return t.locale.Get("Name")
 }
@@ -954,6 +1120,10 @@ func (t *translator) NewQuestion() string {
 
 func (t *translator) NewQuizWithQuestions() string {
 	return t.locale.Get("New quiz with questions")
+}
+
+func (t *translator) NoAccess() string {
+	return t.locale.Get("No access")
 }
 
 func (t *translator) NoAccount() string {
@@ -968,6 +1138,10 @@ func (t *translator) NoDataYet() string {
 	return t.locale.Get("No data yet")
 }
 
+func (t *translator) NoGroupsYet() string {
+	return t.locale.Get("No groups yet")
+}
+
 func (t *translator) NoLearningMaterialsAvailable() string {
 	return t.locale.Get("No Learning Materials Available")
 }
@@ -978,6 +1152,10 @@ func (t *translator) NoMaterialsYet() string {
 
 func (t *translator) NoParticipantsYet() string {
 	return t.locale.Get("No participants yet")
+}
+
+func (t *translator) NoPermissionsYet() string {
+	return t.locale.Get("No permissions yet")
 }
 
 func (t *translator) NoPreviewAvailable() string {
@@ -1032,6 +1210,10 @@ func (t *translator) Overview() string {
 	return t.locale.Get("Overview")
 }
 
+func (t *translator) Owner() string {
+	return t.locale.Get("Owner")
+}
+
 func (t *translator) PageNotFound() string {
 	return t.locale.Get("Page Not Found")
 }
@@ -1042,6 +1224,18 @@ func (t *translator) Password() string {
 
 func (t *translator) PdfPreview() string {
 	return t.locale.Get("PDF Preview")
+}
+
+func (t *translator) PermissionGranted() string {
+	return t.locale.Get("Permission granted")
+}
+
+func (t *translator) PermissionRevoked() string {
+	return t.locale.Get("Permission revoked")
+}
+
+func (t *translator) Permissions() string {
+	return t.locale.Get("Permissions")
 }
 
 func (t *translator) PhysicsMechanicsElectricityOptics() string {
@@ -1156,6 +1350,14 @@ func (t *translator) Registration() string {
 	return t.locale.Get("Registration")
 }
 
+func (t *translator) RemoveAdmin() string {
+	return t.locale.Get("Remove Admin")
+}
+
+func (t *translator) RemoveMember() string {
+	return t.locale.Get("Remove Member")
+}
+
 func (t *translator) Resource() string {
 	return t.locale.Get("Resource")
 }
@@ -1200,6 +1402,14 @@ func (t *translator) Retry() string {
 	return t.locale.Get("Retry")
 }
 
+func (t *translator) RevokeAccess() string {
+	return t.locale.Get("Revoke Access")
+}
+
+func (t *translator) RoleUpdated() string {
+	return t.locale.Get("Role updated")
+}
+
 func (t *translator) Satisfactory() string {
 	return t.locale.Get("Satisfactory")
 }
@@ -1216,8 +1426,24 @@ func (t *translator) SaveError() string {
 	return t.locale.Get("Save error")
 }
 
+func (t *translator) SearchByEmail() string {
+	return t.locale.Get("Search by email")
+}
+
+func (t *translator) SearchByNameOrEmail() string {
+	return t.locale.Get("Search by name or email")
+}
+
 func (t *translator) SeeCorrectAnswersImmediatelyAfterEachQuestionLearnFromYourMistakes() string {
 	return t.locale.Get("See correct answers immediately after each question. Learn from your mistakes!")
+}
+
+func (t *translator) SelectGroup() string {
+	return t.locale.Get("Select group")
+}
+
+func (t *translator) Share() string {
+	return t.locale.Get("Share")
 }
 
 func (t *translator) SignIn() string {
@@ -1400,6 +1626,10 @@ func (t *translator) UploadJsonFile() string {
 	return t.locale.Get("Upload JSON file")
 }
 
+func (t *translator) User() string {
+	return t.locale.Get("User")
+}
+
 func (t *translator) ViewAll() string {
 	return t.locale.Get("View All")
 }
@@ -1412,8 +1642,24 @@ func (t *translator) WhyGoquizvibe() string {
 	return t.locale.Get("Why GoQuizVibe?")
 }
 
+func (t *translator) You() string {
+	return t.locale.Get("You")
+}
+
 func (t *translator) YouAreAnExpertAtCreatingTestQuestionsCreateAnArrayOfQuestionsOnTheTopic() string {
 	return t.locale.Get("You are an expert at creating test questions. Create an array of questions on the topic.")
+}
+
+func (t *translator) YouCanEdit() string {
+	return t.locale.Get("You can edit")
+}
+
+func (t *translator) YouCanView() string {
+	return t.locale.Get("You can view")
+}
+
+func (t *translator) YouHaveFullAccess() string {
+	return t.locale.Get("You have full access")
 }
 
 func (t *translator) YouHaveNoMistakesYetKeepItUp() string {

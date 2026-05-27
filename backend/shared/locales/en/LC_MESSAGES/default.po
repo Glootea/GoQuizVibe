@@ -785,3 +785,133 @@ msgstr "Create"
 
 msgid "Title"
 msgstr "Title"
+
+# Groups
+
+msgid "My Groups"
+msgstr "My Groups"
+
+msgid "Create Group"
+msgstr "Create Group"
+
+msgid "Group Name"
+msgstr "Group Name"
+
+msgid "Members"
+msgstr "Members"
+
+msgid "Admins"
+msgstr "Admins"
+
+msgid "Add Member"
+msgstr "Add Member"
+
+msgid "Remove Member"
+msgstr "Remove Member"
+
+msgid "Make Admin"
+msgstr "Make Admin"
+
+msgid "Remove Admin"
+msgstr "Remove Admin"
+
+msgid "Leave Group"
+msgstr "Leave Group"
+
+msgid "Delete Group"
+msgstr "Delete Group"
+
+msgid "Group created"
+msgstr "Group created"
+
+msgid "Group updated"
+msgstr "Group updated"
+
+msgid "Group deleted"
+msgstr "Group deleted"
+
+msgid "Member added"
+msgstr "Member ajouté"
+
+msgid "Member removed"
+msgstr "Member removed"
+
+msgid "Role updated"
+msgstr "Role updated"
+
+msgid "Left group"
+msgstr "Left group"
+
+msgid "No groups yet"
+msgstr "No groups yet"
+
+msgid "Group"
+msgstr "Group"
+
+msgid "Owner"
+msgstr "Owner"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Member"
+msgstr "Member"
+
+msgid "You"
+msgstr "You"
+
+msgid "Search by name or email"
+msgstr "Search by name or email"
+
+# Permissions
+
+msgid "Share"
+msgstr "Share"
+
+msgid "Permissions"
+msgstr "Permissions"
+
+msgid "Grant Access"
+msgstr "Grant Access"
+
+msgid "Revoke Access"
+msgstr "Revoke Access"
+
+msgid "Can View"
+msgstr "Can View"
+
+msgid "Can Edit"
+msgstr "Can Edit"
+
+msgid "User"
+msgstr "User"
+
+msgid "Search by email"
+msgstr "Search by email"
+
+msgid "Select group"
+msgstr "Select group"
+
+msgid "No permissions yet"
+msgstr "No permissions yet"
+
+msgid "Permission granted"
+msgstr "Permission granted"
+
+msgid "Permission revoked"
+msgstr "Permission revoked"
+
+msgid "Access"
+msgstr "Access"
+
+msgid "No access"
+msgstr "No access"
+
+msgid "You have full access"
+msgstr "You have full access"
+
+msgid "You can edit"
+msgstr "You can edit"
+
+msgid "You can view"
+msgstr "You can view"

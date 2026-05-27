@@ -132,6 +132,20 @@ func main() {
 		{"GET", "/admin/learning-materials/{id}/preview", app.LearningMaterialsHandler.Preview},
 		{"POST", "/admin/learning-materials/{id}/compile", app.LearningMaterialsHandler.Compile},
 		{"POST", "/api/typst/compile", app.TypstHandler.Compile},
+		{"GET", "/admin/groups", app.GroupsHandler.ListGroups},
+		{"GET", "/admin/groups/new", app.GroupsHandler.CreateGroupForm},
+		{"POST", "/admin/groups/new", app.GroupsHandler.CreateGroup},
+		{"GET", "/admin/groups/{id}", app.GroupsHandler.GetGroup},
+		{"PUT", "/admin/groups/{id}", app.GroupsHandler.UpdateGroup},
+		{"DELETE", "/admin/groups/{id}", app.GroupsHandler.DeleteGroup},
+		{"GET", "/admin/groups/{id}/members", app.GroupsHandler.GetMembers},
+		{"POST", "/admin/groups/{id}/members", app.GroupsHandler.AddMember},
+		{"DELETE", "/admin/groups/{id}/members/{memberID}", app.GroupsHandler.RemoveMember},
+		{"PUT", "/admin/groups/{id}/members/{memberID}/role", app.GroupsHandler.UpdateMemberRole},
+		{"POST", "/admin/groups/{id}/leave", app.GroupsHandler.LeaveGroup},
+		{"GET", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.GetPermissionsModal},
+		{"POST", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.GrantPermission},
+		{"DELETE", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.RevokePermission},
 	}
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap

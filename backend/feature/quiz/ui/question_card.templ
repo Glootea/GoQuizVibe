@@ -143,12 +143,13 @@ func renderFillQuestionHTML(correctAnswer, fallbackText string, questionIndex in
 		}
 
 		for _, seg := range segments {
-			if seg.Type == "text" {
+			switch seg.Type {
+			case "text":
 				_, err = io.WriteString(w, seg.Content)
 				if err != nil {
 					return err
 				}
-			} else if seg.Type == "gap" {
+			case "gap":
 				ansVal := ""
 				if gapIdx < len(storedAnswers) {
 					ansVal = storedAnswers[gapIdx]

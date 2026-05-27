@@ -152,9 +152,10 @@ func formatFillAnswerDisplay(userAnswer string, correctAnswer string, showCorrec
 
 	result := ""
 	for _, seg := range segments {
-		if seg.Type == "text" {
+		switch seg.Type {
+		case "text":
 			result += seg.Content
-		} else if seg.Type == "gap" {
+		case "gap":
 			ans := ""
 			if gapIdx < len(answers) {
 				ans = answers[gapIdx]

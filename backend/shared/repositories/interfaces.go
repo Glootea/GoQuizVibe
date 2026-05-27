@@ -73,3 +73,30 @@ type LearningMaterialRepository interface {
 	DeleteLearningMaterial(ctx context.Context, id uuid.UUID) error
 	GetRecentLearningMaterials(ctx context.Context, limit int32) ([]db.LearningMaterial, error)
 }
+
+type UserGroupRepository interface {
+	CreateUserGroup(ctx context.Context, params db.CreateUserGroupParams) (db.UserGroup, error)
+	GetUserGroupByID(ctx context.Context, id uuid.UUID) (db.UserGroup, error)
+	GetUserGroupsByAdmin(ctx context.Context, userID uuid.UUID) ([]db.UserGroup, error)
+	UpdateUserGroup(ctx context.Context, params db.UpdateUserGroupParams) (db.UserGroup, error)
+	DeleteUserGroup(ctx context.Context, params db.DeleteUserGroupParams) error
+	AddUserToGroup(ctx context.Context, params db.AddUserToGroupParams) (db.GroupMember, error)
+	RemoveUserFromGroup(ctx context.Context, params db.RemoveUserFromGroupParams) error
+	GetGroupMembers(ctx context.Context, groupID uuid.UUID) ([]db.GetGroupMembersRow, error)
+	GetUserRoleInGroup(ctx context.Context, params db.GetUserRoleInGroupParams) (interface{}, error)
+	GetGroupMemberCount(ctx context.Context, groupID uuid.UUID) (int64, error)
+	IsUserMemberOfGroup(ctx context.Context, params db.IsUserMemberOfGroupParams) (bool, error)
+}
+
+type AssetPermissionRepository interface {
+	SetOwnerPermission(ctx context.Context, params db.SetOwnerPermissionParams) (db.AssetPermission, error)
+	GrantPermission(ctx context.Context, params db.GrantPermissionParams) (db.AssetPermission, error)
+	RevokePermission(ctx context.Context, params db.RevokePermissionParams) error
+	GetAssetPermissions(ctx context.Context, params db.GetAssetPermissionsParams) ([]db.GetAssetPermissionsRow, error)
+	GetUserAssetPermissions(ctx context.Context, recipientID uuid.UUID) ([]db.AssetPermission, error)
+	GetGroupAssetPermissions(ctx context.Context, groupIDs []uuid.UUID) ([]db.AssetPermission, error)
+	GetAccessibleAssetIDs(ctx context.Context, params db.GetAccessibleAssetIDsParams) ([]uuid.UUID, error)
+	DeleteAssetPermissionsByAsset(ctx context.Context, params db.DeleteAssetPermissionsByAssetParams) error
+	HasPermission(ctx context.Context, params db.HasPermissionParams) (bool, error)
+	HasPermissionLevel(ctx context.Context, params db.HasPermissionLevelParams) (bool, error)
+}

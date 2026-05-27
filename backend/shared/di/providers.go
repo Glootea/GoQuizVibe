@@ -29,6 +29,8 @@ import (
 	learningMaterialsHandlers "github.com/goquizvibe/backend/feature/learning_materials/handlers"
 	editorHandlers "github.com/goquizvibe/backend/feature/editor/handlers"
 	gamificationServices "github.com/goquizvibe/backend/feature/gamification/services"
+	permissionsServices "github.com/goquizvibe/backend/feature/permissions/services"
+	permissionsHandlers "github.com/goquizvibe/backend/feature/permissions/handlers"
 	cacheService "github.com/goquizvibe/backend/shared/infrastructure/cache"
 	storageService "github.com/goquizvibe/backend/shared/infrastructure/storage"
 	timeprovider "github.com/goquizvibe/backend/shared/infrastructure/timeprovider"
@@ -47,6 +49,8 @@ type App struct {
 	StorageService          *storageService.StorageService
 	CacheService            *cacheService.CacheService
 	LearningMaterialService *learningMaterialsServices.LearningMaterialService
+	UserGroupService        *permissionsServices.UserGroupService
+	PermissionsService      *permissionsServices.PermissionsService
 
 	AuthHandler              *authHandlers.AuthHandler
 	DashboardHandler         *dashboardHandlers.DashboardHandler
@@ -55,6 +59,8 @@ type App struct {
 	LearningMaterialsHandler *learningMaterialsHandlers.LearningMaterialsHandler
 	EditorHandler            *editorHandlers.EditorHandler
 	TypstHandler             *learningMaterialsHandlers.TypstHandler
+	GroupsHandler           *permissionsHandlers.GroupsHandler
+	PermissionsHandler       *permissionsHandlers.PermissionsHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -212,6 +218,29 @@ func ProvideTypstHandler(
 	return learningMaterialsHandlers.NewTypstHandler(materialService, adminService)
 }
 
+func ProvideUserGroupService(queries *db.Queries) *permissionsServices.UserGroupService {
+	return permissionsServices.NewUserGroupService(queries, queries)
+}
+
+func ProvidePermissionsService(queries *db.Queries) *permissionsServices.PermissionsService {
+	return permissionsServices.NewPermissionsService(queries, queries)
+}
+
+func ProvideGroupsHandler(
+	groupService *permissionsServices.UserGroupService,
+	authService *authServices.AuthService,
+) *permissionsHandlers.GroupsHandler {
+	return permissionsHandlers.NewGroupsHandler(groupService, authService)
+}
+
+func ProvidePermissionsHandler(
+	permService *permissionsServices.PermissionsService,
+	groupService *permissionsServices.UserGroupService,
+	authService *authServices.AuthService,
+) *permissionsHandlers.PermissionsHandler {
+	return permissionsHandlers.NewPermissionsHandler(permService, groupService, authService)
+}
+
 func ProvideRequireAuthMiddleware(authService *authServices.AuthService) middleware.RequireAuthMiddleware {
 	return middleware.NewRequireAuthMiddleware(authService)
 }
@@ -250,6 +279,8 @@ var ServiceSet = wire.NewSet(
 	ProvideTimeProvider,
 	ProvideTypstGRPCClient,
 	ProvideLearningMaterialService,
+	ProvideUserGroupService,
+	ProvidePermissionsService,
 )
 
 var HandlerSet = wire.NewSet(
@@ -261,6 +292,8 @@ var HandlerSet = wire.NewSet(
 	ProvideTypstHandler,
 	ProvidePromptGenerator,
 	ProvideLearningMaterialsHandler,
+	ProvideGroupsHandler,
+	ProvidePermissionsHandler,
 )
 
 var MiddlewareSet = wire.NewSet(
@@ -275,5 +308,5 @@ var AppSet = wire.NewSet(
 	ServiceSet,
 	HandlerSet,
 	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "TypstHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
+	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "UserGroupService", "PermissionsService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "TypstHandler", "GroupsHandler", "PermissionsHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService"),
 )
