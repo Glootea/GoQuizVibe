@@ -1,1 +1,0 @@
-ALTER TABLE quizzes DROP COLUMN question_pool_size;

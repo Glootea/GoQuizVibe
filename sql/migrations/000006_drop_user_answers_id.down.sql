@@ -1,1 +1,0 @@
-ALTER TABLE user_answers ADD COLUMN id UUID DEFAULT uuid_generate_v4();

@@ -1,0 +1,234 @@
+package ui
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/google/uuid"
+	"github.com/goquizvibe/backend/shared/locales"
+	"github.com/goquizvibe/backend/shared/models"
+	"github.com/goquizvibe/backend/shared/types"
+	"github.com/goquizvibe/backend/shared/ui"
+)
+
+func FormatTimer(seconds int) string {
+	mins := seconds / 60
+	secs := seconds % 60
+	return fmt.Sprintf("%02d:%02d", mins, secs)
+}
+
+templ TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) {
+	<div
+		id="timer-display"
+		class="text-lg font-semibold text-gray-700"
+		data-remaining-seconds={ strconv.Itoa(remainingSeconds) }
+		data-quiz-id={ quizID.String() }
+		data-session-id={ sessionID }
+	>
+		<i class="mr-1 fas fa-clock"></i>
+		<span id="timer-text">{ FormatTimer(remainingSeconds) }</span>
+	</div>
+}
+
+func PositionClass(position int) string {
+	switch position {
+	case 1:
+		return "bg-yellow-400 text-yellow-900"
+	case 2:
+		return "bg-gray-300 text-gray-700"
+	case 3:
+		return "bg-orange-400 text-orange-900"
+	default:
+		return "bg-gray-100 text-gray-600"
+	}
+}
+
+templ DashboardPage(data types.DashboardData, t locales.Translator) {
+	@ui.Base(t.Dashboard(), t) {
+		<div class="min-h-screen bg-gray-50">
+			@Navbar(data.User, t)
+			<main class="py-8 px-4 mx-auto max-w-6xl">
+				if data.ActiveSession != nil {
+					<div class="flex justify-between items-center p-4 mb-6 bg-yellow-50 rounded-xl border border-yellow-200">
+						<div>
+							<p class="font-medium text-yellow-800">{ t.TestInProgress() }: { data.ActiveSession.QuizTitle }</p>
+							<div class="flex gap-1 items-center text-sm text-yellow-600">
+								<span>{ t.TimeRemaining() }:</span>
+								@TimerWidget(data.ActiveSession.QuizID, data.ActiveSession.SessionID.String(), data.ActiveSession.RemainingSeconds)
+							</div>
+						</div>
+						<a
+							href={ templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)) }
+							class="py-2 px-4 font-medium text-white bg-yellow-500 rounded-lg hover:bg-yellow-600"
+						>
+							{ t.Resume() }
+						</a>
+					</div>
+				}
+				@StatsCards(data.Stats, t)
+				@QuizGrid(data.Quizzes, t)
+				@LeaderboardPreview(data.Leaderboard, t)
+			</main>
+		</div>
+	}
+}
+
+templ Navbar(user *models.User, t locales.Translator) {
+	<nav class="sticky top-0 z-50 bg-white shadow-sm">
+		<div class="flex justify-between items-center py-4 px-4 mx-auto max-w-6xl">
+			<a href="/dashboard" class="text-2xl font-bold text-indigo-600">
+				<i class="mr-2 fas fa-graduation-cap"></i>GoQuizVibe
+			</a>
+			<div class="flex gap-6 items-center">
+				if user.Role == models.RoleTeacher {
+					<a href="/admin" class="font-medium text-indigo-600 hover:text-indigo-800">
+						<i class="mr-1 fas fa-cog"></i>{ t.Admin() }
+					</a>
+				}
+				<a href="/leaderboard" class="font-medium text-gray-600 hover:text-indigo-600">
+					<i class="mr-1 fas fa-trophy"></i>{ t.Leaders() }
+				</a>
+				<a href="/errors" class="font-medium text-gray-600 hover:text-indigo-600">
+					<i class="mr-1 fas fa-book"></i>{ t.Mistakes() }
+				</a>
+				<div class="flex gap-3 items-center">
+					<span class="font-medium text-gray-700">{ user.Name }</span>
+					<a href="/logout" class="py-1 px-3 text-sm font-medium text-red-600 hover:text-red-800">
+						<i class="fas fa-sign-out-alt"></i>
+					</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+}
+
+templ StatsCards(stats *models.UserStats, t locales.Translator) {
+	<div class="grid gap-4 mb-8 md:grid-cols-4">
+		<div class="p-5 text-white bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
+			<div class="flex justify-between items-center">
+				<div>
+					<p class="text-sm text-orange-100">{ t.DayStreak() }</p>
+					<p class="text-3xl font-bold">{ stats.Streak }</p>
+				</div>
+				<i class="text-4xl text-orange-300 fas fa-fire"></i>
+			</div>
+			<p class="mt-2 text-sm text-orange-100">{ t.StreakDaysInARow() }</p>
+		</div>
+		<div class="p-5 text-white bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+			<div class="flex justify-between items-center">
+				<div>
+					<p class="text-sm text-blue-100">{ t.TotalXp() }</p>
+					<p class="text-3xl font-bold">{ stats.XP }</p>
+				</div>
+				<i class="text-4xl text-blue-300 fas fa-star"></i>
+			</div>
+			<p class="mt-2 text-sm text-blue-100">{ t.ExperiencePoints() }</p>
+		</div>
+		<div class="p-5 text-white bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+			<div class="flex justify-between items-center">
+				<div>
+					<p class="text-sm text-green-100">{ t.QuizzesCompleted() }</p>
+					<p class="text-3xl font-bold">{ len(stats.CompletedQuizzes) }</p>
+				</div>
+				<i class="text-4xl text-green-300 fas fa-check-circle"></i>
+			</div>
+			<p class="mt-2 text-sm text-green-100">{ t.Completed() }</p>
+		</div>
+		<div class="p-5 text-white bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+			<div class="flex justify-between items-center">
+				<div>
+					<p class="text-sm text-purple-100">{ t.MistakesMade() }</p>
+					<p class="text-3xl font-bold">{ stats.WrongCount }</p>
+				</div>
+				<i class="text-4xl text-purple-300 fas fa-times-circle"></i>
+			</div>
+			<p class="mt-2 text-sm text-purple-100">{ t.Made() }</p>
+		</div>
+	</div>
+}
+
+templ QuizGrid(quizzes []*models.Quiz, t locales.Translator) {
+	<div class="mb-8">
+		<h2 class="mb-4 text-2xl font-bold">{ t.AvailableQuizzes() }</h2>
+		if len(quizzes) == 0 {
+			<div class="p-8 text-center text-gray-500 bg-white rounded-xl">
+				<i class="mb-4 text-4xl fas fa-inbox"></i>
+				<p>{ t.NoQuizzesAvailableYet() }</p>
+			</div>
+		} else {
+			<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+				for _, quiz := range quizzes {
+					@QuizCard(quiz, t)
+				}
+			</div>
+		}
+	</div>
+}
+
+templ QuizCard(quiz *models.Quiz, t locales.Translator) {
+	<a href={ templ.URL("/quiz/" + quiz.ID.String() + "/info") } class="block p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:border-indigo-200 hover:shadow-lg">
+		<div class="flex justify-between items-start mb-3">
+			<span class="py-1 px-3 text-sm text-indigo-700 bg-indigo-100 rounded-full">
+				{ quiz.Subject }
+			</span>
+			<span class="text-sm text-gray-400">
+				{ quiz.Grade } { t.Grade() }
+			</span>
+		</div>
+		<h3 class="mb-2 text-lg font-semibold">{ quiz.Title }</h3>
+		<p class="mb-4 text-sm text-gray-600">{ quiz.Description }</p>
+		<div class="flex justify-between items-center text-sm text-gray-500">
+			<span>
+				<i class="mr-1 fas fa-question-circle"></i>
+				{ len(quiz.Questions) } { t.Question(len(quiz.Questions)) }
+			</span>
+			<span class="font-medium text-indigo-600">
+				{ t.Start() } <i class="ml-1 fas fa-arrow-right"></i>
+			</span>
+		</div>
+	</a>
+}
+
+templ LeaderboardPreview(entries []*models.LeaderboardEntry, t locales.Translator) {
+	<div>
+		<div class="flex justify-between items-center mb-4">
+			<h2 class="text-2xl font-bold">{ t.Leaderboard() }</h2>
+			<a href="/leaderboard" class="font-medium text-indigo-600 hover:text-indigo-800">
+				{ t.All() } <i class="ml-1 fas fa-arrow-right"></i>
+			</a>
+		</div>
+		<div class="p-5 bg-white rounded-xl shadow-sm">
+			if len(entries) == 0 {
+				<div class="py-8 text-center text-gray-500">
+					<p>{ t.NoParticipantsYet() }</p>
+				</div>
+			} else {
+				<div class="space-y-3">
+					for i, entry := range entries {
+						if i >= 5 {
+							break
+						}
+						@LeaderboardRow(entry, i+1, t)
+					}
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Translator) {
+	<div class="flex gap-4 items-center p-3 rounded-lg transition hover:bg-gray-50">
+		<div class={ PositionClass(position) }>
+			{ position }
+		</div>
+		<div class="flex-1">
+			<p class="font-medium">{ entry.UserName }</p>
+		</div>
+		<div class="text-right">
+			<p class="font-bold text-indigo-600">{ entry.XP } XP</p>
+			<p class="text-xs text-gray-500">
+				<i class="mr-1 fas fa-fire"></i>{ entry.Streak }
+			</p>
+		</div>
+	</div>
+}

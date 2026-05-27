@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: goquizvibe
+
+resources:
+  - namespace.yaml
+  - postgres-pvc.yaml
+  - redis-pvc.yaml
+  - minio-pvc.yaml
+  - postgres-deployment.yaml
+  - postgres-service.yaml
+  - redis-deployment.yaml
+  - redis-service.yaml
+  - minio-deployment.yaml
+  - minio-service.yaml
+  - backend-deployment.yaml
+  - backend-service.yaml
+  - backend-ingress.yaml
+
+configMapGenerator:
+  - name: goquizvibe-config
+    envs:
+      - config.env
+
+secretGenerator:
+  - name: goquizvibe-secrets
+    envs:
+      - secrets.env

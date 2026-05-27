@@ -1,0 +1,210 @@
+package ui
+
+import (
+	"fmt"
+	"sort"
+
+	"github.com/goquizvibe/backend/shared/locales"
+	"github.com/goquizvibe/backend/shared/types"
+)
+
+templ StatisticsPage(data *types.AdminStatisticsData, t locales.Translator) {
+	@BaseAdmin(t.Statistics(), data.User, t) {
+		<h1 class="mb-8 text-3xl font-bold">{ t.SummaryStatistics() }</h1>
+		<div class="grid gap-6 mb-8 md:grid-cols-4">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.TotalQuizzes() }</p>
+						<p class="text-3xl font-bold text-indigo-600">{ data.TotalQuizzes }</p>
+					</div>
+					<i class="text-3xl text-indigo-200 fas fa-file-alt"></i>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.TotalStudents() }</p>
+						<p class="text-3xl font-bold text-green-600">{ data.TotalStudents }</p>
+					</div>
+					<i class="text-3xl text-green-200 fas fa-users"></i>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.TotalAttempts() }</p>
+						<p class="text-3xl font-bold text-orange-600">{ data.TotalAttempts }</p>
+					</div>
+					<i class="text-3xl text-orange-200 fas fa-play-circle"></i>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.AverageScore() }</p>
+						<p class="text-3xl font-bold text-purple-600">{ fmt.Sprintf("%.1f", data.AvgScore) }%</p>
+					</div>
+					<i class="text-3xl text-purple-200 fas fa-chart-line"></i>
+				</div>
+			</div>
+		</div>
+		<div class="grid gap-8 mb-8 md:grid-cols-2">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">{ t.QuizStatistics() }</h2>
+				<div id="quiz-stats-table" hx-get="/admin/api/quiz-stats" hx-trigger="load" hx-swap="innerHTML">
+					<div class="py-8 text-center text-gray-500">
+						<p>{ t.Loading() }</p>
+					</div>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">{ t.Subjects() }</h2>
+				<div id="subject-dist" hx-get="/admin/api/subject-dist" hx-trigger="load" hx-swap="innerHTML">
+					<div class="py-8 text-center text-gray-500">
+						<p>{ t.Loading() }</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="p-6 bg-white rounded-xl shadow-sm">
+			<h2 class="mb-4 text-xl font-bold">{ t.StudentsByGrade() }</h2>
+			<div id="grade-dist" hx-get="/admin/api/grade-dist" hx-trigger="load" hx-swap="innerHTML">
+				<div class="py-8 text-center text-gray-500">
+					<p>{ t.Loading() }</p>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ QuizStatsPartial(stats []types.QuizStatsResponse, t locales.Translator) {
+	if len(stats) == 0 {
+		<div class="py-8 text-center text-gray-500">
+			<p>{ t.NoDataYet() }</p>
+		</div>
+	} else {
+		<div class="overflow-x-auto">
+			<table class="w-full text-sm">
+				<thead>
+					<tr class="border-b">
+						<th class="py-2 text-left text-gray-600">{ t.Quiz() }</th>
+						<th class="py-2 text-right text-gray-600">{ t.Attempts() }</th>
+						<th class="py-2 text-right text-gray-600">{ t.AvgScore() }</th>
+						<th class="py-2 text-right text-gray-600">{ t.SuccessRate() }</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, stat := range stats {
+						<tr class="border-b">
+							<td class="py-3">
+								<p class="font-medium">{ stat.Title }</p>
+								<p class="text-xs text-gray-500">{ stat.Subject }</p>
+							</td>
+							<td class="py-3 text-right">{ stat.AttemptCount }</td>
+							<td class="py-3 text-right">
+								<span class={ getScoreColorClass(stat.AvgScore) }>{ fmt.Sprintf("%.1f%%", stat.AvgScore) }</span>
+							</td>
+							<td class="py-3 text-right">
+								<div class="flex gap-2 justify-end items-center">
+									<div class="w-16 h-2 bg-gray-200 rounded-full">
+										<div class={ "h-2 rounded-full " + getPassRateColorClass(stat.PassRate) } style={ fmt.Sprintf("width: %.0f%%", stat.PassRate) }></div>
+									</div>
+									<span class="text-xs">{ fmt.Sprintf("%.0f%%", stat.PassRate) }</span>
+								</div>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+templ GradeDistPartial(dist map[string]int, t locales.Translator) {
+	if len(dist) == 0 {
+		<div class="py-8 text-center text-gray-500">
+			<p>{ t.NoDataYet() }</p>
+		</div>
+	} else {
+		<div class="flex gap-2 justify-around items-end h-48">
+			for grade := 1; grade <= 11; grade++ {
+				<div class="flex flex-col items-center">
+					<div class="w-8 bg-indigo-500 rounded-t" style={ fmt.Sprintf("height: %dpx", getBarHeight(getGradeCount(dist, grade), dist)) }></div>
+					<span class="mt-1 text-xs text-gray-500">{ grade }</span>
+				</div>
+			}
+		</div>
+	}
+}
+
+templ SubjectDistPartial(dist map[string]int, t locales.Translator) {
+	if len(dist) == 0 {
+		<div class="py-8 text-center text-gray-500">
+			<p>{ t.NoDataYet() }</p>
+		</div>
+	} else {
+		<div class="space-y-4">
+			for subject, count := range dist {
+				<div>
+					<div class="flex justify-between mb-1 text-sm">
+						<span class="font-medium">{ subject }</span>
+						<span class="text-gray-500">{ count } тест(ов)</span>
+					</div>
+					<div class="w-full h-3 bg-gray-200 rounded-full">
+						<div class="h-3 bg-indigo-500 rounded-full" style={ fmt.Sprintf("width: %d%%", (count*100)/getMaxCount(dist)) }></div>
+					</div>
+				</div>
+			}
+		</div>
+	}
+}
+
+func getScoreColorClass(score float64) string {
+	if score >= 80 {
+		return "text-green-600 font-semibold"
+	} else if score >= 60 {
+		return "text-yellow-600 font-semibold"
+	}
+	return "text-red-600 font-semibold"
+}
+
+func getPassRateColorClass(rate float64) string {
+	if rate >= 80 {
+		return "bg-green-500"
+	} else if rate >= 60 {
+		return "bg-yellow-500"
+	}
+	return "bg-red-500"
+}
+
+func getBarHeight(count int, dist map[string]int) int {
+	max := 0
+	for _, v := range dist {
+		if v > max {
+			max = v
+		}
+	}
+	if max == 0 {
+		return 10
+	}
+	return (count * 100) / max
+}
+
+func getGradeCount(dist map[string]int, grade int) int {
+	return dist[fmt.Sprintf("%d", grade)]
+}
+
+func getMaxCount(dist map[string]int) int {
+	max := 0
+	for _, v := range dist {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+
+func init() {
+	_ = sort.Strings
+}
