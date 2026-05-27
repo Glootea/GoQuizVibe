@@ -1,8 +1,10 @@
 go 1.26.0
 
 use (
-	.
+	./backend
 	./microservices/typst
 )
 
-replace github.com/goquizvibe/pkg => ./pkg
+replace github.com/goquizvibe/pkg => ./backend/shared/pkg
+
+replace github.com/goquizvibe/backend/shared/pkg => ./backend/shared/pkg

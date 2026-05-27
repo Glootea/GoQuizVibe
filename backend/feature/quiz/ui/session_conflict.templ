@@ -1,0 +1,38 @@
+package ui
+
+import (
+	"strconv"
+
+	"github.com/goquizvibe/backend/shared/locales"
+	"github.com/goquizvibe/backend/shared/types"
+	"github.com/goquizvibe/backend/shared/ui"
+)
+
+templ SessionConflictPage(data *types.SessionConflictData, t locales.Translator) {
+	@ui.Base(t.TestConflict(), t) {
+		<div class="flex justify-center items-center min-h-screen bg-gray-50">
+			<div class="p-8 w-full max-w-md text-center bg-white rounded-xl shadow-lg">
+				<i class="mb-4 text-6xl text-yellow-500 fas fa-exclamation-triangle"></i>
+				<h1 class="mb-2 text-2xl font-bold">{ t.TestAlreadyActive() }</h1>
+				<p class="mb-6 text-gray-600">
+					{ t.AnotherTest() } <span class="font-semibold">"{ data.ExistingQuizTitle }"</span>
+				</p>
+				<p class="mb-8 text-sm text-gray-500">{ t.CancellingWillCompleteTheCurrentTestWithYourCurrentAnswersThisActionCannotBeUndone() }</p>
+				<div class="flex flex-col gap-3">
+					<a
+						href={ templ.URL("/quiz/" + data.ExistingQuizID.String() + "/q/" + strconv.Itoa(data.CurrentIndex)) }
+						class="py-3 px-4 font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+					>
+						{ t.ResumeTest() }
+					</a>
+					<form method="POST" action={ templ.URL("/quiz/" + data.RequestedQuizID.String() + "/cancel-session") }>
+						<input type="hidden" name="session_id" value={ data.ExistingSessionID.String() }/>
+						<button type="submit" class="py-3 px-4 w-full font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
+							{ t.CancelAndStartNew() }
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	}
+}

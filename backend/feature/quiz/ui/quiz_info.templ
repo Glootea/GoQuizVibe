@@ -1,0 +1,57 @@
+package ui
+
+import (
+	"github.com/goquizvibe/backend/shared/locales"
+	"github.com/goquizvibe/backend/shared/types"
+	"github.com/goquizvibe/backend/shared/ui"
+)
+
+templ QuizInfoPage(data *types.QuizInfoData, t locales.Translator) {
+	@ui.Base(t.QuizInformation(), t) {
+		<div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+			<div class="flex justify-center items-center min-h-screen">
+				<div class="p-8 w-full max-w-xl bg-white rounded-2xl shadow-xl">
+					<div class="mb-8 text-center">
+						<div class="flex justify-center items-center mx-auto mb-4 w-20 h-20 bg-indigo-100 rounded-full">
+							<i class="text-4xl text-indigo-600 fas fa-file-alt"></i>
+						</div>
+						<h1 class="mb-2 text-2xl font-bold">{ t.QuizInformation() }</h1>
+					</div>
+					<div class="mb-6">
+						<h2 class="mb-2 text-xl font-semibold">{ data.Quiz.Title }</h2>
+						<p class="mb-4 text-gray-600">{ data.Quiz.Description }</p>
+						<div class="flex gap-2 mb-4">
+							<span class="py-1 px-3 text-sm text-indigo-700 bg-indigo-100 rounded-full">
+								{ data.Quiz.Subject }
+							</span>
+							<span class="py-1 px-3 text-sm text-gray-600 bg-gray-100 rounded-full">
+								{ data.Quiz.Grade } { t.Grade() }
+							</span>
+						</div>
+					</div>
+					<div class="grid grid-cols-2 gap-4 mb-8">
+						<div class="p-4 text-center bg-gray-50 rounded-xl">
+							<p class="text-3xl font-bold text-indigo-600">{ data.QuestionCount }</p>
+							<p class="text-sm text-gray-500">{ t.Questions() }</p>
+						</div>
+						<div class="p-4 text-center bg-gray-50 rounded-xl">
+							<p class="text-3xl font-bold text-indigo-600">{ data.TimeLimitMin }</p>
+							<p class="text-sm text-gray-500">{ t.Min() }</p>
+						</div>
+					</div>
+					<div class="mb-8 text-center">
+						<p class="text-lg font-medium text-gray-700">{ t.ReadyToStart() }</p>
+					</div>
+					<div class="flex gap-4">
+						<a href="/dashboard" class="flex-1 py-3 px-4 font-medium text-center text-gray-700 bg-gray-100 rounded-xl transition hover:bg-gray-200">
+							{ t.Back() }
+						</a>
+						<a href={ templ.URL("/quiz/" + data.Quiz.ID.String() + "/q/0") } class="flex-1 py-3 px-4 font-medium text-center text-white bg-indigo-600 rounded-xl transition hover:bg-indigo-700">
+							{ t.Start() }
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

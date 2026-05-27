@@ -1,0 +1,31 @@
+package ui
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/google/uuid"
+)
+
+func FormatTimer(seconds int) string {
+	mins := seconds / 60
+	secs := seconds % 60
+	return fmt.Sprintf("%02d:%02d", mins, secs)
+}
+
+templ TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) {
+	<div
+		id="timer-display"
+		class="text-lg font-semibold text-gray-700"
+		data-remaining-seconds={ strconv.Itoa(remainingSeconds) }
+		data-quiz-id={ quizID.String() }
+		data-session-id={ sessionID }
+		hx-get={ fmt.Sprintf("/quiz/%s/sync?session=%s", quizID.String(), sessionID) }
+		hx-trigger="every 30s"
+		hx-target="#timer-display"
+		hx-swap="outerHTML"
+	>
+		<i class="mr-1 fas fa-clock"></i>
+		<span id="timer-text">{ FormatTimer(remainingSeconds) }</span>
+	</div>
+}

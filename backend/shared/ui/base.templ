@@ -1,0 +1,21 @@
+package ui
+
+import "github.com/goquizvibe/backend/shared/locales"
+
+templ Base(title string, t locales.Translator) {
+	<!DOCTYPE html>
+	<html lang={ locales.GetLang(ctx) }>
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } - GoQuizVibe</title>
+			<link href="/static/style/app.css" rel="stylesheet"/>
+			<script src="/static/scripts/timer.js"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+		</head>
+		<body class="min-h-screen text-gray-900 bg-gray-50">
+			{ children... }
+		</body>
+	</html>
+}

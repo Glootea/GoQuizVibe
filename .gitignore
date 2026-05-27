@@ -5,7 +5,7 @@ pnpm-lock.yaml
 output.txt
 tmp/
 .DS_Store
-goquizvibe
+backend/backend
 microservices/typst/bin
 microservices/typst/typst
 

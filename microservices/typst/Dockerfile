@@ -6,7 +6,7 @@ RUN apk add go
 
 WORKDIR /app
 
-COPY pkg /app/pkg
+COPY backend/shared/pkg /app/pkg
 COPY microservices/typst /app/typst
 
 WORKDIR /app/typst

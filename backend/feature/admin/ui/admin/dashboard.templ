@@ -1,0 +1,138 @@
+package ui
+
+import (
+	"fmt"
+
+	"github.com/goquizvibe/backend/shared/locales"
+	"github.com/goquizvibe/backend/shared/types"
+	"github.com/goquizvibe/backend/shared/ui/components"
+)
+
+templ DashboardPage(data types.AdminDashboardData, t locales.Translator) {
+	@BaseAdmin(t.Overview(), data.User, t) {
+		<h1 class="mb-8 text-3xl font-bold">{ t.ControlPanel() }</h1>
+		<div class="grid gap-6 mb-8 md:grid-cols-5">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.TotalQuizzes() }</p>
+						<p class="text-3xl font-bold text-indigo-600">{ data.QuizCount }</p>
+					</div>
+					<i class="text-4xl text-indigo-200 fas fa-file-alt"></i>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.TotalStudents() }</p>
+						<p class="text-3xl font-bold text-green-600">{ data.StudentCount }</p>
+					</div>
+					<i class="text-4xl text-green-200 fas fa-users"></i>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.Attempts() }</p>
+						<p class="text-3xl font-bold text-orange-600">{ data.AttemptCount }</p>
+					</div>
+					<i class="text-4xl text-orange-200 fas fa-play-circle"></i>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.AverageScore() }</p>
+						<p class="text-3xl font-bold text-purple-600">{ fmt.Sprintf("%.1f", data.AvgScore) }%</p>
+					</div>
+					<i class="text-4xl text-purple-200 fas fa-percentage"></i>
+				</div>
+			</div>
+			<a href="/admin/learning-materials" class="p-6 bg-white rounded-xl shadow-sm transition hover:shadow-md">
+				<div class="flex justify-between items-center">
+					<div>
+						<p class="text-sm text-gray-500">{ t.LearningMaterials() }</p>
+						<p class="text-3xl font-bold text-teal-600">{ data.MaterialCount }</p>
+					</div>
+					<i class="text-4xl text-teal-200 fas fa-book"></i>
+				</div>
+			</a>
+		</div>
+		<div class="grid gap-8 md:grid-cols-2">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">{ t.QuickActions() }</h2>
+				<div class="space-y-3">
+					<a href="/admin/quizzes" class="flex gap-3 items-center p-4 bg-indigo-50 rounded-lg transition hover:bg-indigo-100">
+						<i class="text-xl text-indigo-600 fas fa-plus-circle"></i>
+						<div>
+							<p class="font-medium text-gray-900">{ t.CreateQuiz() }</p>
+							<p class="text-sm text-gray-500">{ t.NewQuizWithQuestions() }</p>
+						</div>
+					</a>
+					<a href="/admin/results" class="flex gap-3 items-center p-4 bg-green-50 rounded-lg transition hover:bg-green-100">
+						<i class="text-xl text-green-600 fas fa-check-circle"></i>
+						<div>
+							<p class="font-medium text-gray-900">{ t.CheckResults() }</p>
+							<p class="text-sm text-gray-500">{ t.ViewStudentAnswers() }</p>
+						</div>
+					</a>
+					<a href="/admin/statistics" class="flex gap-3 items-center p-4 bg-purple-50 rounded-lg transition hover:bg-purple-100">
+						<i class="text-xl text-purple-600 fas fa-chart-line"></i>
+						<div>
+							<p class="font-medium text-gray-900">{ t.Analytics() }</p>
+							<p class="text-sm text-gray-500">{ t.QuizStatistics() }</p>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">{ t.RecentActivity() }</h2>
+				if len(data.RecentActivity) == 0 {
+					<div class="py-8 text-center text-gray-500">
+						<i class="mb-4 text-4xl fas fa-inbox"></i>
+						<p>{ t.NoActivityYet() }</p>
+					</div>
+				} else {
+					<div class="space-y-3">
+						for _, activity := range data.RecentActivity {
+							<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+								<div class="flex gap-3 items-center">
+									<i class="text-gray-400 fas fa-user-graduate"></i>
+									<div>
+										<p class="font-medium">{ activity.UserName }</p>
+										<p class="text-sm text-gray-500">{ activity.QuizTitle }</p>
+									</div>
+								</div>
+								<div class="text-right">
+									<p class="font-bold text-indigo-600">{ activity.Score }/{ activity.MaxScore }</p>
+									<p class="text-xs text-gray-400">{ activity.CompletedAt }</p>
+								</div>
+							</div>
+						}
+					</div>
+				}
+			</div>
+		</div>
+		<div class="p-6 mt-8 bg-white rounded-xl shadow-sm">
+			<div class="flex justify-between items-center mb-4">
+				<h2 class="text-xl font-bold">{ t.LearningMaterials() }</h2>
+				<a href="/admin/learning-materials" class="inline-flex gap-2 items-center py-2 px-4 text-teal-700 bg-teal-50 rounded-lg transition hover:bg-teal-100">
+					<span>{ t.ViewAll() }</span>
+					<i class="fas fa-arrow-right"></i>
+				</a>
+			</div>
+			if len(data.RecentMaterials) == 0 {
+				<div class="py-8 text-center text-gray-500">
+					<i class="mb-4 text-4xl fas fa-book"></i>
+					<p>{ t.NoMaterialsYet() }</p>
+				</div>
+			} else {
+				<div class="grid gap-4 md:grid-cols-3">
+					for _, m := range data.RecentMaterials {
+						@components.MaterialCard(m, t, false)
+					}
+				</div>
+			}
+		</div>
+	}
+}
