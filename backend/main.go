@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	adminHandlers "github.com/goquizvibe/backend/feature/admin/handlers"
 	"github.com/goquizvibe/backend/shared/database"
 	"github.com/goquizvibe/backend/shared/di"
 	"github.com/goquizvibe/backend/shared/middleware"
@@ -77,7 +76,7 @@ func main() {
 		case func(w http.ResponseWriter, r *http.Request):
 			return h
 		case func(w http.ResponseWriter, r *http.Request) error:
-			return adminHandlers.ErrorHandler(h)
+			return middleware.ErrorHandler(h)
 		case http.Handler:
 			return h.ServeHTTP
 		default:

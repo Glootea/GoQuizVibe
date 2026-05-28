@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	gamificationServices "github.com/goquizvibe/backend/feature/gamification/services"
+	gamificationSvc "github.com/goquizvibe/backend/feature/gamification/services"
 	"github.com/goquizvibe/backend/shared/db"
 	mocks "github.com/goquizvibe/backend/shared/mocks/services"
 	"github.com/goquizvibe/backend/shared/models"
@@ -31,7 +31,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, tp)
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, tp)
 		streak, err := svc.CalculateStreak(ctx, userID)
 		if err != nil {
 			t.Fatalf("CalculateStreak() error = %v, want nil", err)
@@ -57,7 +57,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, tp)
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, tp)
 		streak, err := svc.CalculateStreak(ctx, userID)
 		if err != nil {
 			t.Fatalf("CalculateStreak() error = %v, want nil", err)
@@ -84,7 +84,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, tp)
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, tp)
 		streak, err := svc.CalculateStreak(ctx, userID)
 		if err != nil {
 			t.Fatalf("CalculateStreak() error = %v, want nil", err)
@@ -108,7 +108,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, tp)
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, tp)
 		streak, err := svc.CalculateStreak(ctx, userID)
 		if err != nil {
 			t.Fatalf("CalculateStreak() error = %v, want nil", err)
@@ -132,7 +132,7 @@ func TestGamificationService_CalculateStreak(t *testing.T) {
 		}
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, tp)
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, tp)
 		streak, err := svc.CalculateStreak(ctx, userID)
 		if err != nil {
 			t.Fatalf("CalculateStreak() error = %v, want nil", err)
@@ -157,7 +157,7 @@ func TestGamificationService_GetLeaderboard(t *testing.T) {
 
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return([]db.GetRecentAttemptsRow{}, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		entries, err := svc.GetLeaderboard(ctx, 100)
 		if err != nil {
 			t.Fatalf("GetLeaderboard() error = %v, want nil", err)
@@ -181,7 +181,7 @@ func TestGamificationService_GetLeaderboard(t *testing.T) {
 		}
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return(rows, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		entries, err := svc.GetLeaderboard(ctx, 100)
 		if err != nil {
 			t.Fatalf("GetLeaderboard() error = %v, want nil", err)
@@ -209,7 +209,7 @@ func TestGamificationService_GetLeaderboard(t *testing.T) {
 		}
 		mockAttempts.EXPECT().GetRecentAttempts(ctx, int32(100)).Return(rows, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		entries, err := svc.GetLeaderboard(ctx, 100)
 		if err != nil {
 			t.Fatalf("GetLeaderboard() error = %v, want nil", err)
@@ -247,7 +247,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(nil, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -280,7 +280,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(nil, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -307,7 +307,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(nil, errors.New("no last active"))
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -335,7 +335,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(lastActiveTime, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -362,7 +362,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return([]db.QuizAttempt{}, nil)
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return("2026-04-28 10:00", nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -389,7 +389,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(nil, errors.New("db error"))
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(nil, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -426,7 +426,7 @@ func TestGamificationService_GetUserStats(t *testing.T) {
 		mockAttempts.EXPECT().GetAttemptsByUser(ctx, userID).Return(attempts, nil)
 		mockStats.EXPECT().GetLastActiveDate(ctx, userID).Return(nil, nil)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(baseTime))
 		stats, err := svc.GetUserStats(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetUserStats() error = %v, want nil", err)
@@ -441,7 +441,7 @@ func TestSortByXP(t *testing.T) {
 	t.Run("empty slice", func(t *testing.T) {
 		t.Parallel()
 		entries := []*models.LeaderboardEntry{}
-		gamificationServices.SortByXP(entries)
+		gamificationSvc.SortByXP(entries)
 		if len(entries) != 0 {
 			t.Errorf("SortByXP() len = %d, want 0", len(entries))
 		}
@@ -452,7 +452,7 @@ func TestSortByXP(t *testing.T) {
 		entries := []*models.LeaderboardEntry{
 			{UserID: "1", XP: 100},
 		}
-		gamificationServices.SortByXP(entries)
+		gamificationSvc.SortByXP(entries)
 		if len(entries) != 1 {
 			t.Errorf("SortByXP() len = %d, want 1", len(entries))
 		}
@@ -468,7 +468,7 @@ func TestSortByXP(t *testing.T) {
 			{UserID: "2", XP: 200},
 			{UserID: "3", XP: 100},
 		}
-		gamificationServices.SortByXP(entries)
+		gamificationSvc.SortByXP(entries)
 		if entries[0].XP != 300 || entries[1].XP != 200 || entries[2].XP != 100 {
 			t.Errorf("SortByXP() entries not sorted correctly")
 		}
@@ -481,7 +481,7 @@ func TestSortByXP(t *testing.T) {
 			{UserID: "2", XP: 200},
 			{UserID: "3", XP: 300},
 		}
-		gamificationServices.SortByXP(entries)
+		gamificationSvc.SortByXP(entries)
 		if entries[0].XP != 300 || entries[1].XP != 200 || entries[2].XP != 100 {
 			t.Errorf("SortByXP() entries not sorted correctly")
 		}
@@ -494,7 +494,7 @@ func TestSortByXP(t *testing.T) {
 			{UserID: "2", XP: 100},
 			{UserID: "3", XP: 100},
 		}
-		gamificationServices.SortByXP(entries)
+		gamificationSvc.SortByXP(entries)
 		if entries[0].XP != 100 || entries[1].XP != 100 || entries[2].XP != 100 {
 			t.Errorf("SortByXP() ties not handled correctly")
 		}
@@ -510,7 +510,7 @@ func TestUpdateStreak(t *testing.T) {
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		err := svc.UpdateStreak(context.Background(), uuid.New())
 		if err != nil {
 			t.Errorf("UpdateStreak() error = %v, want nil", err)
@@ -527,7 +527,7 @@ func TestAwardXP(t *testing.T) {
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
 		mockStats := mocks.NewMockStatsRepository(ctrl)
 
-		svc := gamificationServices.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
+		svc := gamificationSvc.NewGamificationService(mockAttempts, mockStats, NewMockTimeProvider(time.Now()))
 		err := svc.AwardXP(context.Background(), uuid.New(), 50)
 		if err != nil {
 			t.Errorf("AwardXP() error = %v, want nil", err)

@@ -54,7 +54,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(t.MyGroups())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 12, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 12, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -67,7 +67,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(t.CreateGroup())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 17, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 17, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -85,7 +85,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoGroupsYet())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 23, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 23, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -98,7 +98,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(t.CreateGroup())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 28, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 28, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -121,7 +121,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 					var templ_7745c5c3_Var7 templ.SafeURL
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/admin/groups/" + group.ID.String()))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 36, Col: 64}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 36, Col: 64}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -134,7 +134,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(group.Name)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 37, Col: 76}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 37, Col: 76}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -147,7 +147,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("/admin/groups/" + group.ID.String())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 40, Col: 56}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 40, Col: 56}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -160,7 +160,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 					var templ_7745c5c3_Var10 string
 					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(t.DeleteGroup())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 41, Col: 36}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 41, Col: 36}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {
@@ -178,7 +178,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 						var templ_7745c5c3_Var11 string
 						templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(group.Description)
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 49, Col: 64}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 49, Col: 64}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 						if templ_7745c5c3_Err != nil {
@@ -196,7 +196,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(group.CreatedAt.Format("2006-01-02"))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 52, Col: 51}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 52, Col: 51}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 					if templ_7745c5c3_Err != nil {
@@ -209,7 +209,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 					var templ_7745c5c3_Var13 templ.SafeURL
 					templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/admin/groups/" + group.ID.String()))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 53, Col: 64}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 53, Col: 64}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 					if templ_7745c5c3_Err != nil {
@@ -232,7 +232,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(t.CreateGroup())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 63, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 63, Col: 56}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -245,7 +245,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(t.GroupName())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 67, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 67, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -258,7 +258,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(t.Description())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 71, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 71, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -271,7 +271,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(t.Cancel())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 77, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 77, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -284,7 +284,7 @@ func GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Tr
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(t.Create())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/permissions/ui/groups_list.templ`, Line: 80, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/permissions/ui/groups_list.templ`, Line: 80, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {

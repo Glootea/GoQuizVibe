@@ -52,7 +52,7 @@ type Config struct {
 }
 
 func Load() *Config {
-	err := godotenv.Load(".env")
+	err := godotenv.Load("../deployment/.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}

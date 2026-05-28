@@ -49,7 +49,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(remainingSeconds))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/quiz/ui/timer_component.templ`, Line: 20, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/quiz/ui/timer_component.templ`, Line: 20, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -62,7 +62,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(quizID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/quiz/ui/timer_component.templ`, Line: 21, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/quiz/ui/timer_component.templ`, Line: 21, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -75,7 +75,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(sessionID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/quiz/ui/timer_component.templ`, Line: 22, Col: 29}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/quiz/ui/timer_component.templ`, Line: 22, Col: 29}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -88,7 +88,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/quiz/%s/sync?session=%s", quizID.String(), sessionID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/quiz/ui/timer_component.templ`, Line: 23, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/quiz/ui/timer_component.templ`, Line: 23, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -101,7 +101,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(FormatTimer(remainingSeconds))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/quiz/ui/timer_component.templ`, Line: 29, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/quiz/ui/timer_component.templ`, Line: 29, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

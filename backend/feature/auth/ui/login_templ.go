@@ -54,7 +54,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(t.SignInToAccount())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 19, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 19, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -72,7 +72,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(err.Message)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 22, Col: 20}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 22, Col: 20}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -90,7 +90,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(t.Email())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 27, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 27, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -103,7 +103,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(t.Password())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 37, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 37, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -116,7 +116,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(t.LogIn())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 50, Col: 18}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 50, Col: 18}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -129,7 +129,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoAccount())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 54, Col: 21}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 54, Col: 21}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -142,7 +142,7 @@ func LoginPage(err *types.LoginError, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(t.SignUp())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/auth/ui/login.templ`, Line: 55, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/auth/ui/login.templ`, Line: 55, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {

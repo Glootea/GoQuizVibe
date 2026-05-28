@@ -53,7 +53,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(t.CreateLearningMaterial())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 11, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 11, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -66,7 +66,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(t.Title())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 19, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 19, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -79,7 +79,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(t.LearningMaterialTitlePlaceholder())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 25, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 25, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -92,7 +92,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(t.Description())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 29, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 29, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -105,7 +105,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(t.LearningMaterialDescriptionPlaceholder())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 34, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 34, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -118,7 +118,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.MaterialType())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 38, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 38, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -131,7 +131,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(t.TypstSource())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 43, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 43, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -144,7 +144,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(t.TypstSourceDescription())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 44, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 44, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -157,7 +157,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(t.ReadyResource())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 50, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 50, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -170,7 +170,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(t.ReadyResourceDescription())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 51, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 51, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -183,7 +183,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(t.TypstFiles())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 58, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 58, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -196,7 +196,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(t.TypstFilesHelp())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 66, Col: 65}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 66, Col: 65}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -209,7 +209,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(t.Oruploadorcreate())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 68, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 68, Col: 70}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -222,7 +222,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(t.CreateFromTemplate())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 76, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 76, Col: 32}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -235,7 +235,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(t.TemplateDescription())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 78, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 78, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -248,7 +248,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(t.ResourceFile())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 82, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 82, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -261,7 +261,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(t.ResourceFileHelp())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 89, Col: 66}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 89, Col: 66}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -274,7 +274,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(t.Create())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 96, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 96, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -287,7 +287,7 @@ func LearningMaterialsNewPage(user *db.User, t locales.Translator) templ.Compone
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(t.Cancel())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_form.templ`, Line: 102, Col: 19}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_form.templ`, Line: 102, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {

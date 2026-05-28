@@ -55,7 +55,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(t.QuizResults())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 12, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 12, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -68,7 +68,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(t.FilterByQuiz())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 16, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 16, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -81,7 +81,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(t.AllQuizzes())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 18, Col: 39}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 18, Col: 39}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -99,7 +99,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var6 string
 				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.ID.String())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 20, Col: 39}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 20, Col: 39}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -112,7 +112,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Title)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 20, Col: 54}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 20, Col: 54}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -130,7 +130,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.TotalAttempts())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 25, Col: 57}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 25, Col: 57}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -143,7 +143,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(len(data.Attempts))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 26, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 26, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -161,7 +161,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoResultsYet())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 33, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 33, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -174,7 +174,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(t.ResultsWillAppearAfterStudentsCompleteQuizzes())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 34, Col: 93}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 34, Col: 93}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -192,7 +192,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(t.Student())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 41, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 41, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -205,7 +205,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(t.Quiz())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 42, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 42, Col: 77}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -218,7 +218,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 				var templ_7745c5c3_Var14 string
 				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(t.Date())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 43, Col: 77}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 43, Col: 77}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {
@@ -236,7 +236,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var15 string
 					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.QuizID.String())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 51, Col: 85}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 51, Col: 85}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 					if templ_7745c5c3_Err != nil {
@@ -249,7 +249,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var16 string
 					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.UserName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 55, Col: 54}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 55, Col: 54}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 					if templ_7745c5c3_Err != nil {
@@ -262,7 +262,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var17 string
 					templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.QuizTitle)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 58, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 58, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 					if templ_7745c5c3_Err != nil {
@@ -276,7 +276,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 						var templ_7745c5c3_Var18 string
 						templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.CompletedAt.Time.Format("2006-01-02 15:04"))
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 61, Col: 63}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 61, Col: 63}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 						if templ_7745c5c3_Err != nil {
@@ -290,7 +290,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var19 string
 					templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.Score)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 65, Col: 24}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 65, Col: 24}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 					if templ_7745c5c3_Err != nil {
@@ -303,7 +303,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var20 string
 					templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(attempt.MaxScore)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 65, Col: 45}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 65, Col: 45}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 					if templ_7745c5c3_Err != nil {
@@ -316,7 +316,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var21 string
 					templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(getPercentage(attempt.Score, attempt.MaxScore))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 68, Col: 57}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 68, Col: 57}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 					if templ_7745c5c3_Err != nil {
@@ -338,7 +338,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var23 string
 					templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var22).String())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 1, Col: 0}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 1, Col: 0}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 					if templ_7745c5c3_Err != nil {
@@ -351,7 +351,7 @@ func ResultsPage(data types.AdminResultsData, t locales.Translator) templ.Compon
 					var templ_7745c5c3_Var24 string
 					templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(getResultStatus(attempt.Score, attempt.MaxScore, t))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/admin/ui/admin/results.templ`, Line: 72, Col: 63}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/admin/ui/admin/results.templ`, Line: 72, Col: 63}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 					if templ_7745c5c3_Err != nil {

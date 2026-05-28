@@ -30,19 +30,6 @@ templ TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) {
 	</div>
 }
 
-func PositionClass(position int) string {
-	switch position {
-	case 1:
-		return "bg-yellow-400 text-yellow-900"
-	case 2:
-		return "bg-gray-300 text-gray-700"
-	case 3:
-		return "bg-orange-400 text-orange-900"
-	default:
-		return "bg-gray-100 text-gray-600"
-	}
-}
-
 templ DashboardPage(data types.DashboardData, t locales.Translator) {
 	@ui.Base(t.Dashboard(), t) {
 		<div class="min-h-screen bg-gray-50">
@@ -231,4 +218,17 @@ templ LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tra
 			</p>
 		</div>
 	</div>
+}
+
+func PositionClass(position int) string {
+	switch position {
+	case 1:
+		return "bg-yellow-400 text-yellow-900"
+	case 2:
+		return "bg-gray-300 text-gray-700"
+	case 3:
+		return "bg-orange-400 text-orange-900"
+	default:
+		return "bg-gray-100 text-gray-600"
+	}
 }

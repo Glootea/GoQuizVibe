@@ -53,7 +53,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(remainingSeconds))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 24, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 24, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -66,7 +66,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(quizID.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 25, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 25, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -79,7 +79,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(sessionID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 26, Col: 29}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 26, Col: 29}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -92,7 +92,7 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(FormatTimer(remainingSeconds))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 29, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 29, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -104,19 +104,6 @@ func TimerWidget(quizID uuid.UUID, sessionID string, remainingSeconds int) templ
 		}
 		return nil
 	})
-}
-
-func PositionClass(position int) string {
-	switch position {
-	case 1:
-		return "bg-yellow-400 text-yellow-900"
-	case 2:
-		return "bg-gray-300 text-gray-700"
-	case 3:
-		return "bg-orange-400 text-orange-900"
-	default:
-		return "bg-gray-100 text-gray-600"
-	}
 }
 
 func DashboardPage(data types.DashboardData, t locales.Translator) templ.Component {
@@ -172,7 +159,7 @@ func DashboardPage(data types.DashboardData, t locales.Translator) templ.Compone
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.TestInProgress())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 54, Col: 66}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 41, Col: 66}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {
@@ -185,7 +172,7 @@ func DashboardPage(data types.DashboardData, t locales.Translator) templ.Compone
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.ActiveSession.QuizTitle)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 54, Col: 100}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 41, Col: 100}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -198,7 +185,7 @@ func DashboardPage(data types.DashboardData, t locales.Translator) templ.Compone
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(t.TimeRemaining())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 56, Col: 33}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 43, Col: 33}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -219,7 +206,7 @@ func DashboardPage(data types.DashboardData, t locales.Translator) templ.Compone
 				var templ_7745c5c3_Var11 templ.SafeURL
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz/" + data.ActiveSession.QuizID.String() + "/q/" + strconv.Itoa(data.ActiveSession.CurrentIndex)))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 61, Col: 126}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 48, Col: 126}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -232,7 +219,7 @@ func DashboardPage(data types.DashboardData, t locales.Translator) templ.Compone
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(t.Resume())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 64, Col: 19}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 51, Col: 19}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -302,7 +289,7 @@ func Navbar(user *models.User, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(t.Admin())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 85, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 72, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -320,7 +307,7 @@ func Navbar(user *models.User, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(t.Leaders())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 89, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 76, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -333,7 +320,7 @@ func Navbar(user *models.User, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(t.Mistakes())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 92, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 79, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -346,7 +333,7 @@ func Navbar(user *models.User, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(user.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 95, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 82, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -388,7 +375,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(t.DayStreak())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 110, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 97, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -401,7 +388,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(stats.Streak)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 111, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 98, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -414,7 +401,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(t.StreakDaysInARow())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 115, Col: 65}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 102, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -427,7 +414,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(t.TotalXp())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 120, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 107, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -440,7 +427,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var23 string
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(stats.XP)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 121, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 108, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {
@@ -453,7 +440,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(t.ExperiencePoints())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 125, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 112, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -466,7 +453,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(t.QuizzesCompleted())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 130, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 117, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {
@@ -479,7 +466,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var26 string
 		templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(len(stats.CompletedQuizzes))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 131, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 118, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 		if templ_7745c5c3_Err != nil {
@@ -492,7 +479,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var27 string
 		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(t.Completed())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 135, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 122, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 		if templ_7745c5c3_Err != nil {
@@ -505,7 +492,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var28 string
 		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(t.MistakesMade())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 140, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 127, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 		if templ_7745c5c3_Err != nil {
@@ -518,7 +505,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var29 string
 		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(stats.WrongCount)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 141, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 128, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 		if templ_7745c5c3_Err != nil {
@@ -531,7 +518,7 @@ func StatsCards(stats *models.UserStats, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var30 string
 		templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(t.Made())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 145, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 132, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 		if templ_7745c5c3_Err != nil {
@@ -573,7 +560,7 @@ func QuizGrid(quizzes []*models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var32 string
 		templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(t.AvailableQuizzes())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 152, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 139, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 		if templ_7745c5c3_Err != nil {
@@ -591,7 +578,7 @@ func QuizGrid(quizzes []*models.Quiz, t locales.Translator) templ.Component {
 			var templ_7745c5c3_Var33 string
 			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoQuizzesAvailableYet())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 156, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 143, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
@@ -653,7 +640,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var35 templ.SafeURL
 		templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL("/quiz/" + quiz.ID.String() + "/info"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 169, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 156, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 		if templ_7745c5c3_Err != nil {
@@ -666,7 +653,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var36 string
 		templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Subject)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 172, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 159, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 		if templ_7745c5c3_Err != nil {
@@ -679,7 +666,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var37 string
 		templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Grade)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 175, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 162, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 		if templ_7745c5c3_Err != nil {
@@ -692,7 +679,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var38 string
 		templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(t.Grade())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 175, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 162, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 		if templ_7745c5c3_Err != nil {
@@ -705,7 +692,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var39 string
 		templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 178, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 165, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 		if templ_7745c5c3_Err != nil {
@@ -718,7 +705,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var40 string
 		templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(quiz.Description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 179, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 166, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 		if templ_7745c5c3_Err != nil {
@@ -731,7 +718,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var41 string
 		templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(len(quiz.Questions))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 183, Col: 25}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 170, Col: 25}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 		if templ_7745c5c3_Err != nil {
@@ -744,7 +731,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var42 string
 		templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(t.Question(len(quiz.Questions)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 183, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 170, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 		if templ_7745c5c3_Err != nil {
@@ -757,7 +744,7 @@ func QuizCard(quiz *models.Quiz, t locales.Translator) templ.Component {
 		var templ_7745c5c3_Var43 string
 		templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(t.Start())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 186, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 173, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 		if templ_7745c5c3_Err != nil {
@@ -799,7 +786,7 @@ func LeaderboardPreview(entries []*models.LeaderboardEntry, t locales.Translator
 		var templ_7745c5c3_Var45 string
 		templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(t.Leaderboard())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 195, Col: 51}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 182, Col: 51}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 		if templ_7745c5c3_Err != nil {
@@ -812,7 +799,7 @@ func LeaderboardPreview(entries []*models.LeaderboardEntry, t locales.Translator
 		var templ_7745c5c3_Var46 string
 		templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(t.All())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 197, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 184, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 		if templ_7745c5c3_Err != nil {
@@ -830,7 +817,7 @@ func LeaderboardPreview(entries []*models.LeaderboardEntry, t locales.Translator
 			var templ_7745c5c3_Var47 string
 			templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(t.NoParticipantsYet())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 203, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 190, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 			if templ_7745c5c3_Err != nil {
@@ -911,7 +898,7 @@ func LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tran
 		var templ_7745c5c3_Var50 string
 		templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var49).String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 1, Col: 0}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 1, Col: 0}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 		if templ_7745c5c3_Err != nil {
@@ -924,7 +911,7 @@ func LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tran
 		var templ_7745c5c3_Var51 string
 		templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(position)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 222, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 209, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 		if templ_7745c5c3_Err != nil {
@@ -937,7 +924,7 @@ func LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tran
 		var templ_7745c5c3_Var52 string
 		templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(entry.UserName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 225, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 212, Col: 42}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 		if templ_7745c5c3_Err != nil {
@@ -950,7 +937,7 @@ func LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tran
 		var templ_7745c5c3_Var53 string
 		templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(entry.XP)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 228, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 215, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 		if templ_7745c5c3_Err != nil {
@@ -963,7 +950,7 @@ func LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tran
 		var templ_7745c5c3_Var54 string
 		templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(entry.Streak)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/dashboard/ui/dashboard.templ`, Line: 230, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/dashboard/ui/dashboard.templ`, Line: 217, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 		if templ_7745c5c3_Err != nil {
@@ -975,6 +962,19 @@ func LeaderboardRow(entry *models.LeaderboardEntry, position int, t locales.Tran
 		}
 		return nil
 	})
+}
+
+func PositionClass(position int) string {
+	switch position {
+	case 1:
+		return "bg-yellow-400 text-yellow-900"
+	case 2:
+		return "bg-gray-300 text-gray-700"
+	case 3:
+		return "bg-orange-400 text-orange-900"
+	default:
+		return "bg-gray-100 text-gray-600"
+	}
 }
 
 var _ = templruntime.GeneratedTemplate

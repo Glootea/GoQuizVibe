@@ -1,13 +1,13 @@
-package handlers
+package middleware
 
 import (
 	"log"
 	"net/http"
 
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
-	"github.com/goquizvibe/backend/shared/middleware"
+	"github.com/goquizvibe/backend/shared/ui"
+
 	"github.com/goquizvibe/backend/shared/types"
-	pages "github.com/goquizvibe/backend/shared/ui"
 )
 
 type HandlerFunc func(w http.ResponseWriter, r *http.Request) error
@@ -19,18 +19,18 @@ func ErrorHandler(f HandlerFunc) http.HandlerFunc {
 
 			log.Printf("--- ERROR START ---\n%v\nRequest url: %s\nRequest method: %s\n--- ERROR END ---", err, r.URL.String(), r.Method)
 
-			isHTMX := middleware.IsHTMXRequest(r)
+			isHTMX := IsHTMXRequest(r)
 			status := ce.HTTPStatus(err)
 			redirectTo := redirectPathForStatus(status)
 
 			if isHTMX {
 				w.WriteHeader(status)
-				t := middleware.GetTranslator(r.Context())
-				pages.ErrorAlert(ce.UserMessage(err), redirectTo, t).Render(r.Context(), w)
+				t := GetTranslator(r.Context())
+				ui.ErrorAlert(ce.UserMessage(err), redirectTo, t).Render(r.Context(), w)
 			} else {
 				w.WriteHeader(status)
-				t := middleware.GetTranslator(r.Context())
-				pages.ErrorPage(types.ErrorData{
+				t := GetTranslator(r.Context())
+				ui.ErrorPage(types.ErrorData{
 					Message:    ce.UserMessage(err),
 					RedirectTo: redirectTo,
 				}, t).Render(r.Context(), w)

@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/goquizvibe/backend/shared/db"
+	tp "github.com/goquizvibe/backend/shared/infrastructure/timeprovider"
 	"github.com/goquizvibe/backend/shared/models"
 	r "github.com/goquizvibe/backend/shared/repositories"
-	timeprovider "github.com/goquizvibe/backend/shared/infrastructure/timeprovider"
 )
 
 func formatCompletedAt(t sql.NullTime) string {
@@ -22,10 +22,10 @@ func formatCompletedAt(t sql.NullTime) string {
 type GamificationService struct {
 	attempts     r.AttemptRepository
 	stats        r.StatsRepository
-	timeProvider timeprovider.TimeProvider
+	timeProvider tp.TimeProvider
 }
 
-func NewGamificationService(attempts r.AttemptRepository, stats r.StatsRepository, tp timeprovider.TimeProvider) *GamificationService {
+func NewGamificationService(attempts r.AttemptRepository, stats r.StatsRepository, tp tp.TimeProvider) *GamificationService {
 	return &GamificationService{
 		attempts:     attempts,
 		stats:        stats,

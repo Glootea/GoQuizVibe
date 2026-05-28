@@ -6,17 +6,17 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	adminServices "github.com/goquizvibe/backend/feature/admin/services"
-	lmServices "github.com/goquizvibe/backend/feature/learning_materials/services"
+	adminSvc "github.com/goquizvibe/backend/feature/admin/services"
+	lmSvc "github.com/goquizvibe/backend/feature/learning_materials/services"
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
 )
 
 type TypstHandler struct {
-	materialService *lmServices.LearningMaterialService
-	adminService    *adminServices.AdminService
+	materialService *lmSvc.LearningMaterialService
+	adminService    *adminSvc.AdminService
 }
 
-func NewTypstHandler(ms *lmServices.LearningMaterialService, as *adminServices.AdminService) *TypstHandler {
+func NewTypstHandler(ms *lmSvc.LearningMaterialService, as *adminSvc.AdminService) *TypstHandler {
 	return &TypstHandler{
 		materialService: ms,
 		adminService:    as,

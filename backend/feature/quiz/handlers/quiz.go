@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	authServices "github.com/goquizvibe/backend/feature/auth/services"
-	quizServices "github.com/goquizvibe/backend/feature/quiz/services"
+	authSvc "github.com/goquizvibe/backend/feature/auth/services"
+	quizSvc "github.com/goquizvibe/backend/feature/quiz/services"
 	quizUI "github.com/goquizvibe/backend/feature/quiz/ui"
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
 	"github.com/goquizvibe/backend/shared/db"
@@ -22,13 +22,13 @@ import (
 var ErrTimeExpired = errors.New("time expired")
 
 type QuizHandler struct {
-	sessionService *quizServices.QuizSessionService
-	quizService    *quizServices.QuizService
+	sessionService *quizSvc.QuizSessionService
+	quizService    *quizSvc.QuizService
 	pool           *db.Queries
-	authService    *authServices.AuthService
+	authService    *authSvc.AuthService
 }
 
-func NewQuiz(pool *db.Queries, qs *quizServices.QuizService, ss *quizServices.QuizSessionService, auth *authServices.AuthService) *QuizHandler {
+func NewQuiz(pool *db.Queries, qs *quizSvc.QuizService, ss *quizSvc.QuizSessionService, auth *authSvc.AuthService) *QuizHandler {
 	return &QuizHandler{
 		sessionService: ss,
 		quizService:    qs,
@@ -212,7 +212,7 @@ func (h *QuizHandler) QuizNavigate(w http.ResponseWriter, r *http.Request) error
 
 	navData, err := h.sessionService.NavigateQuestion(ctx, userID, quizID, currentIndex, targetIndex, answer, &usr)
 	if err != nil {
-		if errors.Is(err, quizServices.ErrTimeExpired) {
+		if errors.Is(err, quizSvc.ErrTimeExpired) {
 			http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
 			return nil
 		}
@@ -288,7 +288,7 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 
 	_, err = h.sessionService.SaveAnswer(r.Context(), userID, quizID, currentIndex, answer)
 	if err != nil {
-		if errors.Is(err, quizServices.ErrTimeExpired) {
+		if errors.Is(err, quizSvc.ErrTimeExpired) {
 			http.Redirect(w, r, "/quiz/"+quizID.String()+"/result?session="+sessionIDStr, http.StatusFound)
 			return nil
 		}
@@ -305,7 +305,7 @@ func (h *QuizHandler) QuizFinish(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (*quizServices.QuizSession, string, bool, *types.ActiveSessionInfo) {
+func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (*quizSvc.QuizSession, string, bool, *types.ActiveSessionInfo) {
 	ctx := r.Context()
 	userID, _ := h.sessionService.GetUserIDFromRequest(r, h.authService)
 
@@ -315,7 +315,7 @@ func (h *QuizHandler) getSessionFromRequest(r *http.Request, quizID uuid.UUID) (
 	}
 
 	if existing != nil {
-		return &quizServices.QuizSession{
+		return &quizSvc.QuizSession{
 			UserID:       userID,
 			QuizID:       existing.QuizID,
 			AttemptID:    existing.SessionID,

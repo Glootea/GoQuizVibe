@@ -5,27 +5,21 @@ go 1.26.0
 require (
 	github.com/a-h/templ v0.3.1001
 	github.com/andybalholm/brotli v1.1.0
+	github.com/goforj/wire v1.2.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
+	github.com/goquizvibe/pkg v0.0.0
+	github.com/invopop/jsonschema v0.14.0
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/joho/godotenv v1.5.1
 	github.com/klauspost/compress v1.18.6
-	github.com/minio/minio-go/v7 v7.1.0 // indirect
-	go.uber.org/mock v0.6.0
-	golang.org/x/crypto v0.49.0
-)
-
-require (
-	github.com/goforj/wire v1.2.0
-	github.com/goquizvibe/pkg v0.0.0
-	github.com/invopop/jsonschema v0.14.0
 	github.com/leonelquinteros/gotext v1.7.2
+	github.com/minio/minio-go/v7 v7.1.0 // indirect
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redis/go-redis/v9 v9.19.0
-)
-
-require (
+	go.uber.org/mock v0.6.0
+	golang.org/x/crypto v0.49.0
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 )

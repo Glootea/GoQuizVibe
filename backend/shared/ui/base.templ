@@ -1,10 +1,13 @@
 package ui
 
-import "github.com/goquizvibe/backend/shared/locales"
+import (
+	"github.com/goquizvibe/backend/shared/locales"
 
-templ Base(title string, t locales.Translator) {
+)
+
+templ Base(title string, t locales.Translator, ) {
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang={ locales.GetLang(ctx) }>
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>

@@ -71,7 +71,7 @@ func Connect(ctx context.Context, c config.Config) (*pgxpool.Pool, error) {
 
 func runMigrations(c config.Config) error {
 	connStr := c.Database.DSN()
-	m, err := migrate.New("file://sql/migrations", connStr)
+	m, err := migrate.New("file://shared/sql/migrations", connStr)
 	if err != nil {
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}

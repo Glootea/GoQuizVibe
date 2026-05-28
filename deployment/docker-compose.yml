@@ -1,7 +1,7 @@
 services:
   typst:
     build:
-      context: ./backend
+      context: ./../
       dockerfile: microservices/typst/Dockerfile
     ports:
       - "9091:9090"
@@ -23,7 +23,9 @@ services:
   server:
     image: server:latest
     pull_policy: never
-    build: ./backend
+    build: 
+      context: ./../
+      dockerfile: backend/Dockerfile
     profiles: ["with-server"]     
     ports:
       - "7890:7890"

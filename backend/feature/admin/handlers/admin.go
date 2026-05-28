@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	adminServices "github.com/goquizvibe/backend/feature/admin/services"
-	authServices "github.com/goquizvibe/backend/feature/auth/services"
+	adminSvc "github.com/goquizvibe/backend/feature/admin/services"
 	adminUI "github.com/goquizvibe/backend/feature/admin/ui/admin"
+	authSvc "github.com/goquizvibe/backend/feature/auth/services"
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
 	"github.com/goquizvibe/backend/shared/db"
 	"github.com/goquizvibe/backend/shared/locales"
@@ -20,13 +20,13 @@ import (
 )
 
 type AdminHandler struct {
-	adminService    *adminServices.AdminService
-	authService     *authServices.AuthService
+	adminService    *adminSvc.AdminService
+	authService     *authSvc.AuthService
 	localeSvc       *locales.Service
-	promptGenerator *adminServices.PromptGenerator
+	promptGenerator *adminSvc.PromptGenerator
 }
 
-func NewAdmin(adminSvc *adminServices.AdminService, auth *authServices.AuthService, svc *locales.Service, pg *adminServices.PromptGenerator) *AdminHandler {
+func NewAdmin(adminSvc *adminSvc.AdminService, auth *authSvc.AuthService, svc *locales.Service, pg *adminSvc.PromptGenerator) *AdminHandler {
 	return &AdminHandler{
 		adminService:    adminSvc,
 		authService:     auth,
@@ -165,7 +165,7 @@ func (h *AdminHandler) AddQuestion(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
 
-	text, questionTypeStr, explanation, correctAnswer, points, orderIndex, options, files, err := adminServices.ParseQuestionForm(r)
+	text, questionTypeStr, explanation, correctAnswer, points, orderIndex, options, files, err := adminSvc.ParseQuestionForm(r)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
@@ -303,7 +303,7 @@ func (h *AdminHandler) UploadQuestionImage(w http.ResponseWriter, r *http.Reques
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
 
-	if err := r.ParseMultipartForm(adminServices.MaxImageSize); err != nil {
+	if err := r.ParseMultipartForm(adminSvc.MaxImageSize); err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
 	}
 

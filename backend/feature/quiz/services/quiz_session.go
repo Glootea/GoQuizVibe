@@ -12,14 +12,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	authHelpers "github.com/goquizvibe/backend/feature/auth/services"
+	"github.com/goquizvibe/backend/feature/gamification/services"
 	"github.com/goquizvibe/backend/shared/db"
+	cache "github.com/goquizvibe/backend/shared/infrastructure/cache"
+	"github.com/goquizvibe/backend/shared/infrastructure/interfaces"
 	"github.com/goquizvibe/backend/shared/models"
 	r "github.com/goquizvibe/backend/shared/repositories"
 	"github.com/goquizvibe/backend/shared/types"
-	"github.com/goquizvibe/backend/shared/infrastructure/interfaces"
-	"github.com/goquizvibe/backend/feature/gamification/services"
-cache "github.com/goquizvibe/backend/shared/infrastructure/cache"
-	authHelpers "github.com/goquizvibe/backend/feature/auth/services"
 )
 
 const (
@@ -640,8 +640,6 @@ func (s *QuizSessionService) getQuizWithQuestions(ctx context.Context, quizID uu
 		Questions: questionsWithImages,
 	}, nil
 }
-
-
 
 func (s *QuizSessionService) SessionExists(ctx context.Context, userID uuid.UUID) bool {
 	return s.GetSession(ctx, userID) != nil

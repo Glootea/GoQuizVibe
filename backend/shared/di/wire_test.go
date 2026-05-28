@@ -7,20 +7,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	adminHandlers "github.com/goquizvibe/backend/feature/admin/handlers"
-	adminServices "github.com/goquizvibe/backend/feature/admin/services"
-	authHandlers "github.com/goquizvibe/backend/feature/auth/handlers"
-	authServices "github.com/goquizvibe/backend/feature/auth/services"
-	dashboardHandlers "github.com/goquizvibe/backend/feature/dashboard/handlers"
-	dashboardServices "github.com/goquizvibe/backend/feature/dashboard/services"
-	gamificationServices "github.com/goquizvibe/backend/feature/gamification/services"
-	quizHandlers "github.com/goquizvibe/backend/feature/quiz/handlers"
-	quizServices "github.com/goquizvibe/backend/feature/quiz/services"
+	adminHndl "github.com/goquizvibe/backend/feature/admin/handlers"
+	adminSvc "github.com/goquizvibe/backend/feature/admin/services"
+	authHndl "github.com/goquizvibe/backend/feature/auth/handlers"
+	authSvc "github.com/goquizvibe/backend/feature/auth/services"
+	dashboardHndl "github.com/goquizvibe/backend/feature/dashboard/handlers"
+	dashboardSvc "github.com/goquizvibe/backend/feature/dashboard/services"
+	gamificationSvc "github.com/goquizvibe/backend/feature/gamification/services"
+	quizHndl "github.com/goquizvibe/backend/feature/quiz/handlers"
+	quizSvc "github.com/goquizvibe/backend/feature/quiz/services"
 	"github.com/goquizvibe/backend/shared/config"
 	"github.com/goquizvibe/backend/shared/db"
-	cacheServices "github.com/goquizvibe/backend/shared/infrastructure/cache"
+	cacheSvc "github.com/goquizvibe/backend/shared/infrastructure/cache"
 	interfaces "github.com/goquizvibe/backend/shared/infrastructure/interfaces"
-	storageServices "github.com/goquizvibe/backend/shared/infrastructure/storage"
+	storageSvc "github.com/goquizvibe/backend/shared/infrastructure/storage"
 	timeProvider "github.com/goquizvibe/backend/shared/infrastructure/timeprovider"
 	locales "github.com/goquizvibe/backend/shared/locales"
 	"github.com/goquizvibe/backend/shared/middleware"
@@ -32,19 +32,19 @@ import (
 )
 
 type TestApp struct {
-	AuthService         *authServices.AuthService
-	QuizService         *quizServices.QuizService
-	QuizSessionService  *quizServices.QuizSessionService
-	AdminService        *adminServices.AdminService
-	DashboardService    *dashboardServices.DashboardService
-	GamificationService *gamificationServices.GamificationService
-	StorageService      *storageServices.StorageService
-	CacheService        *cacheServices.CacheService
+	AuthService         *authSvc.AuthService
+	QuizService         *quizSvc.QuizService
+	QuizSessionService  *quizSvc.QuizSessionService
+	AdminService        *adminSvc.AdminService
+	DashboardService    *dashboardSvc.DashboardService
+	GamificationService *gamificationSvc.GamificationService
+	StorageService      *storageSvc.StorageService
+	CacheService        *cacheSvc.CacheService
 
-	AuthHandler      *authHandlers.AuthHandler
-	DashboardHandler *dashboardHandlers.DashboardHandler
-	QuizHandler      *quizHandlers.QuizHandler
-	AdminHandler     *adminHandlers.AdminHandler
+	AuthHandler      *authHndl.AuthHandler
+	DashboardHandler *dashboardHndl.DashboardHandler
+	QuizHandler      *quizHndl.QuizHandler
+	AdminHandler     *adminHndl.AdminHandler
 
 	RequireAuthMiddleware   middleware.RequireAuthMiddleware
 	RequireRoleMiddleware   middleware.RequireRoleMiddleware
@@ -168,7 +168,7 @@ type MockGamificationService struct {
 	data map[uuid.UUID]*models.UserStats
 }
 
-func NewMockGamificationService() *gamificationServices.GamificationService {
+func NewMockGamificationService() *gamificationSvc.GamificationService {
 	return nil
 }
 
@@ -177,29 +177,29 @@ func ProvideTestConfig() *config.Config {
 	return cfg
 }
 
-func ProvideTestCacheService() *cacheServices.CacheService {
+func ProvideTestCacheService() *cacheSvc.CacheService {
 	return nil
 }
 
-func ProvideTestPromptGenerator(cacheService *cacheServices.CacheService) *adminServices.PromptGenerator {
-	schemaService := adminServices.NewQuestionSchema(cacheService)
-	return adminServices.NewPromptGenerator(schemaService)
+func ProvideTestPromptGenerator(cacheService *cacheSvc.CacheService) *adminSvc.PromptGenerator {
+	schemaService := adminSvc.NewQuestionSchema(cacheService)
+	return adminSvc.NewPromptGenerator(schemaService)
 }
 
-func ProvideTestStorageService() *storageServices.StorageService {
+func ProvideTestStorageService() *storageSvc.StorageService {
 	return nil
 }
 
-func ProvideTestAuthService(queries *db.Queries, cfg *config.Config) *authServices.AuthService {
-	return authServices.NewAuthService(queries, cfg.JWTSecret, 24*time.Hour)
+func ProvideTestAuthService(queries *db.Queries, cfg *config.Config) *authSvc.AuthService {
+	return authSvc.NewAuthService(queries, cfg.JWTSecret, 24*time.Hour)
 }
 
-func ProvideTestGamificationService(queries *db.Queries, tp timeProvider.TimeProvider) *gamificationServices.GamificationService {
-	return gamificationServices.NewGamificationService(queries, queries, tp)
+func ProvideTestGamificationService(queries *db.Queries, tp timeProvider.TimeProvider) *gamificationSvc.GamificationService {
+	return gamificationSvc.NewGamificationService(queries, queries, tp)
 }
 
-func ProvideTestQuizService(queries *db.Queries, cacheService *cacheServices.CacheService) *quizServices.QuizService {
-	return quizServices.NewQuizService(queries, queries, queries, queries, cacheService)
+func ProvideTestQuizService(queries *db.Queries, cacheService *cacheSvc.CacheService) *quizSvc.QuizService {
+	return quizSvc.NewQuizService(queries, queries, queries, queries, cacheService)
 }
 
 func ProvideTestAdminService(
@@ -210,28 +210,28 @@ func ProvideTestAdminService(
 	attempts r.AttemptRepository,
 	stats r.StatsRepository,
 	materials r.LearningMaterialRepository,
-	authService *authServices.AuthService,
-	storageService *storageServices.StorageService,
-	cacheService *cacheServices.CacheService,
-) *adminServices.AdminService {
-	return adminServices.NewAdminService(users, quizzes, questions, images, attempts, stats, materials, authService, storageService, cacheService)
+	authService *authSvc.AuthService,
+	storageService *storageSvc.StorageService,
+	cacheService *cacheSvc.CacheService,
+) *adminSvc.AdminService {
+	return adminSvc.NewAdminService(users, quizzes, questions, images, attempts, stats, materials, authService, storageService, cacheService)
 }
 
 func ProvideTestQuizSessionService(
 	queries *db.Queries,
-	gamification *gamificationServices.GamificationService,
-) *quizServices.QuizSessionService {
+	gamification *gamificationSvc.GamificationService,
+) *quizSvc.QuizSessionService {
 	return nil
 }
 
 func ProvideTestDashboardService(
 	queries *db.Queries,
-	gamification *gamificationServices.GamificationService,
-	authService *authServices.AuthService,
-	sessionService *quizServices.QuizSessionService,
-	cacheService *cacheServices.CacheService,
-) *dashboardServices.DashboardService {
-	return dashboardServices.NewDashboardService(queries, queries, queries, queries, gamification, authService, sessionService, cacheService)
+	gamification *gamificationSvc.GamificationService,
+	authService *authSvc.AuthService,
+	sessionService *quizSvc.QuizSessionService,
+	cacheService *cacheSvc.CacheService,
+) *dashboardSvc.DashboardService {
+	return dashboardSvc.NewDashboardService(queries, queries, queries, queries, gamification, authService, sessionService, cacheService)
 }
 
 func ProvideMockAuthenticator() interfaces.Authenticator {
@@ -242,36 +242,36 @@ func ProvideMockTimeProvider() timeProvider.TimeProvider {
 	return NewMockTimeProvider()
 }
 
-func ProvideTestAuthHandler(queries *db.Queries, authService *authServices.AuthService, localeService *locales.Service) *authHandlers.AuthHandler {
-	return authHandlers.NewAuth(queries, authService, localeService)
+func ProvideTestAuthHandler(queries *db.Queries, authService *authSvc.AuthService, localeService *locales.Service) *authHndl.AuthHandler {
+	return authHndl.NewAuth(queries, authService, localeService)
 }
 
-func ProvideTestDashboardHandler(dashboardService *dashboardServices.DashboardService) *dashboardHandlers.DashboardHandler {
-	return dashboardHandlers.NewDashboard(dashboardService)
+func ProvideTestDashboardHandler(dashboardService *dashboardSvc.DashboardService) *dashboardHndl.DashboardHandler {
+	return dashboardHndl.NewDashboard(dashboardService)
 }
 
 func ProvideTestQuizHandler(
 	queries *db.Queries,
-	quizService *quizServices.QuizService,
-	authService *authServices.AuthService,
-) *quizHandlers.QuizHandler {
-	return quizHandlers.NewQuiz(queries, quizService, nil, authService)
+	quizService *quizSvc.QuizService,
+	authService *authSvc.AuthService,
+) *quizHndl.QuizHandler {
+	return quizHndl.NewQuiz(queries, quizService, nil, authService)
 }
 
 func ProvideTestAdminHandler(
-	adminService *adminServices.AdminService,
-	authService *authServices.AuthService,
+	adminService *adminSvc.AdminService,
+	authService *authSvc.AuthService,
 	localeService *locales.Service,
-	promptGenerator *adminServices.PromptGenerator,
-) *adminHandlers.AdminHandler {
-	return adminHandlers.NewAdmin(adminService, authService, localeService, promptGenerator)
+	promptGenerator *adminSvc.PromptGenerator,
+) *adminHndl.AdminHandler {
+	return adminHndl.NewAdmin(adminService, authService, localeService, promptGenerator)
 }
 
-func ProvideTestRequireAuthMiddleware(authService *authServices.AuthService) middleware.RequireAuthMiddleware {
+func ProvideTestRequireAuthMiddleware(authService *authSvc.AuthService) middleware.RequireAuthMiddleware {
 	return middleware.NewRequireAuthMiddleware(authService)
 }
 
-func ProvideTestRequireRoleMiddleware(authService *authServices.AuthService) middleware.RequireRoleMiddleware {
+func ProvideTestRequireRoleMiddleware(authService *authSvc.AuthService) middleware.RequireRoleMiddleware {
 	return middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher)
 }
 
@@ -346,15 +346,15 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 	})
 
 	mockTime := NewMockTimeProvider()
-	authService := authServices.NewAuthService(queries, cfg.JWTSecret, 24*time.Hour)
-	gamification := gamificationServices.NewGamificationService(queries, queries, mockTime)
-	cacheService := cacheServices.NewCacheService(nil, cfg.Redis.CacheTTL)
-	quizService := quizServices.NewQuizService(queries, queries, queries, queries, cacheService)
-	schemaService := adminServices.NewQuestionSchema(nil)
-	promptGenerator := adminServices.NewPromptGenerator(schemaService)
+	authService := authSvc.NewAuthService(queries, cfg.JWTSecret, 24*time.Hour)
+	gamification := gamificationSvc.NewGamificationService(queries, queries, mockTime)
+	cacheService := cacheSvc.NewCacheService(nil, cfg.Redis.CacheTTL)
+	quizService := quizSvc.NewQuizService(queries, queries, queries, queries, cacheService)
+	schemaService := adminSvc.NewQuestionSchema(nil)
+	promptGenerator := adminSvc.NewPromptGenerator(schemaService)
 
-	quizSessionService := quizServices.NewQuizSessionService(queries, queries, queries, queries, queries, gamification, cacheService)
-	dashboardService := dashboardServices.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
+	quizSessionService := quizSvc.NewQuizSessionService(queries, queries, queries, queries, queries, gamification, cacheService)
+	dashboardService := dashboardSvc.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
 
 	localeSvc, _ := locales.NewService()
 
@@ -367,10 +367,10 @@ func CreateTestApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config) 
 		GamificationService:     gamification,
 		StorageService:          nil,
 		CacheService:            nil,
-		AuthHandler:             authHandlers.NewAuth(queries, authService, localeSvc),
-		DashboardHandler:        dashboardHandlers.NewDashboard(dashboardService),
-		QuizHandler:             quizHandlers.NewQuiz(queries, quizService, nil, authService),
-		AdminHandler:            adminHandlers.NewAdmin(nil, authService, localeSvc, promptGenerator),
+		AuthHandler:             authHndl.NewAuth(queries, authService, localeSvc),
+		DashboardHandler:        dashboardHndl.NewDashboard(dashboardService),
+		QuizHandler:             quizHndl.NewQuiz(queries, quizService, nil, authService),
+		AdminHandler:            adminHndl.NewAdmin(nil, authService, localeSvc, promptGenerator),
 		RequireAuthMiddleware:   middleware.NewRequireAuthMiddleware(authService),
 		RequireRoleMiddleware:   middleware.NewRequireRoleMiddleware(authService, models.RoleTeacher),
 		CompressionMiddleware:   middleware.NewCompressionMiddleware(),

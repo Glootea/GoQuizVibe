@@ -4,12 +4,12 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/goquizvibe/backend/feature/auth/services"
+	"github.com/goquizvibe/backend/feature/auth/ui"
 	"github.com/goquizvibe/backend/shared/db"
 	"github.com/goquizvibe/backend/shared/locales"
 	"github.com/goquizvibe/backend/shared/middleware"
 	"github.com/goquizvibe/backend/shared/models"
-	"github.com/goquizvibe/backend/feature/auth/ui"
-	"github.com/goquizvibe/backend/feature/auth/services"
 	"github.com/goquizvibe/backend/shared/types"
 )
 

@@ -5,9 +5,7 @@
 
 package di
 
-import (
-	"context"
-)
+import "context"
 
 func InitializeApp(ctx context.Context) (*App, error) {
 	config := ProvideConfig()
@@ -48,20 +46,18 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	editorHandler := ProvideEditorHandler(learningMaterialService)
 	typstHandler := ProvideTypstHandler(learningMaterialService, adminService)
 	learningMaterialsHandler := ProvideLearningMaterialsHandler(learningMaterialService, adminService, service)
-	groupsHandler := ProvideGroupsHandler(userGroupService, authService)
-	permissionsHandler := ProvidePermissionsHandler(permissionsService, userGroupService, authService)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	compressionMiddleware := ProvideCompressionMiddleware()
 	commonHeaders := ProvideCommonHeadersMiddleware()
 	localeMiddleware := ProvideLocaleMiddleware(service)
 	app := &App{
-		Config:                  config,
-		AuthService:             authService,
-		QuizService:             quizService,
+		Config:                   config,
+		AuthService:              authService,
+		QuizService:              quizService,
 		QuizSessionService:       quizSessionService,
 		QuizTimerService:         quizTimerService,
-		AdminService:            adminService,
+		AdminService:             adminService,
 		DashboardService:         dashboardService,
 		GamificationService:      gamificationService,
 		StorageService:           storageService,
@@ -72,16 +68,14 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		AuthHandler:              authHandler,
 		DashboardHandler:         dashboardHandler,
 		QuizHandler:              quizHandler,
-		AdminHandler:            adminHandler,
+		AdminHandler:             adminHandler,
 		EditorHandler:            editorHandler,
 		TypstHandler:             typstHandler,
 		LearningMaterialsHandler: learningMaterialsHandler,
-		GroupsHandler:           groupsHandler,
-		PermissionsHandler:      permissionsHandler,
 		RequireAuthMiddleware:    requireAuthMiddleware,
 		RequireRoleMiddleware:    requireRoleMiddleware,
-		CompressionMiddleware:   compressionMiddleware,
-		CommonHeadersMiddleware: commonHeaders,
+		CompressionMiddleware:    compressionMiddleware,
+		CommonHeadersMiddleware:  commonHeaders,
 		LocaleMiddleware:         localeMiddleware,
 		LocaleService:            service,
 	}

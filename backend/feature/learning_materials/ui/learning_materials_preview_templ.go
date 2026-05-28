@@ -53,7 +53,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(material.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_preview.templ`, Line: 15, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_preview.templ`, Line: 15, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -66,7 +66,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(t.PdfPreview())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_preview.templ`, Line: 16, Col: 48}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_preview.templ`, Line: 16, Col: 48}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -79,7 +79,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 			var templ_7745c5c3_Var5 templ.SafeURL
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs("/admin/learning-materials/" + templ.URL(material.ID.String()))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_preview.templ`, Line: 19, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_preview.templ`, Line: 19, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -92,7 +92,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(t.BackToEdit())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_preview.templ`, Line: 22, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_preview.templ`, Line: 22, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -110,7 +110,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(templ.URL(url))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_preview.templ`, Line: 29, Col: 27}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_preview.templ`, Line: 29, Col: 27}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -128,7 +128,7 @@ func LearningMaterialsPreviewPage(user *db.User, material *db.LearningMaterial, 
 				var templ_7745c5c3_Var8 string
 				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.PreviewNotAvailable())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `backend/feature/learning_materials/ui/learning_materials_preview.templ`, Line: 35, Col: 35}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `feature/learning_materials/ui/learning_materials_preview.templ`, Line: 35, Col: 35}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 				if templ_7745c5c3_Err != nil {

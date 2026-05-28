@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	authServices "github.com/goquizvibe/backend/feature/auth/services"
 	"github.com/goquizvibe/backend/feature/permissions/services"
 	permissionsUI "github.com/goquizvibe/backend/feature/permissions/ui"
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
 	"github.com/goquizvibe/backend/shared/db"
 	"github.com/goquizvibe/backend/shared/infrastructure/interfaces"
-	"github.com/google/uuid"
 	"github.com/goquizvibe/backend/shared/middleware"
 )
 
@@ -23,7 +23,7 @@ type GroupsHandler struct {
 func NewGroupsHandler(groupService *services.UserGroupService, auth interfaces.Authenticator) *GroupsHandler {
 	return &GroupsHandler{
 		groupService: groupService,
-		auth:        auth,
+		auth:         auth,
 	}
 }
 

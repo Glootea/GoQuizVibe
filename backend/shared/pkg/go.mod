@@ -1,6 +1,6 @@
 module github.com/goquizvibe/backend/shared/pkg
 
-go 1.26.0
+go 1.25.0
 
 require github.com/minio/minio-go/v7 v7.1.0
 

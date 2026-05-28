@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	adminServices "github.com/goquizvibe/backend/feature/admin/services"
-	lmServices "github.com/goquizvibe/backend/feature/learning_materials/services"
+	adminSvc "github.com/goquizvibe/backend/feature/admin/services"
+	lmSvc "github.com/goquizvibe/backend/feature/learning_materials/services"
 	lmUI "github.com/goquizvibe/backend/feature/learning_materials/ui"
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
 	"github.com/goquizvibe/backend/shared/db"
@@ -16,14 +16,14 @@ import (
 )
 
 type LearningMaterialsHandler struct {
-	materialService *lmServices.LearningMaterialService
-	adminService    *adminServices.AdminService
+	materialService *lmSvc.LearningMaterialService
+	adminService    *adminSvc.AdminService
 	localeSvc       *locales.Service
 }
 
 func NewLearningMaterialsHandler(
-	materialService *lmServices.LearningMaterialService,
-	adminService *adminServices.AdminService,
+	materialService *lmSvc.LearningMaterialService,
+	adminService *adminSvc.AdminService,
 	localeSvc *locales.Service,
 ) *LearningMaterialsHandler {
 	return &LearningMaterialsHandler{
