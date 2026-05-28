@@ -88,8 +88,8 @@ templ MembersList(members []services.MemberWithRole, t locales.Translator) {
 	</div>
 }
 
-templ GroupDetailPage(group *db.UserGroup, members []services.MemberWithRole, t locales.Translator) {
-	@BaseAdmin(t.MyGroups(), nil, t) {
+templ GroupDetailPage(group *db.UserGroup, user *db.User, members []services.MemberWithRole, t locales.Translator) {
+	@BaseAdmin(t.MyGroups(), user, t) {
 		<div class="mb-6 flex items-center justify-between">
 			<div>
 				<a href="/admin/groups" class="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">

@@ -7,22 +7,25 @@ import (
 
 	"github.com/google/uuid"
 	authServices "github.com/goquizvibe/backend/feature/auth/services"
-	"github.com/goquizvibe/backend/feature/permissions/services"
+	permServices "github.com/goquizvibe/backend/feature/permissions/services"
 	permissionsUI "github.com/goquizvibe/backend/feature/permissions/ui"
 	ce "github.com/goquizvibe/backend/shared/custom_errors"
 	"github.com/goquizvibe/backend/shared/db"
 	"github.com/goquizvibe/backend/shared/infrastructure/interfaces"
 	"github.com/goquizvibe/backend/shared/middleware"
+	r "github.com/goquizvibe/backend/shared/repositories"
 )
 
 type GroupsHandler struct {
-	groupService *services.UserGroupService
+	groupService *permServices.UserGroupService
+	users        r.UserRepository
 	auth         interfaces.Authenticator
 }
 
-func NewGroupsHandler(groupService *services.UserGroupService, auth interfaces.Authenticator) *GroupsHandler {
+func NewGroupsHandler(groupService *permServices.UserGroupService, users r.UserRepository, auth interfaces.Authenticator) *GroupsHandler {
 	return &GroupsHandler{
 		groupService: groupService,
+		users:        users,
 		auth:         auth,
 	}
 }
@@ -42,8 +45,13 @@ func (h *GroupsHandler) ListGroups(w http.ResponseWriter, r *http.Request) error
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
+	user, err := h.users.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
 	t := middleware.GetTranslator(r.Context())
-	return permissionsUI.GroupsListPage(groups, userID, t).Render(r.Context(), w)
+	return permissionsUI.GroupsListPage(groups, &user, t).Render(r.Context(), w)
 }
 
 func (h *GroupsHandler) GetGroup(w http.ResponseWriter, r *http.Request) error {
@@ -73,8 +81,13 @@ func (h *GroupsHandler) GetGroup(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
+	user, err := h.users.GetUserByID(r.Context(), userID)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
+	}
+
 	t := middleware.GetTranslator(r.Context())
-	return permissionsUI.GroupDetailPage(group, members, t).Render(r.Context(), w)
+	return permissionsUI.GroupDetailPage(group, &user, members, t).Render(r.Context(), w)
 }
 
 func (h *GroupsHandler) CreateGroupForm(w http.ResponseWriter, r *http.Request) error {

@@ -20,10 +20,10 @@ RETURNING group_id, user_id, role, joined_at
 `
 
 type AddUserToGroupParams struct {
-	GroupID  uuid.UUID   `json:"group_id"`
-	UserID   uuid.UUID   `json:"user_id"`
-	Role     interface{} `json:"role"`
-	JoinedAt time.Time   `json:"joined_at"`
+	GroupID  uuid.UUID `json:"group_id"`
+	UserID   uuid.UUID `json:"user_id"`
+	Role     GroupRole `json:"role"`
+	JoinedAt time.Time `json:"joined_at"`
 }
 
 func (q *Queries) AddUserToGroup(ctx context.Context, arg AddUserToGroupParams) (GroupMember, error) {
@@ -110,11 +110,11 @@ ORDER BY gm.role DESC, gm.joined_at ASC
 `
 
 type GetGroupMembersRow struct {
-	ID       uuid.UUID   `json:"id"`
-	Name     string      `json:"name"`
-	Email    string      `json:"email"`
-	Role     interface{} `json:"role"`
-	JoinedAt time.Time   `json:"joined_at"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Email    string    `json:"email"`
+	Role     GroupRole `json:"role"`
+	JoinedAt time.Time `json:"joined_at"`
 }
 
 func (q *Queries) GetGroupMembers(ctx context.Context, groupID uuid.UUID) ([]GetGroupMembersRow, error) {
@@ -202,9 +202,9 @@ type GetUserRoleInGroupParams struct {
 	UserID  uuid.UUID `json:"user_id"`
 }
 
-func (q *Queries) GetUserRoleInGroup(ctx context.Context, arg GetUserRoleInGroupParams) (interface{}, error) {
+func (q *Queries) GetUserRoleInGroup(ctx context.Context, arg GetUserRoleInGroupParams) (GroupRole, error) {
 	row := q.db.QueryRow(ctx, getUserRoleInGroup, arg.GroupID, arg.UserID)
-	var role interface{}
+	var role GroupRole
 	err := row.Scan(&role)
 	return role, err
 }

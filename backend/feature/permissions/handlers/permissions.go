@@ -46,7 +46,7 @@ func (h *PermissionsHandler) GetPermissionsModal(w http.ResponseWriter, r *http.
 		return ce.WithHTTPStatus(err, http.StatusBadRequest)
 	}
 
-	perms, err := h.permService.GetAssetPermissions(r.Context(), assetType, assetID)
+	perms, err := h.permService.GetAssetPermissions(r.Context(), db.AssetType(assetType), assetID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -104,7 +104,7 @@ func (h *PermissionsHandler) GrantPermission(w http.ResponseWriter, r *http.Requ
 		return ce.WithHTTPStatus(errors.New("invalid recipient"), http.StatusBadRequest)
 	}
 
-	err = h.permService.Grant(r.Context(), assetType, assetID, permission, recipientType, recipientID, userID)
+	err = h.permService.Grant(r.Context(), db.AssetType(assetType), assetID, permission, recipientType, recipientID, userID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
@@ -162,7 +162,7 @@ func (h *PermissionsHandler) RevokePermission(w http.ResponseWriter, r *http.Req
 		permission = db.PermissionTypeRead
 	}
 
-	err = h.permService.Revoke(r.Context(), assetType, assetID, permission, recipientType, recipientID)
+	err = h.permService.Revoke(r.Context(), db.AssetType(assetType), assetID, permission, recipientType, recipientID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}

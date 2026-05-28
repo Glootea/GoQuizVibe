@@ -31,6 +31,7 @@ type AdminService struct {
 	attempts       r.AttemptRepository
 	stats          r.StatsRepository
 	materials      r.LearningMaterialRepository
+	permissions    r.AssetPermissionRepository
 	authService    *authSvc.AuthService
 	storageService *storageSvc.StorageService
 	cache          *cacheSvc.CacheService
@@ -44,6 +45,7 @@ func NewAdminService(
 	attempts r.AttemptRepository,
 	stats r.StatsRepository,
 	materials r.LearningMaterialRepository,
+	permissions r.AssetPermissionRepository,
 	auth *authSvc.AuthService,
 	storage *storageSvc.StorageService,
 	cache *cacheSvc.CacheService,
@@ -56,6 +58,7 @@ func NewAdminService(
 		attempts:       attempts,
 		stats:          stats,
 		materials:      materials,
+		permissions:    permissions,
 		authService:    auth,
 		storageService: storage,
 		cache:          cache,
@@ -223,6 +226,16 @@ func (s *AdminService) CreateQuiz(ctx context.Context, userID uuid.UUID, title, 
 	})
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("create quiz: %w", err)
+	}
+
+	if _, err := s.permissions.SetOwnerPermission(ctx, db.SetOwnerPermissionParams{
+		ID:          uuid.New(),
+		AssetType:   db.AssetTypeQuiz,
+		AssetID:     createdQuiz.ID,
+		RecipientID: userID,
+		CreatedAt:   time.Now(),
+	}); err != nil {
+		return uuid.Nil, fmt.Errorf("set owner permission: %w", err)
 	}
 
 	_ = cacheSvc.Delete(ctx, s.cache, "quizzes:user:"+userID.String(), func() error {

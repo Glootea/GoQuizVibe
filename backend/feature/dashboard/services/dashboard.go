@@ -23,6 +23,7 @@ type DashboardService struct {
 	quizzes        r.QuizRepository
 	questions      r.QuestionRepository
 	images         r.ImageRepository
+	groups         r.UserGroupRepository
 	gamification   *gamification.GamificationService
 	auth           interfaces.Authenticator
 	sessionService *quiz.QuizSessionService
@@ -34,6 +35,7 @@ func NewDashboardService(
 	quizzes r.QuizRepository,
 	questions r.QuestionRepository,
 	images r.ImageRepository,
+	groups r.UserGroupRepository,
 	gamification *gamification.GamificationService,
 	auth interfaces.Authenticator,
 	sessionService *quiz.QuizSessionService,
@@ -43,6 +45,7 @@ func NewDashboardService(
 		users:          users,
 		quizzes:        quizzes,
 		questions:      questions,
+		groups:         groups,
 		images:         images,
 		gamification:   gamification,
 		auth:           auth,
@@ -96,7 +99,18 @@ func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUI
 func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
 	cacheKey := "quizzes:user:" + userID.String()
 	quizzes, err := cache.GetOrFetch(ctx, s.cache, cacheKey, func() ([]db.Quiz, error) {
-		return s.quizzes.GetQuizzesForUser(ctx, userID)
+		groups, err := s.groups.GetUserGroupsByAdmin(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+		groupIDs := make([]uuid.UUID, len(groups))
+		for i, g := range groups {
+			groupIDs[i] = g.ID
+		}
+		return s.quizzes.GetQuizzesForUser(ctx, db.GetQuizzesForUserParams{
+			RecipientID: userID,
+			Column2:     groupIDs,
+		})
 	})
 	if err != nil {
 		return nil, err

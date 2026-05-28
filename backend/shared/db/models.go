@@ -287,7 +287,7 @@ func (e *RecipientType) Scan(src interface{}) error {
 
 type NullRecipientType struct {
 	RecipientType RecipientType `json:"recipient_type"`
-	Valid         bool           `json:"valid"`
+	Valid         bool          `json:"valid"`
 }
 
 func (ns *NullRecipientType) Scan(value interface{}) error {
@@ -306,22 +306,62 @@ func (ns NullRecipientType) Value() (driver.Value, error) {
 	return string(ns.RecipientType), nil
 }
 
+type AssetType string
+
+const (
+	AssetTypeQuiz            AssetType = "quiz"
+	AssetTypeLearningMaterial AssetType = "learning_material"
+)
+
+func (e *AssetType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AssetType(s)
+	case string:
+		*e = AssetType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AssetType: %T", src)
+	}
+	return nil
+}
+
+type NullAssetType struct {
+	AssetType AssetType `json:"asset_type"`
+	Valid     bool      `json:"valid"`
+}
+
+func (ns *NullAssetType) Scan(value interface{}) error {
+	if value == nil {
+		ns.AssetType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AssetType.Scan(value)
+}
+
+func (ns NullAssetType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AssetType), nil
+}
+
 type AssetPermission struct {
-	ID            uuid.UUID   `json:"id"`
-	AssetType     string      `json:"asset_type"`
-	AssetID       uuid.UUID   `json:"asset_id"`
-	Permission    interface{} `json:"permission"`
-	RecipientType interface{} `json:"recipient_type"`
-	RecipientID   uuid.UUID   `json:"recipient_id"`
-	GrantorID     uuid.UUID   `json:"grantor_id"`
-	CreatedAt     time.Time   `json:"created_at"`
+	ID            uuid.UUID      `json:"id"`
+	AssetType     AssetType      `json:"asset_type"`
+	AssetID       uuid.UUID      `json:"asset_id"`
+	Permission    PermissionType `json:"permission"`
+	RecipientType RecipientType  `json:"recipient_type"`
+	RecipientID   uuid.UUID      `json:"recipient_id"`
+	GrantorID     uuid.UUID      `json:"grantor_id"`
+	CreatedAt     time.Time      `json:"created_at"`
 }
 
 type GroupMember struct {
-	GroupID  uuid.UUID   `json:"group_id"`
-	UserID   uuid.UUID   `json:"user_id"`
-	Role     interface{} `json:"role"`
-	JoinedAt time.Time   `json:"joined_at"`
+	GroupID  uuid.UUID `json:"group_id"`
+	UserID   uuid.UUID `json:"user_id"`
+	Role     GroupRole `json:"role"`
+	JoinedAt time.Time `json:"joined_at"`
 }
 
 type LearningMaterial struct {

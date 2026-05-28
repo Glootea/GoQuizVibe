@@ -31,14 +31,14 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	}
 	userGroupService := ProvideUserGroupService(queries)
 	permissionsService := ProvidePermissionsService(queries)
-	adminService := ProvideAdminService(queries, authService, storageService, cacheService)
+	adminService := ProvideAdminService(queries, queries, authService, storageService, cacheService)
 	dashboardService := ProvideDashboardService(queries, gamificationService, authService, quizSessionService, cacheService)
 	service, err := ProvideLocaleService()
 	if err != nil {
 		return nil, err
 	}
 	promptGenerator := ProvidePromptGenerator(cacheService)
-	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstClient)
+	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstClient, queries)
 	authHandler := ProvideAuthHandler(queries, authService, service)
 	dashboardHandler := ProvideDashboardHandler(dashboardService)
 	quizHandler := ProvideQuizHandler(queries, quizService, quizSessionService, authService)
@@ -46,6 +46,8 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	editorHandler := ProvideEditorHandler(learningMaterialService)
 	typstHandler := ProvideTypstHandler(learningMaterialService, adminService)
 	learningMaterialsHandler := ProvideLearningMaterialsHandler(learningMaterialService, adminService, service)
+	groupsHandler := ProvideGroupsHandler(userGroupService, queries, authService)
+	permissionsHandler := ProvidePermissionsHandler(permissionsService, userGroupService, authService)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	compressionMiddleware := ProvideCompressionMiddleware()
@@ -65,6 +67,8 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		LearningMaterialService:  learningMaterialService,
 		UserGroupService:         userGroupService,
 		PermissionsService:       permissionsService,
+		GroupsHandler:            groupsHandler,
+		PermissionsHandler:       permissionsHandler,
 		AuthHandler:              authHandler,
 		DashboardHandler:         dashboardHandler,
 		QuizHandler:              quizHandler,

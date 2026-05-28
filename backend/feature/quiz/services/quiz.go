@@ -62,15 +62,17 @@ type QuizService struct {
 	questions r.QuestionRepository
 	images    r.ImageRepository
 	attempts  r.AttemptRepository
+	groups    r.UserGroupRepository
 	cache     *cache.CacheService
 }
 
-func NewQuizService(quizzes r.QuizRepository, questions r.QuestionRepository, images r.ImageRepository, attempts r.AttemptRepository, cache *cache.CacheService) *QuizService {
+func NewQuizService(quizzes r.QuizRepository, questions r.QuestionRepository, images r.ImageRepository, attempts r.AttemptRepository, groups r.UserGroupRepository, cache *cache.CacheService) *QuizService {
 	return &QuizService{
 		quizzes:   quizzes,
 		questions: questions,
 		images:    images,
 		attempts:  attempts,
+		groups:    groups,
 		cache:     cache,
 	}
 }
@@ -78,7 +80,18 @@ func NewQuizService(quizzes r.QuizRepository, questions r.QuestionRepository, im
 func (s *QuizService) GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
 	cacheKey := "quizzes:user:" + userID.String()
 	quizzes, err := cache.GetOrFetch(ctx, s.cache, cacheKey, func() ([]db.Quiz, error) {
-		return s.quizzes.GetQuizzesForUser(ctx, userID)
+		groups, err := s.groups.GetUserGroupsByAdmin(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+		groupIDs := make([]uuid.UUID, len(groups))
+		for i, g := range groups {
+			groupIDs[i] = g.ID
+		}
+		return s.quizzes.GetQuizzesForUser(ctx, db.GetQuizzesForUserParams{
+			RecipientID: userID,
+			Column2:     groupIDs,
+		})
 	})
 	if err != nil {
 		return nil, err

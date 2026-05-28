@@ -195,11 +195,26 @@ func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getQuizzesForUser = `-- name: GetQuizzesForUser :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE status = 'available' OR created_by = $1 ORDER BY created_at DESC
+SELECT DISTINCT q.id, q.title, q.description, q.subject, q.grade, q.status, q.time_limit, q.created_by, q.created_at, q.question_pool_size FROM quizzes q
+WHERE EXISTS (
+    SELECT 1 FROM asset_permissions ap
+    WHERE ap.asset_type = 'quiz' AND ap.asset_id = q.id
+    AND (
+        (ap.recipient_type = 'user' AND ap.recipient_id = $1)
+        OR (ap.recipient_type = 'group' AND ap.recipient_id = ANY($2::uuid[]))
+    )
+    AND ap.permission IN ('read', 'write', 'owner')
+)
+ORDER BY q.created_at DESC
 `
 
-func (q *Queries) GetQuizzesForUser(ctx context.Context, createdBy uuid.UUID) ([]Quiz, error) {
-	rows, err := q.db.Query(ctx, getQuizzesForUser, createdBy)
+type GetQuizzesForUserParams struct {
+	RecipientID uuid.UUID   `json:"recipient_id"`
+	Column2     []uuid.UUID `json:"column_2"`
+}
+
+func (q *Queries) GetQuizzesForUser(ctx context.Context, arg GetQuizzesForUserParams) ([]Quiz, error) {
+	rows, err := q.db.Query(ctx, getQuizzesForUser, arg.RecipientID, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -227,6 +242,39 @@ func (q *Queries) GetQuizzesForUser(ctx context.Context, createdBy uuid.UUID) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const hasQuizAccess = `-- name: HasQuizAccess :one
+SELECT EXISTS(
+    SELECT 1 FROM asset_permissions
+    WHERE asset_type = 'quiz' AND asset_id = $1
+    AND recipient_type = CASE WHEN $3 = 'group' THEN 'group' ELSE 'user' END
+    AND recipient_id = $2
+    AND (
+        ($4 = 'owner' AND permission = 'owner')
+        OR ($4 = 'write' AND permission IN ('owner', 'write'))
+        OR ($4 = 'read')
+    )
+)
+`
+
+type HasQuizAccessParams struct {
+	AssetID     uuid.UUID   `json:"asset_id"`
+	RecipientID uuid.UUID   `json:"recipient_id"`
+	Column3     interface{} `json:"column_3"`
+	Column4     interface{} `json:"column_4"`
+}
+
+func (q *Queries) HasQuizAccess(ctx context.Context, arg HasQuizAccessParams) (bool, error) {
+	row := q.db.QueryRow(ctx, hasQuizAccess,
+		arg.AssetID,
+		arg.RecipientID,
+		arg.Column3,
+		arg.Column4,
+	)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const quizTitleExists = `-- name: QuizTitleExists :one

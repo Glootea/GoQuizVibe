@@ -23,17 +23,20 @@ type LearningMaterialService struct {
 	repo           r.LearningMaterialRepository
 	storageService *storageSvc.StorageService
 	typstClient    *TypstGRPCClient
+	permissions    r.AssetPermissionRepository
 }
 
 func NewLearningMaterialService(
 	repo r.LearningMaterialRepository,
 	storageService *storageSvc.StorageService,
 	typstClient *TypstGRPCClient,
+	permissions r.AssetPermissionRepository,
 ) *LearningMaterialService {
 	return &LearningMaterialService{
 		repo:           repo,
 		storageService: storageService,
 		typstClient:    typstClient,
+		permissions:    permissions,
 	}
 }
 
@@ -120,7 +123,22 @@ func (s *LearningMaterialService) UploadTypstMaterial(ctx context.Context, owner
 		return nil, fmt.Errorf("create material: %w", err)
 	}
 
+	if err := s.setOwner(ctx, material.ID, ownerID); err != nil {
+		return nil, fmt.Errorf("set owner permission: %w", err)
+	}
+
 	return &material, nil
+}
+
+func (s *LearningMaterialService) setOwner(ctx context.Context, materialID, ownerID uuid.UUID) error {
+	_, err := s.permissions.SetOwnerPermission(ctx, db.SetOwnerPermissionParams{
+		ID:          uuid.New(),
+		AssetType:   db.AssetTypeLearningMaterial,
+		AssetID:     materialID,
+		RecipientID: ownerID,
+		CreatedAt:   time.Now(),
+	})
+	return err
 }
 
 func (s *LearningMaterialService) CreateTypstMaterialFromTemplate(ctx context.Context, ownerID uuid.UUID, title, description string) (*db.LearningMaterial, error) {
@@ -167,6 +185,10 @@ func (s *LearningMaterialService) CreateTypstMaterialFromTemplate(ctx context.Co
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create material: %w", err)
+	}
+
+	if err := s.setOwner(ctx, material.ID, ownerID); err != nil {
+		return nil, fmt.Errorf("set owner permission: %w", err)
 	}
 
 	return &material, nil
@@ -222,6 +244,10 @@ func (s *LearningMaterialService) UploadResourceMaterial(ctx context.Context, ow
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create material: %w", err)
+	}
+
+	if err := s.setOwner(ctx, material.ID, ownerID); err != nil {
+		return nil, fmt.Errorf("set owner permission: %w", err)
 	}
 
 	return &material, nil

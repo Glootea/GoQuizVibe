@@ -17,7 +17,7 @@ DELETE FROM asset_permissions WHERE asset_type = $1 AND asset_id = $2
 `
 
 type DeleteAssetPermissionsByAssetParams struct {
-	AssetType string    `json:"asset_type"`
+	AssetType AssetType `json:"asset_type"`
 	AssetID   uuid.UUID `json:"asset_id"`
 }
 
@@ -36,7 +36,7 @@ AND (
 `
 
 type GetAccessibleAssetIDsParams struct {
-	AssetType   string      `json:"asset_type"`
+	AssetType   AssetType   `json:"asset_type"`
 	RecipientID uuid.UUID   `json:"recipient_id"`
 	Column3     []uuid.UUID `json:"column_3"`
 }
@@ -72,20 +72,20 @@ ORDER BY ap.permission DESC, ap.created_at ASC
 `
 
 type GetAssetPermissionsParams struct {
-	AssetType string    `json:"asset_type"`
+	AssetType AssetType `json:"asset_type"`
 	AssetID   uuid.UUID `json:"asset_id"`
 }
 
 type GetAssetPermissionsRow struct {
-	ID            uuid.UUID   `json:"id"`
-	AssetType     string      `json:"asset_type"`
-	AssetID       uuid.UUID   `json:"asset_id"`
-	Permission    interface{} `json:"permission"`
-	RecipientType interface{} `json:"recipient_type"`
-	RecipientID   uuid.UUID   `json:"recipient_id"`
-	GrantorID     uuid.UUID   `json:"grantor_id"`
-	CreatedAt     time.Time   `json:"created_at"`
-	RecipientName interface{} `json:"recipient_name"`
+	ID            uuid.UUID      `json:"id"`
+	AssetType     AssetType      `json:"asset_type"`
+	AssetID       uuid.UUID      `json:"asset_id"`
+	Permission    PermissionType `json:"permission"`
+	RecipientType RecipientType  `json:"recipient_type"`
+	RecipientID   uuid.UUID      `json:"recipient_id"`
+	GrantorID     uuid.UUID      `json:"grantor_id"`
+	CreatedAt     time.Time      `json:"created_at"`
+	RecipientName interface{}    `json:"recipient_name"`
 }
 
 func (q *Queries) GetAssetPermissions(ctx context.Context, arg GetAssetPermissionsParams) ([]GetAssetPermissionsRow, error) {
@@ -194,14 +194,14 @@ RETURNING id, asset_type, asset_id, permission, recipient_type, recipient_id, gr
 `
 
 type GrantPermissionParams struct {
-	ID            uuid.UUID   `json:"id"`
-	AssetType     string      `json:"asset_type"`
-	AssetID       uuid.UUID   `json:"asset_id"`
-	Permission    interface{} `json:"permission"`
-	RecipientType interface{} `json:"recipient_type"`
-	RecipientID   uuid.UUID   `json:"recipient_id"`
-	GrantorID     uuid.UUID   `json:"grantor_id"`
-	CreatedAt     time.Time   `json:"created_at"`
+	ID            uuid.UUID      `json:"id"`
+	AssetType     AssetType      `json:"asset_type"`
+	AssetID       uuid.UUID      `json:"asset_id"`
+	Permission    PermissionType `json:"permission"`
+	RecipientType RecipientType  `json:"recipient_type"`
+	RecipientID   uuid.UUID      `json:"recipient_id"`
+	GrantorID     uuid.UUID      `json:"grantor_id"`
+	CreatedAt     time.Time      `json:"created_at"`
 }
 
 func (q *Queries) GrantPermission(ctx context.Context, arg GrantPermissionParams) (AssetPermission, error) {
@@ -239,11 +239,11 @@ SELECT EXISTS(
 `
 
 type HasPermissionParams struct {
-	AssetType     string      `json:"asset_type"`
-	AssetID       uuid.UUID   `json:"asset_id"`
-	RecipientType interface{} `json:"recipient_type"`
-	RecipientID   uuid.UUID   `json:"recipient_id"`
-	Permission    interface{} `json:"permission"`
+	AssetType     AssetType      `json:"asset_type"`
+	AssetID       uuid.UUID      `json:"asset_id"`
+	RecipientType RecipientType  `json:"recipient_type"`
+	RecipientID   uuid.UUID      `json:"recipient_id"`
+	Permission    PermissionType `json:"permission"`
 }
 
 func (q *Queries) HasPermission(ctx context.Context, arg HasPermissionParams) (bool, error) {
@@ -265,19 +265,19 @@ SELECT EXISTS(
     WHERE asset_type = $1 AND asset_id = $2
     AND recipient_type = $3 AND recipient_id = $4
     AND (
-        ($5 = 'owner' AND asset_permission = 'owner')
-        OR ($5 = 'write' AND asset_permission IN ('owner', 'write'))
+        ($5 = 'owner' AND permission = 'owner')
+        OR ($5 = 'write' AND permission IN ('owner', 'write'))
         OR ($5 = 'read')
     )
 )
 `
 
 type HasPermissionLevelParams struct {
-	AssetType     string      `json:"asset_type"`
-	AssetID       uuid.UUID   `json:"asset_id"`
-	RecipientType interface{} `json:"recipient_type"`
-	RecipientID   uuid.UUID   `json:"recipient_id"`
-	Column5       interface{} `json:"column_5"`
+	AssetType     AssetType     `json:"asset_type"`
+	AssetID       uuid.UUID     `json:"asset_id"`
+	RecipientType RecipientType `json:"recipient_type"`
+	RecipientID   uuid.UUID     `json:"recipient_id"`
+	Column5       interface{}   `json:"column_5"`
 }
 
 func (q *Queries) HasPermissionLevel(ctx context.Context, arg HasPermissionLevelParams) (bool, error) {
@@ -299,11 +299,11 @@ WHERE asset_type = $1 AND asset_id = $2 AND permission = $3 AND recipient_type =
 `
 
 type RevokePermissionParams struct {
-	AssetType     string      `json:"asset_type"`
-	AssetID       uuid.UUID   `json:"asset_id"`
-	Permission    interface{} `json:"permission"`
-	RecipientType interface{} `json:"recipient_type"`
-	RecipientID   uuid.UUID   `json:"recipient_id"`
+	AssetType     AssetType      `json:"asset_type"`
+	AssetID       uuid.UUID      `json:"asset_id"`
+	Permission    PermissionType `json:"permission"`
+	RecipientType RecipientType  `json:"recipient_type"`
+	RecipientID   uuid.UUID      `json:"recipient_id"`
 }
 
 func (q *Queries) RevokePermission(ctx context.Context, arg RevokePermissionParams) error {
@@ -326,7 +326,7 @@ RETURNING id, asset_type, asset_id, permission, recipient_type, recipient_id, gr
 
 type SetOwnerPermissionParams struct {
 	ID          uuid.UUID `json:"id"`
-	AssetType   string    `json:"asset_type"`
+	AssetType   AssetType `json:"asset_type"`
 	AssetID     uuid.UUID `json:"asset_id"`
 	RecipientID uuid.UUID `json:"recipient_id"`
 	CreatedAt   time.Time `json:"created_at"`

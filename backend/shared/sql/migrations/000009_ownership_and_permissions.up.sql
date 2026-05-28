@@ -17,6 +17,12 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+DO $$ BEGIN
+    CREATE TYPE asset_type AS ENUM ('quiz', 'learning_material');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- Tables
 CREATE TABLE IF NOT EXISTS user_groups (
     id UUID PRIMARY KEY,
@@ -36,7 +42,7 @@ CREATE TABLE IF NOT EXISTS group_members (
 
 CREATE TABLE IF NOT EXISTS asset_permissions (
     id UUID PRIMARY KEY,
-    asset_type TEXT NOT NULL,
+    asset_type asset_type NOT NULL,
     asset_id UUID NOT NULL,
     permission permission_type NOT NULL,
     recipient_type recipient_type NOT NULL,

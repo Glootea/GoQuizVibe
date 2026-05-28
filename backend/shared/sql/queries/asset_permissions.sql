@@ -56,8 +56,8 @@ SELECT EXISTS(
     WHERE asset_type = $1 AND asset_id = $2
     AND recipient_type = $3 AND recipient_id = $4
     AND (
-        ($5 = 'owner' AND asset_permission = 'owner')
-        OR ($5 = 'write' AND asset_permission IN ('owner', 'write'))
+        ($5 = 'owner' AND permission = 'owner')
+        OR ($5 = 'write' AND permission IN ('owner', 'write'))
         OR ($5 = 'read')
     )
 );

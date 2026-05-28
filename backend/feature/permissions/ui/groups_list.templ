@@ -1,13 +1,12 @@
 package ui
 
 import (
-	"github.com/google/uuid"
 	"github.com/goquizvibe/backend/shared/db"
 	"github.com/goquizvibe/backend/shared/locales"
 )
 
-templ GroupsListPage(groups []db.UserGroup, currentUserID uuid.UUID, t locales.Translator) {
-	@BaseAdmin(t.MyGroups(), nil, t) {
+templ GroupsListPage(groups []db.UserGroup, user *db.User, t locales.Translator) {
+	@BaseAdmin(t.MyGroups(), user, t) {
 		<div class="flex justify-between items-center mb-8">
 			<h1 class="text-3xl font-bold">{ t.MyGroups() }</h1>
 			<button

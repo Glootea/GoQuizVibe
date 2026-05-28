@@ -14,7 +14,7 @@ import (
 var (
 	ErrNoPermission      = errors.New("no permission")
 	ErrPermissionDenied  = errors.New("permission denied")
-	ErrAssetNotFound    = errors.New("asset not found")
+	ErrAssetNotFound     = errors.New("asset not found")
 	ErrCannotRevokeOwner = errors.New("cannot revoke owner permission")
 )
 
@@ -30,7 +30,7 @@ func NewPermissionsService(perms r.AssetPermissionRepository, groups r.UserGroup
 	}
 }
 
-func (s *PermissionsService) SetOwner(ctx context.Context, assetType string, assetID, ownerID uuid.UUID) error {
+func (s *PermissionsService) SetOwner(ctx context.Context, assetType db.AssetType, assetID, ownerID uuid.UUID) error {
 	_, err := s.perms.SetOwnerPermission(ctx, db.SetOwnerPermissionParams{
 		ID:          uuid.New(),
 		AssetType:   assetType,
@@ -44,7 +44,7 @@ func (s *PermissionsService) SetOwner(ctx context.Context, assetType string, ass
 	return nil
 }
 
-func (s *PermissionsService) Grant(ctx context.Context, assetType string, assetID uuid.UUID, permission db.PermissionType, recipientType db.RecipientType, recipientID, grantorID uuid.UUID) error {
+func (s *PermissionsService) Grant(ctx context.Context, assetType db.AssetType, assetID uuid.UUID, permission db.PermissionType, recipientType db.RecipientType, recipientID, grantorID uuid.UUID) error {
 	if recipientType == db.RecipientTypeUser && permission == db.PermissionTypeOwner {
 		return fmt.Errorf("cannot grant owner permission to user")
 	}
@@ -65,7 +65,7 @@ func (s *PermissionsService) Grant(ctx context.Context, assetType string, assetI
 	return nil
 }
 
-func (s *PermissionsService) Revoke(ctx context.Context, assetType string, assetID uuid.UUID, permission db.PermissionType, recipientType db.RecipientType, recipientID uuid.UUID) error {
+func (s *PermissionsService) Revoke(ctx context.Context, assetType db.AssetType, assetID uuid.UUID, permission db.PermissionType, recipientType db.RecipientType, recipientID uuid.UUID) error {
 	if recipientType == db.RecipientTypeUser && permission == db.PermissionTypeOwner {
 		return ErrCannotRevokeOwner
 	}
@@ -83,7 +83,7 @@ func (s *PermissionsService) Revoke(ctx context.Context, assetType string, asset
 	return nil
 }
 
-func (s *PermissionsService) GetAssetPermissions(ctx context.Context, assetType string, assetID uuid.UUID) ([]PermissionWithGrantor, error) {
+func (s *PermissionsService) GetAssetPermissions(ctx context.Context, assetType db.AssetType, assetID uuid.UUID) ([]PermissionWithGrantor, error) {
 	rows, err := s.perms.GetAssetPermissions(ctx, db.GetAssetPermissionsParams{
 		AssetType: assetType,
 		AssetID:   assetID,
@@ -98,8 +98,8 @@ func (s *PermissionsService) GetAssetPermissions(ctx context.Context, assetType 
 			ID:            r.ID,
 			AssetType:     r.AssetType,
 			AssetID:       r.AssetID,
-			Permission:    db.PermissionType(fmt.Sprintf("%v", r.Permission)),
-			RecipientType: db.RecipientType(fmt.Sprintf("%v", r.RecipientType)),
+			Permission:    r.Permission,
+			RecipientType: r.RecipientType,
 			RecipientID:   r.RecipientID,
 			GrantorID:     r.GrantorID,
 			CreatedAt:     r.CreatedAt,
@@ -109,7 +109,7 @@ func (s *PermissionsService) GetAssetPermissions(ctx context.Context, assetType 
 	return result, nil
 }
 
-func (s *PermissionsService) CanAccess(ctx context.Context, assetType string, assetID, userID uuid.UUID, requiredPermission db.PermissionType) (bool, error) {
+func (s *PermissionsService) CanAccess(ctx context.Context, assetType db.AssetType, assetID, userID uuid.UUID, requiredPermission db.PermissionType) (bool, error) {
 	userGroups, err := s.groups.GetUserGroupsByAdmin(ctx, userID)
 	if err != nil {
 		return false, fmt.Errorf("get user groups: %w", err)
@@ -132,13 +132,13 @@ func (s *PermissionsService) CanAccess(ctx context.Context, assetType string, as
 	if hasUserPerm {
 		return true, nil
 	}
-
-	if len(groupIDs) > 0 {
+	// TODO: optimize by checking group permissions in a single query instead of iterating
+	for _, groupID := range groupIDs {
 		hasGroupPerm, err := s.perms.HasPermissionLevel(ctx, db.HasPermissionLevelParams{
 			AssetType:     assetType,
 			AssetID:       assetID,
 			RecipientType: db.RecipientTypeGroup,
-			RecipientID:   groupIDs[0],
+			RecipientID:   groupID,
 			Column5:       requiredPermission,
 		})
 		if err == nil && hasGroupPerm {
@@ -149,19 +149,19 @@ func (s *PermissionsService) CanAccess(ctx context.Context, assetType string, as
 	return false, nil
 }
 
-func (s *PermissionsService) CanRead(ctx context.Context, assetType string, assetID, userID uuid.UUID) (bool, error) {
+func (s *PermissionsService) CanRead(ctx context.Context, assetType db.AssetType, assetID, userID uuid.UUID) (bool, error) {
 	return s.CanAccess(ctx, assetType, assetID, userID, db.PermissionTypeRead)
 }
 
-func (s *PermissionsService) CanWrite(ctx context.Context, assetType string, assetID, userID uuid.UUID) (bool, error) {
+func (s *PermissionsService) CanWrite(ctx context.Context, assetType db.AssetType, assetID, userID uuid.UUID) (bool, error) {
 	return s.CanAccess(ctx, assetType, assetID, userID, db.PermissionTypeWrite)
 }
 
-func (s *PermissionsService) IsOwner(ctx context.Context, assetType string, assetID, userID uuid.UUID) (bool, error) {
+func (s *PermissionsService) IsOwner(ctx context.Context, assetType db.AssetType, assetID, userID uuid.UUID) (bool, error) {
 	return s.CanAccess(ctx, assetType, assetID, userID, db.PermissionTypeOwner)
 }
 
-func (s *PermissionsService) GetAccessibleAssetIDs(ctx context.Context, assetType string, userID uuid.UUID, groupIDs []uuid.UUID) ([]uuid.UUID, error) {
+func (s *PermissionsService) GetAccessibleAssetIDs(ctx context.Context, assetType db.AssetType, userID uuid.UUID, groupIDs []uuid.UUID) ([]uuid.UUID, error) {
 	ids, err := s.perms.GetAccessibleAssetIDs(ctx, db.GetAccessibleAssetIDsParams{
 		AssetType:   assetType,
 		RecipientID: userID,
@@ -175,7 +175,7 @@ func (s *PermissionsService) GetAccessibleAssetIDs(ctx context.Context, assetTyp
 
 type PermissionWithGrantor struct {
 	ID            uuid.UUID
-	AssetType     string
+	AssetType     db.AssetType
 	AssetID       uuid.UUID
 	Permission    db.PermissionType
 	RecipientType db.RecipientType

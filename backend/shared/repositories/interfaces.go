@@ -18,7 +18,7 @@ type UserRepository interface {
 type QuizRepository interface {
 	CreateQuiz(ctx context.Context, params db.CreateQuizParams) (db.Quiz, error)
 	GetQuizByID(ctx context.Context, id uuid.UUID) (db.Quiz, error)
-	GetQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]db.Quiz, error)
+	GetQuizzesForUser(ctx context.Context, params db.GetQuizzesForUserParams) ([]db.Quiz, error)
 	GetNonArchivedQuizzes(ctx context.Context) ([]db.Quiz, error)
 	UpdateQuiz(ctx context.Context, params db.UpdateQuizParams) (db.Quiz, error)
 	UpdateQuizStatus(ctx context.Context, params db.UpdateQuizStatusParams) error
@@ -68,7 +68,7 @@ type LearningMaterialRepository interface {
 	CreateLearningMaterial(ctx context.Context, params db.CreateLearningMaterialParams) (db.LearningMaterial, error)
 	GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (db.LearningMaterial, error)
 	GetLearningMaterials(ctx context.Context) ([]db.LearningMaterial, error)
-	GetLearningMaterialsByOwner(ctx context.Context, ownerID uuid.UUID) ([]db.LearningMaterial, error)
+	GetLearningMaterialsForUser(ctx context.Context, params db.GetLearningMaterialsForUserParams) ([]db.LearningMaterial, error)
 	UpdateLearningMaterial(ctx context.Context, params db.UpdateLearningMaterialParams) (db.LearningMaterial, error)
 	DeleteLearningMaterial(ctx context.Context, id uuid.UUID) error
 	GetRecentLearningMaterials(ctx context.Context, limit int32) ([]db.LearningMaterial, error)
@@ -83,7 +83,7 @@ type UserGroupRepository interface {
 	AddUserToGroup(ctx context.Context, params db.AddUserToGroupParams) (db.GroupMember, error)
 	RemoveUserFromGroup(ctx context.Context, params db.RemoveUserFromGroupParams) error
 	GetGroupMembers(ctx context.Context, groupID uuid.UUID) ([]db.GetGroupMembersRow, error)
-	GetUserRoleInGroup(ctx context.Context, params db.GetUserRoleInGroupParams) (interface{}, error)
+	GetUserRoleInGroup(ctx context.Context, params db.GetUserRoleInGroupParams) (db.GroupRole, error)
 	GetGroupMemberCount(ctx context.Context, groupID uuid.UUID) (int64, error)
 	IsUserMemberOfGroup(ctx context.Context, params db.IsUserMemberOfGroupParams) (bool, error)
 }

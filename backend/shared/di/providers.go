@@ -34,6 +34,7 @@ import (
 	cacheService "github.com/goquizvibe/backend/shared/infrastructure/cache"
 	storageService "github.com/goquizvibe/backend/shared/infrastructure/storage"
 	timeprovider "github.com/goquizvibe/backend/shared/infrastructure/timeprovider"
+	r "github.com/goquizvibe/backend/shared/repositories"
 )
 
 type App struct {
@@ -105,7 +106,7 @@ func ProvideGamificationService(queries *db.Queries) *gamificationSvc.Gamificati
 }
 
 func ProvideQuizService(queries *db.Queries, cacheService *cacheService.CacheService) *quizSvc.QuizService {
-	return quizSvc.NewQuizService(queries, queries, queries, queries, cacheService)
+	return quizSvc.NewQuizService(queries, queries, queries, queries, queries, cacheService)
 }
 
 func ProvideStorageService(cfg *config.Config) (*storageService.StorageService, error) {
@@ -114,11 +115,12 @@ func ProvideStorageService(cfg *config.Config) (*storageService.StorageService, 
 
 func ProvideAdminService(
 	queries *db.Queries,
+	permissions *db.Queries,
 	authService *authSvc.AuthService,
 	storageService *storageService.StorageService,
 	cacheService *cacheService.CacheService,
 ) *adminSvc.AdminService {
-	return adminSvc.NewAdminService(queries, queries, queries, queries, queries, queries, queries, authService, storageService, cacheService)
+	return adminSvc.NewAdminService(queries, queries, queries, queries, queries, queries, queries, permissions, authService, storageService, cacheService)
 }
 
 func ProvideQuizSessionService(
@@ -145,7 +147,7 @@ func ProvideDashboardService(
 	quizSessionService *quizSvc.QuizSessionService,
 	cacheService *cacheService.CacheService,
 ) *dashboardSrv.DashboardService {
-	return dashboardSrv.NewDashboardService(queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
+	return dashboardSrv.NewDashboardService(queries, queries, queries, queries, queries, gamification, authService, quizSessionService, cacheService)
 }
 
 func ProvideLocaleService() (*locales.Service, error) {
@@ -195,8 +197,9 @@ func ProvideLearningMaterialService(
 	queries *db.Queries,
 	storageService *storageService.StorageService,
 	typstClient *learningMaterialsSvc.TypstGRPCClient,
+	permissions *db.Queries,
 ) *learningMaterialsSvc.LearningMaterialService {
-	return learningMaterialsSvc.NewLearningMaterialService(queries, storageService, typstClient)
+	return learningMaterialsSvc.NewLearningMaterialService(queries, storageService, typstClient, permissions)
 }
 
 func ProvideLearningMaterialsHandler(
@@ -246,8 +249,8 @@ func ProvidePermissionsService(queries *db.Queries) *permissionsSvc.PermissionsS
 	return permissionsSvc.NewPermissionsService(queries, queries)
 }
 
-func ProvideGroupsHandler(userGroupService *permissionsSvc.UserGroupService, authService *authSvc.AuthService) *permissionsHdl.GroupsHandler {
-	return permissionsHdl.NewGroupsHandler(userGroupService, authService)
+func ProvideGroupsHandler(userGroupService *permissionsSvc.UserGroupService, users r.UserRepository, authService *authSvc.AuthService) *permissionsHdl.GroupsHandler {
+	return permissionsHdl.NewGroupsHandler(userGroupService, users, authService)
 }
 
 func ProvidePermissionsHandler(permissionsService *permissionsSvc.PermissionsService, userGroupService *permissionsSvc.UserGroupService, authService *authSvc.AuthService) *permissionsHdl.PermissionsHandler {
