@@ -43,18 +43,19 @@ func (h *LearningMaterialsHandler) List(w http.ResponseWriter, r *http.Request) 
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
-	materials, err := h.materialService.GetAllMaterials(r.Context())
+	materials, permissions, err := h.materialService.GetAccessibleMaterials(r.Context(), user.ID)
 	if err != nil {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrInternal, err), http.StatusInternalServerError)
 	}
 
 	materialsWithURLs := make([]types.MaterialWithURL, 0, len(materials))
-	for _, m := range materials {
+	for i, m := range materials {
 		url, _ := h.materialService.GetMaterialURL(r.Context(), m)
 		materialsWithURLs = append(materialsWithURLs, types.MaterialWithURL{
-			Material:  m,
-			PublicURL: url,
-			Type:      string(m.MaterialType),
+			Material:   m,
+			PublicURL:  url,
+			Type:       string(m.MaterialType),
+			Permission: permissions[i],
 		})
 	}
 

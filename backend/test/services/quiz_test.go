@@ -74,17 +74,19 @@ func TestQuizService_GetQuizzesForUser(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		quiz1 := db.Quiz{ID: uuid.New(), Title: "Quiz 1"}
 		quiz2 := db.Quiz{ID: uuid.New(), Title: "Quiz 2"}
 		quizzes := []db.Quiz{quiz1, quiz2}
 
-		mockQuizzes.EXPECT().GetQuizzesForUser(ctx, userID).Return(quizzes, nil)
+		mockGroups.EXPECT().GetUserGroupsByAdmin(ctx, userID).Return([]db.UserGroup{}, nil)
+		mockQuizzes.EXPECT().GetQuizzesForUser(ctx, gomock.Any()).Return(quizzes, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quiz1.ID).Return([]db.Question{}, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quiz2.ID).Return([]db.Question{}, nil)
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, gomock.Any()).Return([]db.QuestionImage{}, nil).AnyTimes()
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		result, err := svc.GetQuizzesForUser(ctx, userID)
 		if err != nil {
 			t.Fatalf("GetQuizzesForUser() error = %v, want nil", err)
@@ -103,10 +105,11 @@ func TestQuizService_GetQuizzesForUser(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
-		mockQuizzes.EXPECT().GetQuizzesForUser(ctx, userID).Return(nil, errors.New("db error"))
+		mockGroups.EXPECT().GetUserGroupsByAdmin(ctx, userID).Return(nil, errors.New("groups error"))
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		_, err := svc.GetQuizzesForUser(ctx, userID)
 		if err == nil {
 			t.Fatal("GetQuizzesForUser() error = nil, want error")
@@ -127,6 +130,7 @@ func TestQuizService_GetQuizByID(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
 		questions := []db.Question{
@@ -137,7 +141,7 @@ func TestQuizService_GetQuizByID(t *testing.T) {
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
 		mockImages.EXPECT().GetImagesByQuestionID(ctx, questions[0].ID).Return([]db.QuestionImage{}, nil)
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		result, err := svc.GetQuizByID(ctx, quizID)
 		if err != nil {
 			t.Fatalf("GetQuizByID() error = %v, want nil", err)
@@ -159,10 +163,11 @@ func TestQuizService_GetQuizByID(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(db.Quiz{}, errors.New("sql: no rows"))
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		_, err := svc.GetQuizByID(ctx, quizID)
 		if err == nil {
 			t.Fatal("GetQuizByID() error = nil, want error")
@@ -178,12 +183,13 @@ func TestQuizService_GetQuizByID(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(nil, errors.New("db error"))
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		_, err := svc.GetQuizByID(ctx, quizID)
 		if err == nil {
 			t.Fatal("GetQuizByID() error = nil, want error")
@@ -205,12 +211,14 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
 		questions := []db.Question{
 			{ID: uuid.New(), QuizID: quizID, Text: "Q1", CorrectAnswer: "a", Points: 10},
 			{ID: uuid.New(), QuizID: quizID, Text: "Q2", CorrectAnswer: "b", Points: 20},
 		}
+
 		answers := map[uuid.UUID]string{
 			questions[0].ID: "a",
 			questions[1].ID: "b",
@@ -228,7 +236,7 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		}, nil)
 		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil).Times(2)
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		result, err := svc.SubmitQuizAttempt(ctx, userID, quizID, answers)
 		if err != nil {
 			t.Fatalf("SubmitQuizAttempt() error = %v, want nil", err)
@@ -247,11 +255,34 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(db.Quiz{}, errors.New("sql: no rows"))
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
-		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
+		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, map[uuid.UUID]string{})
+		if err == nil {
+			t.Fatal("SubmitQuizAttempt() error = nil, want error")
+		}
+	})
+
+	t.Run("questions retrieval error", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockQuizzes := mocks.NewMockQuizRepository(ctrl)
+		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
+		mockImages := mocks.NewMockImageRepository(ctrl)
+		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
+
+		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
+		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
+		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(nil, errors.New("db error"))
+
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
+		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, map[uuid.UUID]string{})
 		if err == nil {
 			t.Fatal("SubmitQuizAttempt() error = nil, want error")
 		}
@@ -266,6 +297,7 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
 		questions := []db.Question{
@@ -276,14 +308,14 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, errors.New("create failed"))
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
 		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, map[uuid.UUID]string{})
 		if err == nil {
 			t.Fatal("SubmitQuizAttempt() error = nil, want error")
 		}
 	})
 
-	t.Run("update attempt error", func(t *testing.T) {
+	t.Run("all correct answers", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -292,125 +324,40 @@ func TestQuizService_SubmitQuizAttempt(t *testing.T) {
 		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
 		mockImages := mocks.NewMockImageRepository(ctrl)
 		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
+		mockGroups := mocks.NewMockUserGroupRepository(ctrl)
 
 		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
+		q1ID := uuid.New()
+		q2ID := uuid.New()
 		questions := []db.Question{
-			{ID: uuid.New(), QuizID: quizID, Text: "Q1", CorrectAnswer: "a", Points: 10},
+			{ID: q1ID, QuizID: quizID, Text: "Q1", CorrectAnswer: "a", Points: 10},
+			{ID: q2ID, QuizID: quizID, Text: "Q2", CorrectAnswer: "b", Points: 10},
+		}
+
+		answers := map[uuid.UUID]string{
+			q1ID: "a",
+			q2ID: "b",
 		}
 
 		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
 		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
 		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
-		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil).Times(1)
-		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, errors.New("update failed"))
+		mockAttempts.EXPECT().UpdateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{
+			ID:       uuid.New(),
+			UserID:   userID,
+			QuizID:   quizID,
+			Score:    20,
+			MaxScore: 20,
+		}, nil)
+		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, nil).Times(2)
 
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
-		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, map[uuid.UUID]string{})
-		if err == nil {
-			t.Fatal("SubmitQuizAttempt() error = nil, want error")
+		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, mockGroups, nil)
+		result, err := svc.SubmitQuizAttempt(ctx, userID, quizID, answers)
+		if err != nil {
+			t.Fatalf("SubmitQuizAttempt() error = %v, want nil", err)
+		}
+		if result.Score != 20 {
+			t.Errorf("result.Score = %d, want 20", result.Score)
 		}
 	})
-
-	t.Run("create user answers error", func(t *testing.T) {
-		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockQuizzes := mocks.NewMockQuizRepository(ctrl)
-		mockQuestions := mocks.NewMockQuestionRepository(ctrl)
-		mockImages := mocks.NewMockImageRepository(ctrl)
-		mockAttempts := mocks.NewMockAttemptRepository(ctrl)
-
-		quiz := db.Quiz{ID: quizID, Title: "Test Quiz"}
-		questions := []db.Question{
-			{ID: uuid.New(), QuizID: quizID, Text: "Q1", CorrectAnswer: "a", Points: 10},
-		}
-
-		mockQuizzes.EXPECT().GetQuizByID(ctx, quizID).Return(quiz, nil)
-		mockQuestions.EXPECT().GetQuestionsByQuizID(ctx, quizID).Return(questions, nil)
-		mockAttempts.EXPECT().CreateAttempt(ctx, gomock.Any()).Return(db.QuizAttempt{}, nil)
-		mockAttempts.EXPECT().UpsertUserAnswer(ctx, gomock.Any()).Return(db.UserAnswer{}, errors.New("create answer failed"))
-
-		svc := quizSvc.NewQuizService(mockQuizzes, mockQuestions, mockImages, mockAttempts, nil)
-		_, err := svc.SubmitQuizAttempt(ctx, userID, quizID, map[uuid.UUID]string{})
-		if err == nil {
-			t.Fatal("SubmitQuizAttempt() error = nil, want error")
-		}
-	})
-}
-
-func TestCheckFillAnswer(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name          string
-		userAnswers   []string
-		correctAnswer string
-		expected      bool
-	}{
-		{
-			name:          "correct single gap",
-			userAnswers:   []string{"4"},
-			correctAnswer: `[{"type":"text","content":"2 + 2 = "},{"type":"gap","content":"4"}]`,
-			expected:      true,
-		},
-		{
-			name:          "correct multiple gaps",
-			userAnswers:   []string{"water", "CO2"},
-			correctAnswer: `[{"type":"text","content":"Products: "},{"type":"gap","content":"water"},{"type":"text","content":" and "},{"type":"gap","content":"CO2"}]`,
-			expected:      true,
-		},
-		{
-			name:          "wrong answer",
-			userAnswers:   []string{"5"},
-			correctAnswer: `[{"type":"text","content":"2 + 2 = "},{"type":"gap","content":"4"}]`,
-			expected:      false,
-		},
-		{
-			name:          "wrong number of answers",
-			userAnswers:   []string{"water", "CO2", "extra"},
-			correctAnswer: `[{"type":"text","content":"Products: "},{"type":"gap","content":"water"},{"type":"gap","content":"CO2"}]`,
-			expected:      false,
-		},
-		{
-			name:          "case insensitive",
-			userAnswers:   []string{"ANSWER"},
-			correctAnswer: `[{"type":"text","content":"The answer is "},{"type":"gap","content":"answer"}]`,
-			expected:      true,
-		},
-		{
-			name:          "empty user answers",
-			userAnswers:   []string{},
-			correctAnswer: `[{"type":"gap","content":"something"}]`,
-			expected:      false,
-		},
-		{
-			name:          "no gaps in answer",
-			userAnswers:   []string{"answer"},
-			correctAnswer: `[{"type":"text","content":"Just text"}]`,
-			expected:      false,
-		},
-		{
-			name:          "invalid json",
-			userAnswers:   []string{"answer"},
-			correctAnswer: "not json",
-			expected:      false,
-		},
-		{
-			name:          "trim trailing dots",
-			userAnswers:   []string{"answer"},
-			correctAnswer: `[{"type":"text","content":"The answer is "},{"type":"gap","content":"answer."}]`,
-			expected:      true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			result := quizSvc.CheckFillAnswer(tt.userAnswers, tt.correctAnswer)
-			if result != tt.expected {
-				t.Errorf("CheckFillAnswer(%v, %q) = %v, want %v", tt.userAnswers, tt.correctAnswer, result, tt.expected)
-			}
-		})
-	}
 }

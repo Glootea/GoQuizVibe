@@ -197,9 +197,9 @@ func ProvideLearningMaterialService(
 	queries *db.Queries,
 	storageService *storageService.StorageService,
 	typstClient *learningMaterialsSvc.TypstGRPCClient,
-	permissions *db.Queries,
+	permissions *permissionsSvc.PermissionsService,
 ) *learningMaterialsSvc.LearningMaterialService {
-	return learningMaterialsSvc.NewLearningMaterialService(queries, storageService, typstClient, permissions)
+	return learningMaterialsSvc.NewLearningMaterialService(queries, storageService, typstClient, permissions, queries)
 }
 
 func ProvideLearningMaterialsHandler(

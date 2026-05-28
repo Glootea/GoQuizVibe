@@ -38,7 +38,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 	promptGenerator := ProvidePromptGenerator(cacheService)
-	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstClient, queries)
+	learningMaterialService := ProvideLearningMaterialService(queries, storageService, typstClient, permissionsService)
 	authHandler := ProvideAuthHandler(queries, authService, service)
 	dashboardHandler := ProvideDashboardHandler(dashboardService)
 	quizHandler := ProvideQuizHandler(queries, quizService, quizSessionService, authService)

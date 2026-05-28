@@ -161,6 +161,26 @@ func (s *PermissionsService) IsOwner(ctx context.Context, assetType db.AssetType
 	return s.CanAccess(ctx, assetType, assetID, userID, db.PermissionTypeOwner)
 }
 
+func (s *PermissionsService) GetUserPermissionLevel(ctx context.Context, assetType db.AssetType, assetID, userID uuid.UUID) (db.PermissionType, error) {
+	isOwner, err := s.CanAccess(ctx, assetType, assetID, userID, db.PermissionTypeOwner)
+	if err != nil {
+		return "", err
+	}
+	if isOwner {
+		return db.PermissionTypeOwner, nil
+	}
+
+	isWrite, err := s.CanAccess(ctx, assetType, assetID, userID, db.PermissionTypeWrite)
+	if err != nil {
+		return "", err
+	}
+	if isWrite {
+		return db.PermissionTypeWrite, nil
+	}
+
+	return db.PermissionTypeRead, nil
+}
+
 func (s *PermissionsService) GetAccessibleAssetIDs(ctx context.Context, assetType db.AssetType, userID uuid.UUID, groupIDs []uuid.UUID) ([]uuid.UUID, error) {
 	ids, err := s.perms.GetAccessibleAssetIDs(ctx, db.GetAccessibleAssetIDsParams{
 		AssetType:   assetType,
@@ -171,6 +191,17 @@ func (s *PermissionsService) GetAccessibleAssetIDs(ctx context.Context, assetTyp
 		return nil, fmt.Errorf("get accessible assets: %w", err)
 	}
 	return ids, nil
+}
+
+func (s *PermissionsService) RevokeAllForAsset(ctx context.Context, assetType db.AssetType, assetID uuid.UUID) error {
+	err := s.perms.DeleteAssetPermissionsByAsset(ctx, db.DeleteAssetPermissionsByAssetParams{
+		AssetType: assetType,
+		AssetID:   assetID,
+	})
+	if err != nil {
+		return fmt.Errorf("revoke all permissions for asset: %w", err)
+	}
+	return nil
 }
 
 type PermissionWithGrantor struct {

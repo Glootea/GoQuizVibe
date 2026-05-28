@@ -17,26 +17,30 @@ import (
 	r "github.com/goquizvibe/backend/shared/repositories"
 	"github.com/jackc/pgx/v5/pgtype"
 	storageSvc "github.com/goquizvibe/backend/shared/infrastructure/storage"
+	permissionsSvc "github.com/goquizvibe/backend/feature/permissions/services"
 )
 
 type LearningMaterialService struct {
 	repo           r.LearningMaterialRepository
 	storageService *storageSvc.StorageService
 	typstClient    *TypstGRPCClient
-	permissions    r.AssetPermissionRepository
+	permissions    *permissionsSvc.PermissionsService
+	groups         r.UserGroupRepository
 }
 
 func NewLearningMaterialService(
 	repo r.LearningMaterialRepository,
 	storageService *storageSvc.StorageService,
 	typstClient *TypstGRPCClient,
-	permissions r.AssetPermissionRepository,
+	permissions *permissionsSvc.PermissionsService,
+	groups r.UserGroupRepository,
 ) *LearningMaterialService {
 	return &LearningMaterialService{
 		repo:           repo,
 		storageService: storageService,
 		typstClient:    typstClient,
 		permissions:    permissions,
+		groups:         groups,
 	}
 }
 
@@ -131,14 +135,7 @@ func (s *LearningMaterialService) UploadTypstMaterial(ctx context.Context, owner
 }
 
 func (s *LearningMaterialService) setOwner(ctx context.Context, materialID, ownerID uuid.UUID) error {
-	_, err := s.permissions.SetOwnerPermission(ctx, db.SetOwnerPermissionParams{
-		ID:          uuid.New(),
-		AssetType:   db.AssetTypeLearningMaterial,
-		AssetID:     materialID,
-		RecipientID: ownerID,
-		CreatedAt:   time.Now(),
-	})
-	return err
+	return s.permissions.SetOwner(ctx, db.AssetTypeLearningMaterial, materialID, ownerID)
 }
 
 func (s *LearningMaterialService) CreateTypstMaterialFromTemplate(ctx context.Context, ownerID uuid.UUID, title, description string) (*db.LearningMaterial, error) {
@@ -253,13 +250,17 @@ func (s *LearningMaterialService) UploadResourceMaterial(ctx context.Context, ow
 	return &material, nil
 }
 
-func (s *LearningMaterialService) DeleteMaterial(ctx context.Context, materialID, ownerID uuid.UUID) error {
+func (s *LearningMaterialService) DeleteMaterial(ctx context.Context, materialID, userID uuid.UUID) error {
 	material, err := s.repo.GetLearningMaterialByID(ctx, materialID)
 	if err != nil {
 		return fmt.Errorf("get material: %w", err)
 	}
 
-	if material.OwnerID != ownerID {
+	canWrite, err := s.permissions.CanWrite(ctx, db.AssetTypeLearningMaterial, materialID, userID)
+	if err != nil {
+		return fmt.Errorf("check write permission: %w", err)
+	}
+	if !canWrite {
 		return fmt.Errorf("unauthorized")
 	}
 
@@ -275,6 +276,10 @@ func (s *LearningMaterialService) DeleteMaterial(ctx context.Context, materialID
 
 	if err := s.repo.DeleteLearningMaterial(ctx, materialID); err != nil {
 		return fmt.Errorf("delete material: %w", err)
+	}
+
+	if err := s.permissions.RevokeAllForAsset(ctx, db.AssetTypeLearningMaterial, materialID); err != nil {
+		return fmt.Errorf("revoke permissions: %w", err)
 	}
 
 	return nil
@@ -296,6 +301,49 @@ func (s *LearningMaterialService) GetAllMaterials(ctx context.Context) ([]db.Lea
 		return nil, fmt.Errorf("get materials: %w", err)
 	}
 	return materials, nil
+}
+
+func (s *LearningMaterialService) GetAccessibleMaterials(ctx context.Context, userID uuid.UUID) ([]db.LearningMaterial, []db.PermissionType, error) {
+	userGroups, err := s.groups.GetUserGroupsByAdmin(ctx, userID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get user groups: %w", err)
+	}
+	groupIDs := make([]uuid.UUID, len(userGroups))
+	for i, g := range userGroups {
+		groupIDs[i] = g.ID
+	}
+
+	accessibleIDs, err := s.permissions.GetAccessibleAssetIDs(ctx, db.AssetTypeLearningMaterial, userID, groupIDs)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get accessible material IDs: %w", err)
+	}
+
+	if len(accessibleIDs) == 0 {
+		return []db.LearningMaterial{}, []db.PermissionType{}, nil
+	}
+
+	allMaterials, err := s.repo.GetLearningMaterials(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get materials: %w", err)
+	}
+
+	materialsMap := make(map[uuid.UUID]db.LearningMaterial)
+	for _, m := range allMaterials {
+		materialsMap[m.ID] = m
+	}
+
+	materials := make([]db.LearningMaterial, 0, len(accessibleIDs))
+	permissions := make([]db.PermissionType, 0, len(accessibleIDs))
+
+	for _, id := range accessibleIDs {
+		if m, ok := materialsMap[id]; ok {
+			materials = append(materials, m)
+			perm, _ := s.permissions.GetUserPermissionLevel(ctx, db.AssetTypeLearningMaterial, id, userID)
+			permissions = append(permissions, perm)
+		}
+	}
+
+	return materials, permissions, nil
 }
 
 func (s *LearningMaterialService) GetMaterialByID(ctx context.Context, materialID uuid.UUID) (*db.LearningMaterial, error) {
@@ -325,13 +373,17 @@ func (s *LearningMaterialService) GetMaterialURL(ctx context.Context, material d
 	return s.storageService.GetPresignedURL(objectPath), nil
 }
 
-func (s *LearningMaterialService) CompileTypst(ctx context.Context, materialID, ownerID uuid.UUID) (*db.LearningMaterial, error) {
+func (s *LearningMaterialService) CompileTypst(ctx context.Context, materialID, userID uuid.UUID) (*db.LearningMaterial, error) {
 	material, err := s.repo.GetLearningMaterialByID(ctx, materialID)
 	if err != nil {
 		return nil, fmt.Errorf("get material: %w", err)
 	}
 
-	if material.OwnerID != ownerID {
+	canWrite, err := s.permissions.CanWrite(ctx, db.AssetTypeLearningMaterial, materialID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("check write permission: %w", err)
+	}
+	if !canWrite {
 		return nil, fmt.Errorf("unauthorized")
 	}
 

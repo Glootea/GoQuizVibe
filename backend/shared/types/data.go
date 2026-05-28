@@ -129,9 +129,10 @@ type RecentAttempt struct {
 }
 
 type MaterialWithURL struct {
-	Material  db.LearningMaterial
-	PublicURL string
-	Type      string
+	Material   db.LearningMaterial
+	PublicURL  string
+	Type       string
+	Permission db.PermissionType
 }
 
 type AdminQuizListData struct {

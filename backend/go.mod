@@ -3,7 +3,7 @@ module github.com/goquizvibe/backend
 go 1.26.0
 
 require (
-	github.com/a-h/templ v0.3.1001
+	github.com/a-h/templ v0.3.1020
 	github.com/andybalholm/brotli v1.1.0
 	github.com/goforj/wire v1.2.0
 	github.com/golang-jwt/jwt/v5 v5.2.1

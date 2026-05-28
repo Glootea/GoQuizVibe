@@ -18,7 +18,7 @@ templ BaseAdmin(title string, user *models.User, t locales.Translator) {
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 		</head>
 		<body class="min-h-screen text-gray-900 bg-gray-100">
-			@components.AdminNavbar(user, t)
+			@components.AdminNavbar(user.Name, t)
 			<main class="py-8 px-4 mx-auto max-w-7xl">
 				{ children... }
 			</main>
