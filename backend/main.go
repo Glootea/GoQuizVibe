@@ -142,8 +142,9 @@ func main() {
 		{"DELETE", "/admin/groups/{id}/members/{memberID}", app.GroupsHandler.RemoveMember},
 		{"PUT", "/admin/groups/{id}/members/{memberID}/role", app.GroupsHandler.UpdateMemberRole},
 		{"POST", "/admin/groups/{id}/leave", app.GroupsHandler.LeaveGroup},
-		{"GET", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.GetPermissionsModal},
+		{"GET", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.GetPermissionsPage},
 		{"POST", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.GrantPermission},
+		{"POST", "/admin/assets/{type}/{id}/permissions/update", app.PermissionsHandler.UpdatePermission},
 		{"DELETE", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.RevokePermission},
 	}
 

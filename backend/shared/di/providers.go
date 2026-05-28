@@ -253,8 +253,8 @@ func ProvideGroupsHandler(userGroupService *permissionsSvc.UserGroupService, use
 	return permissionsHdl.NewGroupsHandler(userGroupService, users, authService)
 }
 
-func ProvidePermissionsHandler(permissionsService *permissionsSvc.PermissionsService, userGroupService *permissionsSvc.UserGroupService, authService *authSvc.AuthService) *permissionsHdl.PermissionsHandler {
-	return permissionsHdl.NewPermissionsHandler(permissionsService, userGroupService, authService)
+func ProvidePermissionsHandler(permissionsService *permissionsSvc.PermissionsService, userGroupService *permissionsSvc.UserGroupService, authService *authSvc.AuthService, queries *db.Queries) *permissionsHdl.PermissionsHandler {
+	return permissionsHdl.NewPermissionsHandler(permissionsService, userGroupService, authService, queries, queries, queries)
 }
 
 var ServiceSet = wire.NewSet(

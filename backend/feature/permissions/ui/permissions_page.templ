@@ -1,0 +1,185 @@
+package ui
+
+import (
+	"fmt"
+
+	"github.com/goquizvibe/backend/feature/permissions/services"
+	"github.com/goquizvibe/backend/shared/db"
+	"github.com/goquizvibe/backend/shared/locales"
+)
+
+templ PermissionsPage(assetType, assetID string, assetTitle string, permissions []services.PermissionWithGrantor, groups []db.UserGroup, user *db.User, t locales.Translator, errorMsg string) {
+	@BaseAdmin(t.Permissions(), user, t) {
+		<div class="max-w-3xl mx-auto">
+			<div class="mb-6">
+				<a href={ templ.URL(getBackURL(assetType, assetID)) } class="text-indigo-600 hover:text-indigo-800">
+					<i class="mr-1 fas fa-arrow-left"></i>{ t.Back() }
+				</a>
+			</div>
+			<div class="flex justify-between items-center mb-8">
+				<div>
+					<h1 class="text-3xl font-bold">{ t.Permissions() }</h1>
+					if assetTitle != "" {
+						<p class="text-gray-500 mt-1">{ assetTitle }</p>
+					}
+				</div>
+			</div>
+			<div class="p-6 bg-white rounded-xl shadow-sm mb-6">
+				<h2 class="mb-4 text-xl font-bold">{ t.Access() }</h2>
+				<div id="permissions-list">
+					if len(permissions) == 0 {
+						<p class="text-gray-500 text-center py-4">{ t.NoPermissionsYet() }</p>
+					} else {
+						<div class="space-y-3">
+							for _, perm := range permissions {
+								<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+									<div class="flex items-center gap-3">
+										<i class="fas fa-share-alt text-gray-400"></i>
+										<div>
+											<span class="font-medium">{ fmt.Sprintf("%v", perm.RecipientName) }</span>
+											<span class="text-sm text-gray-500 ml-2">
+												if string(perm.RecipientType) == "group" {
+													{ t.Group() }
+												} else {
+													{ t.User() }
+												}
+											</span>
+										</div>
+									</div>
+									<div class="flex items-center gap-2">
+										<form
+											hx-post={ "/admin/assets/" + assetType + "/" + assetID + "/permissions/update" }
+											hx-swap="none"
+											class="inline"
+										>
+											<input type="hidden" name="recipient_type" value={ string(perm.RecipientType) }/>
+											<input type="hidden" name="recipient_id" value={ perm.RecipientID.String() }/>
+											<input type="hidden" name="current_permission" value={ string(perm.Permission) }/>
+											<select
+												name="permission"
+												class="py-1 px-3 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 text-sm"
+												onchange="this.form.requestSubmit()"
+											>
+												if string(perm.Permission) == "owner" {
+													<option value="owner" selected>{ t.Owner() }</option>
+												} else {
+													<option value="read" selected?={ string(perm.Permission) == "read" }>{ t.CanView() }</option>
+													<option value="write" selected?={ string(perm.Permission) == "write" }>{ t.CanEdit() }</option>
+												}
+											</select>
+										</form>
+										if string(perm.Permission) != "owner" {
+											<button
+												type="button"
+												hx-delete={ "/admin/assets/" + assetType + "/" + assetID + "/permissions?recipient_type=" + string(perm.RecipientType) + "&recipient_id=" + perm.RecipientID.String() + "&permission=" + string(perm.Permission) }
+												hx-swap="none"
+												hx-confirm={ t.RevokeAccess() }
+												class="p-2 text-red-600 hover:text-red-800 transition"
+											>
+												<i class="fas fa-trash"></i>
+											</button>
+										}
+									</div>
+								</div>
+							}
+						</div>
+					}
+				</div>
+			</div>
+			<div id="permissions-form-container">
+			<div class="p-6 bg-white rounded-xl shadow-sm">
+				<h2 class="mb-4 text-xl font-bold">{ t.GrantAccess() }</h2>
+				<form
+					hx-post={ "/admin/assets/" + assetType + "/" + assetID + "/permissions" }
+					hx-target="#permissions-form-container"
+					hx-swap="innerHTML"
+				>
+					<div class="space-y-4">
+						<div class="flex gap-2">
+							<button type="button" data-recipient-type="user" onclick="selectRecipientType(this)" class="flex-1 px-3 py-2 rounded border recipient-type-btn selected">
+								{ t.User() }
+							</button>
+							<button type="button" data-recipient-type="group" onclick="selectRecipientType(this)" class="flex-1 px-3 py-2 rounded border recipient-type-btn">
+								{ t.Group() }
+							</button>
+						</div>
+						<input type="hidden" name="recipient_type" id="recipientType" value="user"/>
+						<div id="user-input">
+							<input type="email" name="email" placeholder={ t.SearchByEmail() } class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
+						</div>
+						<div id="group-input" class="hidden">
+							<select name="group_id" class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+								<option value="">{ t.SelectGroup() }</option>
+								for _, g := range groups {
+									<option value={ g.ID.String() }>{ g.Name }</option>
+								}
+							</select>
+						</div>
+						<div>
+							<label class="block mb-1 text-sm font-medium text-gray-700">{ t.Access() }</label>
+							<select name="permission" class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+								<option value="read">{ t.CanView() }</option>
+								<option value="write">{ t.CanEdit() }</option>
+							</select>
+						</div>
+					</div>
+					<div class="flex gap-3 justify-end mt-4">
+						<button type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+							{ t.GrantAccess() }
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+		<script>
+			function selectRecipientType(btn) {
+				document.querySelectorAll('.recipient-type-btn').forEach(b => b.classList.remove('selected', 'bg-indigo-50', 'border-indigo-500'));
+				btn.classList.add('selected', 'bg-indigo-50', 'border-indigo-500');
+				const recipientType = btn.dataset.recipientType;
+				document.getElementById('recipientType').value = recipientType;
+				const userInput = document.getElementById('user-input');
+				const groupInput = document.getElementById('group-input');
+				if (recipientType === 'user') {
+					userInput.classList.remove('hidden');
+					groupInput.classList.add('hidden');
+				} else {
+					userInput.classList.add('hidden');
+					groupInput.classList.remove('hidden');
+				}
+			}
+			document.addEventListener('DOMContentLoaded', function() {
+				document.querySelectorAll('.recipient-type-btn.selected').forEach(function(btn) {
+					if (btn.dataset.recipientType === 'group') {
+						document.getElementById('user-input').classList.add('hidden');
+						document.getElementById('group-input').classList.remove('hidden');
+					}
+				});
+			});
+		</script>
+	}
+}
+
+func getBackURL(assetType, assetID string) string {
+	switch assetType {
+	case "quiz":
+		return "/admin/quizzes/" + assetID
+	case "learning_material":
+		return "/admin/learning-materials/" + assetID
+	default:
+		return "/admin"
+	}
+}
+
+func PermissionBadgeClass(permission string) string {
+	switch permission {
+	case "owner":
+		return "bg-purple-100 text-purple-700"
+	case "write":
+		return "bg-blue-100 text-blue-700"
+	case "read":
+		return "bg-gray-100 text-gray-700"
+	default:
+		return "bg-gray-100 text-gray-700"
+	}
+}

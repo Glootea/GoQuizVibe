@@ -20,16 +20,13 @@ templ MaterialCard(m types.MaterialWithURL, t locales.Translator, showActions bo
 				</div>
 				<div class="flex items-center gap-2">
 					if showActions {
-						<button
-							type="button"
-							data-asset-type="learning_material"
-							data-asset-id={ m.Material.ID.String() }
-							onclick="openPermissionsModal()"
+						<a
+							href={ templ.URL("/admin/assets/learning_material/" + m.Material.ID.String() + "/permissions") }
 							class="text-gray-400 transition hover:text-indigo-600"
 							title={ t.Share() }
 						>
 							<i class="fas fa-share-alt"></i>
-						</button>
+						</a>
 					}
 					if showActions && (m.Permission == db.PermissionTypeOwner || m.Permission == db.PermissionTypeWrite) {
 						<button

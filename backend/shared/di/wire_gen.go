@@ -47,7 +47,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	typstHandler := ProvideTypstHandler(learningMaterialService, adminService)
 	learningMaterialsHandler := ProvideLearningMaterialsHandler(learningMaterialService, adminService, service)
 	groupsHandler := ProvideGroupsHandler(userGroupService, queries, authService)
-	permissionsHandler := ProvidePermissionsHandler(permissionsService, userGroupService, authService)
+	permissionsHandler := ProvidePermissionsHandler(permissionsService, userGroupService, authService, queries)
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	compressionMiddleware := ProvideCompressionMiddleware()

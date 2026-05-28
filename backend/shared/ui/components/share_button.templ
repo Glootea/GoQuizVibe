@@ -3,16 +3,13 @@ package components
 import "github.com/goquizvibe/backend/shared/locales"
 
 templ ShareButton(assetType, assetID string, t locales.Translator) {
-	<button
-		type="button"
-		data-asset-type={ assetType }
-		data-asset-id={ assetID }
-		onclick="openPermissionsModal()"
+	<a
+		href={ templ.URL("/admin/assets/" + assetType + "/" + assetID + "/permissions") }
 		class="p-2 text-gray-500 hover:text-indigo-600 transition"
 		title={ t.Share() }
 	>
 		<i class="fas fa-share-alt"></i>
-	</button>
+	</a>
 }
 
 func PermissionBadgeClass(permission string) string {

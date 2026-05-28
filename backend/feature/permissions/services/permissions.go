@@ -109,6 +109,7 @@ func (s *PermissionsService) GetAssetPermissions(ctx context.Context, assetType 
 	return result, nil
 }
 
+// TODO: optimize by checking group permissions in a single query instead of iterating
 func (s *PermissionsService) CanAccess(ctx context.Context, assetType db.AssetType, assetID, userID uuid.UUID, requiredPermission db.PermissionType) (bool, error) {
 	userGroups, err := s.groups.GetUserGroupsByAdmin(ctx, userID)
 	if err != nil {
