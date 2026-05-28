@@ -1,8 +1,8 @@
 -- name: GetLearningMaterials :many
-SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC;
+SELECT * FROM learning_materials ORDER BY created_at DESC;
 
 -- name: GetLearningMaterialsForUser :many
-SELECT DISTINCT lm.id, lm.title, lm.description, lm.material_type, lm.owner_id, lm.source_path, lm.compiled_path, lm.resource_path, lm.file_size, lm.mime_type, lm.created_at, lm.updated_at FROM learning_materials lm
+SELECT DISTINCT lm.* FROM learning_materials lm
 WHERE EXISTS (
     SELECT 1 FROM asset_permissions ap
     WHERE ap.asset_type = 'learning_material' AND ap.asset_id = lm.id
@@ -11,6 +11,26 @@ WHERE EXISTS (
         OR (ap.recipient_type = 'group' AND ap.recipient_id = ANY($2::uuid[]))
     )
     AND ap.permission IN ('read', 'write', 'owner')
+)
+ORDER BY lm.created_at DESC;
+
+-- name: GetLearningMaterialsForStudent :many
+SELECT DISTINCT lm.* FROM learning_materials lm
+WHERE (
+    lm.student_permission = 'open_to_all'
+    OR EXISTS (
+        SELECT 1 FROM student_access sa
+        WHERE sa.asset_type = 'learning_material' AND sa.asset_id = lm.id
+        AND ((sa.recipient_type = 'user' AND sa.recipient_id = $1)
+             OR (sa.recipient_type = 'group' AND sa.recipient_id = ANY($2::uuid[])))
+    )
+    OR EXISTS (
+        SELECT 1 FROM asset_permissions ap
+        WHERE ap.asset_type = 'learning_material' AND ap.asset_id = lm.id
+        AND ((ap.recipient_type = 'user' AND ap.recipient_id = $1)
+             OR (ap.recipient_type = 'group' AND ap.recipient_id = ANY($2::uuid[])))
+        AND ap.permission IN ('read', 'write', 'owner')
+    )
 )
 ORDER BY lm.created_at DESC;
 
@@ -28,7 +48,7 @@ SELECT EXISTS(
 );
 
 -- name: GetLearningMaterialByID :one
-SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials WHERE id = $1;
+SELECT * FROM learning_materials WHERE id = $1;
 
 -- name: CreateLearningMaterial :one
 INSERT INTO learning_materials (id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at)
@@ -45,4 +65,7 @@ RETURNING *;
 DELETE FROM learning_materials WHERE id = $1;
 
 -- name: GetRecentLearningMaterials :many
-SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC LIMIT $1;
+SELECT * FROM learning_materials ORDER BY created_at DESC LIMIT $1;
+
+-- name: UpdateLearningMaterialStudentPermission :exec
+UPDATE learning_materials SET student_permission = $2 WHERE id = $1;

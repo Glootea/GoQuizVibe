@@ -99,7 +99,7 @@ func (s *DashboardService) GetDashboardData(ctx context.Context, userID uuid.UUI
 func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UUID) ([]*models.QuizWithQuestionsAndImages, error) {
 	cacheKey := "quizzes:user:" + userID.String()
 	quizzes, err := cache.GetOrFetch(ctx, s.cache, cacheKey, func() ([]db.Quiz, error) {
-		groups, err := s.groups.GetUserGroupsByAdmin(ctx, userID)
+		groups, err := s.groups.GetUserGroupsForStudent(ctx, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +107,7 @@ func (s *DashboardService) getQuizzesForUser(ctx context.Context, userID uuid.UU
 		for i, g := range groups {
 			groupIDs[i] = g.ID
 		}
-		return s.quizzes.GetQuizzesForUser(ctx, db.GetQuizzesForUserParams{
+		return s.quizzes.GetQuizzesForStudent(ctx, db.GetQuizzesForStudentParams{
 			RecipientID: userID,
 			Column2:     groupIDs,
 		})

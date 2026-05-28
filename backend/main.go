@@ -146,6 +146,10 @@ func main() {
 		{"POST", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.GrantPermission},
 		{"POST", "/admin/assets/{type}/{id}/permissions/update", app.PermissionsHandler.UpdatePermission},
 		{"DELETE", "/admin/assets/{type}/{id}/permissions", app.PermissionsHandler.RevokePermission},
+		{"GET", "/admin/assets/{type}/{id}/student-permission/access", app.PermissionsHandler.GetStudentAccessList},
+		{"POST", "/admin/assets/{type}/{id}/student-permission/access", app.PermissionsHandler.GrantStudentAccess},
+		{"DELETE", "/admin/assets/{type}/{id}/student-permission/access/{accessId}", app.PermissionsHandler.RevokeStudentAccess},
+		{"PUT", "/admin/assets/{type}/{id}/student-permission", app.PermissionsHandler.UpdateStudentPermission},
 	}
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap

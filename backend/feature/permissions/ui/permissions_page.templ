@@ -8,7 +8,7 @@ import (
 	"github.com/goquizvibe/backend/shared/locales"
 )
 
-templ PermissionsPage(assetType, assetID string, assetTitle string, permissions []services.PermissionWithGrantor, groups []db.UserGroup, user *db.User, t locales.Translator, errorMsg string) {
+templ PermissionsPage(assetType, assetID string, assetTitle string, studentPermission db.StudentPermission, permissions []services.PermissionWithGrantor, studentAccessList []services.StudentAccessWithRecipient, groups []db.UserGroup, user *db.User, t locales.Translator, errorMsg string) {
 	@BaseAdmin(t.Permissions(), user, t) {
 		<div class="max-w-3xl mx-auto">
 			<div class="mb-6">
@@ -24,8 +24,19 @@ templ PermissionsPage(assetType, assetID string, assetTitle string, permissions 
 					}
 				</div>
 			</div>
+
 			<div class="p-6 bg-white rounded-xl shadow-sm mb-6">
-				<h2 class="mb-4 text-xl font-bold">{ t.Access() }</h2>
+				@StudentPermissionSection(assetType, assetID, studentPermission, studentAccessList, groups, t)
+			</div>
+
+			<div class="flex items-center gap-4 my-8">
+				<div class="flex-1 h-px bg-gray-300"></div>
+				<span class="text-gray-500 text-sm font-medium px-2">{ t.AdminAccess() }</span>
+				<div class="flex-1 h-px bg-gray-300"></div>
+			</div>
+
+			<div class="p-6 bg-white rounded-xl shadow-sm mb-6">
+				<h2 class="mb-4 text-xl font-bold">{ t.AdminAccess() }</h2>
 				<div id="permissions-list">
 					if len(permissions) == 0 {
 						<p class="text-gray-500 text-center py-4">{ t.NoPermissionsYet() }</p>
@@ -86,9 +97,9 @@ templ PermissionsPage(assetType, assetID string, assetTitle string, permissions 
 					}
 				</div>
 			</div>
-			<div id="permissions-form-container">
-			<div class="p-6 bg-white rounded-xl shadow-sm">
-				<h2 class="mb-4 text-xl font-bold">{ t.GrantAccess() }</h2>
+
+			<div id="permissions-form-container" class="p-6 bg-white rounded-xl shadow-sm">
+				<h3 class="mb-4 text-lg font-semibold">{ t.GrantAdminAccess() }</h3>
 				<form
 					hx-post={ "/admin/assets/" + assetType + "/" + assetID + "/permissions" }
 					hx-target="#permissions-form-container"
@@ -131,7 +142,6 @@ templ PermissionsPage(assetType, assetID string, assetTitle string, permissions 
 				</form>
 			</div>
 		</div>
-	</div>
 		<script>
 			function selectRecipientType(btn) {
 				document.querySelectorAll('.recipient-type-btn').forEach(b => b.classList.remove('selected', 'bg-indigo-50', 'border-indigo-500'));

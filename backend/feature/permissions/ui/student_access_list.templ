@@ -1,0 +1,47 @@
+package ui
+
+import (
+	"fmt"
+
+	"github.com/goquizvibe/backend/feature/permissions/services"
+	"github.com/goquizvibe/backend/shared/locales"
+)
+
+templ StudentAccessList(accessList []services.StudentAccessWithRecipient, assetType string, assetID string, t locales.Translator) {
+	if len(accessList) == 0 {
+		<p class="text-gray-500 text-center py-4">{ t.NoStudentsWithAccess() }</p>
+	} else {
+		<div class="space-y-3">
+			for _, access := range accessList {
+				<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+					<div class="flex items-center gap-3">
+						if string(access.RecipientType) == "group" {
+							<i class="fas fa-users text-gray-400"></i>
+						} else {
+							<i class="fas fa-user text-gray-400"></i>
+						}
+						<div>
+							<span class="font-medium">{ access.RecipientName }</span>
+							<span class="text-sm text-gray-500 ml-2">
+								if string(access.RecipientType) == "group" {
+									{ t.Group() }
+								} else {
+									{ t.User() }
+								}
+							</span>
+						</div>
+					</div>
+					<button
+						type="button"
+						class="p-2 text-red-600 hover:text-red-800 transition"
+						hx-delete={ fmt.Sprintf("/admin/assets/%s/%s/student-permission/access/%s", assetType, assetID, access.ID.String()) }
+						hx-swap="none"
+						hx-confirm={ t.RevokeAccessConfirm() }
+					>
+						<i class="fas fa-trash"></i>
+					</button>
+				</div>
+			}
+		</div>
+	}
+}

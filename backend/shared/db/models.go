@@ -185,167 +185,6 @@ func (ns NullRole) Value() (driver.Value, error) {
 	return string(ns.Role), nil
 }
 
-type GroupRole string
-
-const (
-	GroupRoleAdmin  GroupRole = "admin"
-	GroupRoleMember GroupRole = "member"
-)
-
-func (e *GroupRole) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = GroupRole(s)
-	case string:
-		*e = GroupRole(s)
-	default:
-		return fmt.Errorf("unsupported scan type for GroupRole: %T", src)
-	}
-	return nil
-}
-
-type NullGroupRole struct {
-	GroupRole GroupRole `json:"group_role"`
-	Valid     bool      `json:"valid"`
-}
-
-func (ns *NullGroupRole) Scan(value interface{}) error {
-	if value == nil {
-		ns.GroupRole, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.GroupRole.Scan(value)
-}
-
-func (ns NullGroupRole) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.GroupRole), nil
-}
-
-type PermissionType string
-
-const (
-	PermissionTypeRead  PermissionType = "read"
-	PermissionTypeWrite PermissionType = "write"
-	PermissionTypeOwner PermissionType = "owner"
-)
-
-func (e *PermissionType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = PermissionType(s)
-	case string:
-		*e = PermissionType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for PermissionType: %T", src)
-	}
-	return nil
-}
-
-type NullPermissionType struct {
-	PermissionType PermissionType `json:"permission_type"`
-	Valid          bool           `json:"valid"`
-}
-
-func (ns *NullPermissionType) Scan(value interface{}) error {
-	if value == nil {
-		ns.PermissionType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.PermissionType.Scan(value)
-}
-
-func (ns NullPermissionType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.PermissionType), nil
-}
-
-type RecipientType string
-
-const (
-	RecipientTypeUser  RecipientType = "user"
-	RecipientTypeGroup RecipientType = "group"
-)
-
-func (e *RecipientType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = RecipientType(s)
-	case string:
-		*e = RecipientType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for RecipientType: %T", src)
-	}
-	return nil
-}
-
-type NullRecipientType struct {
-	RecipientType RecipientType `json:"recipient_type"`
-	Valid         bool          `json:"valid"`
-}
-
-func (ns *NullRecipientType) Scan(value interface{}) error {
-	if value == nil {
-		ns.RecipientType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.RecipientType.Scan(value)
-}
-
-func (ns NullRecipientType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.RecipientType), nil
-}
-
-type AssetType string
-
-const (
-	AssetTypeQuiz            AssetType = "quiz"
-	AssetTypeLearningMaterial AssetType = "learning_material"
-)
-
-func (e *AssetType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = AssetType(s)
-	case string:
-		*e = AssetType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for AssetType: %T", src)
-	}
-	return nil
-}
-
-type NullAssetType struct {
-	AssetType AssetType `json:"asset_type"`
-	Valid     bool      `json:"valid"`
-}
-
-func (ns *NullAssetType) Scan(value interface{}) error {
-	if value == nil {
-		ns.AssetType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.AssetType.Scan(value)
-}
-
-func (ns NullAssetType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.AssetType), nil
-}
-
 type AssetPermission struct {
 	ID            uuid.UUID      `json:"id"`
 	AssetType     AssetType      `json:"asset_type"`
@@ -365,18 +204,19 @@ type GroupMember struct {
 }
 
 type LearningMaterial struct {
-	ID           uuid.UUID            `json:"id"`
-	Title        string               `json:"title"`
-	Description  string               `json:"description"`
-	MaterialType LearningMaterialType `json:"material_type"`
-	OwnerID      uuid.UUID            `json:"owner_id"`
-	SourcePath   string               `json:"source_path"`
-	CompiledPath string               `json:"compiled_path"`
-	ResourcePath string               `json:"resource_path"`
-	FileSize     pgtype.Int8          `json:"file_size"`
-	MimeType     string               `json:"mime_type"`
-	CreatedAt    time.Time            `json:"created_at"`
-	UpdatedAt    time.Time            `json:"updated_at"`
+	ID                uuid.UUID            `json:"id"`
+	Title             string               `json:"title"`
+	Description       string               `json:"description"`
+	MaterialType      LearningMaterialType `json:"material_type"`
+	OwnerID           uuid.UUID            `json:"owner_id"`
+	SourcePath        string               `json:"source_path"`
+	CompiledPath      string               `json:"compiled_path"`
+	ResourcePath      string               `json:"resource_path"`
+	FileSize          pgtype.Int8          `json:"file_size"`
+	MimeType          string               `json:"mime_type"`
+	CreatedAt         time.Time            `json:"created_at"`
+	UpdatedAt         time.Time            `json:"updated_at"`
+	StudentPermission StudentPermission    `json:"student_permission"`
 }
 
 type Question struct {
@@ -400,16 +240,17 @@ type QuestionImage struct {
 }
 
 type Quiz struct {
-	ID               uuid.UUID  `json:"id"`
-	Title            string     `json:"title"`
-	Description      string     `json:"description"`
-	Subject          string     `json:"subject"`
-	Grade            int        `json:"grade"`
-	Status           QuizStatus `json:"status"`
-	TimeLimit        int        `json:"time_limit"`
-	CreatedBy        uuid.UUID  `json:"created_by"`
-	CreatedAt        time.Time  `json:"created_at"`
-	QuestionPoolSize int        `json:"question_pool_size"`
+	ID                uuid.UUID         `json:"id"`
+	Title             string            `json:"title"`
+	Description       string            `json:"description"`
+	Subject           string            `json:"subject"`
+	Grade             int               `json:"grade"`
+	Status            QuizStatus        `json:"status"`
+	TimeLimit         int               `json:"time_limit"`
+	CreatedBy         uuid.UUID         `json:"created_by"`
+	CreatedAt         time.Time         `json:"created_at"`
+	QuestionPoolSize  int               `json:"question_pool_size"`
+	StudentPermission StudentPermission `json:"student_permission"`
 }
 
 type QuizAttempt struct {
@@ -430,6 +271,15 @@ type QuizSession struct {
 	CurrentIndex int       `json:"current_index"`
 	Answers      []byte    `json:"answers"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+type StudentAccess struct {
+	ID            uuid.UUID     `json:"id"`
+	AssetType     AssetType     `json:"asset_type"`
+	AssetID       uuid.UUID     `json:"asset_id"`
+	RecipientType RecipientType `json:"recipient_type"`
+	RecipientID   uuid.UUID     `json:"recipient_id"`
+	CreatedAt     time.Time     `json:"created_at"`
 }
 
 type User struct {

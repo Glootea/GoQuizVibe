@@ -15,7 +15,7 @@ import (
 const createQuiz = `-- name: CreateQuiz :one
 INSERT INTO quizzes (id, title, description, subject, grade, status, time_limit, created_by, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size
+RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size, student_permission
 `
 
 type CreateQuizParams struct {
@@ -54,6 +54,7 @@ func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, e
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.QuestionPoolSize,
+		&i.StudentPermission,
 	)
 	return i, err
 }
@@ -68,7 +69,7 @@ func (q *Queries) DeleteQuiz(ctx context.Context, id uuid.UUID) error {
 }
 
 const getAvailableQuizzes = `-- name: GetAvailableQuizzes :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE status = 'available' ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size, student_permission FROM quizzes WHERE status = 'available' ORDER BY created_at DESC
 `
 
 func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
@@ -91,6 +92,7 @@ func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.QuestionPoolSize,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -103,7 +105,7 @@ func (q *Queries) GetAvailableQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getNonArchivedQuizzes = `-- name: GetNonArchivedQuizzes :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE status != 'archived' ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size, student_permission FROM quizzes WHERE status != 'archived' ORDER BY created_at DESC
 `
 
 func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
@@ -126,6 +128,7 @@ func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.QuestionPoolSize,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -138,7 +141,7 @@ func (q *Queries) GetNonArchivedQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getQuizByID = `-- name: GetQuizByID :one
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes WHERE id = $1
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size, student_permission FROM quizzes WHERE id = $1
 `
 
 func (q *Queries) GetQuizByID(ctx context.Context, id uuid.UUID) (Quiz, error) {
@@ -155,12 +158,13 @@ func (q *Queries) GetQuizByID(ctx context.Context, id uuid.UUID) (Quiz, error) {
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.QuestionPoolSize,
+		&i.StudentPermission,
 	)
 	return i, err
 }
 
 const getQuizzes = `-- name: GetQuizzes :many
-SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size FROM quizzes ORDER BY created_at DESC
+SELECT id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size, student_permission FROM quizzes ORDER BY created_at DESC
 `
 
 func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
@@ -183,6 +187,66 @@ func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.QuestionPoolSize,
+			&i.StudentPermission,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getQuizzesForStudent = `-- name: GetQuizzesForStudent :many
+SELECT DISTINCT q.id, q.title, q.description, q.subject, q.grade, q.status, q.time_limit, q.created_by, q.created_at, q.question_pool_size, q.student_permission FROM quizzes q
+WHERE (
+    q.student_permission = 'open_to_all'
+    OR EXISTS (
+        SELECT 1 FROM student_access sa
+        WHERE sa.asset_type = 'quiz' AND sa.asset_id = q.id
+        AND ((sa.recipient_type = 'user' AND sa.recipient_id = $1)
+             OR (sa.recipient_type = 'group' AND sa.recipient_id = ANY($2::uuid[])))
+    )
+    OR EXISTS (
+        SELECT 1 FROM asset_permissions ap
+        WHERE ap.asset_type = 'quiz' AND ap.asset_id = q.id
+        AND ((ap.recipient_type = 'user' AND ap.recipient_id = $1)
+             OR (ap.recipient_type = 'group' AND ap.recipient_id = ANY($2::uuid[])))
+        AND ap.permission IN ('read', 'write', 'owner')
+    )
+)
+AND q.status = 'available'
+ORDER BY q.created_at DESC
+`
+
+type GetQuizzesForStudentParams struct {
+	RecipientID uuid.UUID   `json:"recipient_id"`
+	Column2     []uuid.UUID `json:"column_2"`
+}
+
+func (q *Queries) GetQuizzesForStudent(ctx context.Context, arg GetQuizzesForStudentParams) ([]Quiz, error) {
+	rows, err := q.db.Query(ctx, getQuizzesForStudent, arg.RecipientID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Quiz{}
+	for rows.Next() {
+		var i Quiz
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.Subject,
+			&i.Grade,
+			&i.Status,
+			&i.TimeLimit,
+			&i.CreatedBy,
+			&i.CreatedAt,
+			&i.QuestionPoolSize,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -195,7 +259,7 @@ func (q *Queries) GetQuizzes(ctx context.Context) ([]Quiz, error) {
 }
 
 const getQuizzesForUser = `-- name: GetQuizzesForUser :many
-SELECT DISTINCT q.id, q.title, q.description, q.subject, q.grade, q.status, q.time_limit, q.created_by, q.created_at, q.question_pool_size FROM quizzes q
+SELECT DISTINCT q.id, q.title, q.description, q.subject, q.grade, q.status, q.time_limit, q.created_by, q.created_at, q.question_pool_size, q.student_permission FROM quizzes q
 WHERE EXISTS (
     SELECT 1 FROM asset_permissions ap
     WHERE ap.asset_type = 'quiz' AND ap.asset_id = q.id
@@ -233,6 +297,7 @@ func (q *Queries) GetQuizzesForUser(ctx context.Context, arg GetQuizzesForUserPa
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.QuestionPoolSize,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -290,7 +355,7 @@ func (q *Queries) QuizTitleExists(ctx context.Context, title string) (bool, erro
 
 const updateQuiz = `-- name: UpdateQuiz :one
 UPDATE quizzes SET title = $2, description = $3, subject = $4, grade = $5, status = $6, time_limit = $7
-WHERE id = $1 RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size
+WHERE id = $1 RETURNING id, title, description, subject, grade, status, time_limit, created_by, created_at, question_pool_size, student_permission
 `
 
 type UpdateQuizParams struct {
@@ -325,6 +390,7 @@ func (q *Queries) UpdateQuiz(ctx context.Context, arg UpdateQuizParams) (Quiz, e
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.QuestionPoolSize,
+		&i.StudentPermission,
 	)
 	return i, err
 }
@@ -340,5 +406,19 @@ type UpdateQuizStatusParams struct {
 
 func (q *Queries) UpdateQuizStatus(ctx context.Context, arg UpdateQuizStatusParams) error {
 	_, err := q.db.Exec(ctx, updateQuizStatus, arg.ID, arg.Status)
+	return err
+}
+
+const updateQuizStudentPermission = `-- name: UpdateQuizStudentPermission :exec
+UPDATE quizzes SET student_permission = $2 WHERE id = $1
+`
+
+type UpdateQuizStudentPermissionParams struct {
+	ID                uuid.UUID         `json:"id"`
+	StudentPermission StudentPermission `json:"student_permission"`
+}
+
+func (q *Queries) UpdateQuizStudentPermission(ctx context.Context, arg UpdateQuizStudentPermissionParams) error {
+	_, err := q.db.Exec(ctx, updateQuizStudentPermission, arg.ID, arg.StudentPermission)
 	return err
 }

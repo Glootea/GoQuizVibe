@@ -12,6 +12,12 @@ JOIN group_members gm ON g.id = gm.group_id
 WHERE gm.user_id = $1 AND gm.role = 'admin'
 ORDER BY g.created_at DESC;
 
+-- name: GetUserGroupsForStudent :many
+SELECT g.* FROM user_groups g
+JOIN group_members gm ON g.id = gm.group_id
+WHERE gm.user_id = $1
+ORDER BY g.created_at DESC;
+
 -- name: UpdateUserGroup :one
 UPDATE user_groups SET name = $2, description = $3
 WHERE id = $1

@@ -1,0 +1,169 @@
+package ui
+
+import (
+	"fmt"
+
+	"github.com/goquizvibe/backend/feature/permissions/services"
+	"github.com/goquizvibe/backend/shared/db"
+	"github.com/goquizvibe/backend/shared/locales"
+)
+
+templ StudentAccessContainer(assetType string, assetID string, studentAccessList []services.StudentAccessWithRecipient, groups []db.UserGroup, t locales.Translator) {
+	<div id="student-access-list" class="space-y-3">
+		if len(studentAccessList) == 0 {
+			<p class="text-gray-500 text-center py-4">{ t.NoStudentsWithAccess() }</p>
+		} else {
+			for _, access := range studentAccessList {
+				<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+					<div class="flex items-center gap-3">
+						if string(access.RecipientType) == "group" {
+							<i class="fas fa-users text-gray-400"></i>
+						} else {
+							<i class="fas fa-user text-gray-400"></i>
+						}
+						<div>
+							<span class="font-medium">{ access.RecipientName }</span>
+							<span class="text-sm text-gray-500 ml-2">
+								if string(access.RecipientType) == "group" {
+									{ t.Group() }
+								} else {
+									{ t.User() }
+								}
+							</span>
+						</div>
+					</div>
+					<button
+						type="button"
+						class="p-2 text-red-600 hover:text-red-800 transition"
+						hx-delete={ fmt.Sprintf("/admin/assets/%s/%s/student-permission/access/%s", assetType, assetID, access.ID.String()) }
+						hx-swap="none"
+						hx-confirm={ t.RevokeAccessConfirm() }
+					>
+						<i class="fas fa-trash"></i>
+					</button>
+				</div>
+			}
+		}
+	</div>
+	<div class="mt-4 pt-4 border-t">
+		@StudentAccessForm(assetType, assetID, groups, t)
+	</div>
+}
+
+templ StudentAccessForm(assetType string, assetID string, groups []db.UserGroup, t locales.Translator) {
+	<div id="student-access-form-container" class="p-4 bg-gray-50 rounded-lg">
+		<h3 class="mb-3 text-lg font-medium">{ t.AddStudentAccess() }</h3>
+		<form
+			id="student-access-form"
+			hx-post={ fmt.Sprintf("/admin/assets/%s/%s/student-permission/access", assetType, assetID) }
+			hx-target="#student-access-container"
+			hx-swap="outerHTML"
+		>
+			<div class="space-y-3">
+				<div class="flex gap-2">
+					<button type="button" data-recipient-type="user" onclick="selectStudentAccessRecipientType(this)" class="flex-1 px-3 py-2 rounded border student-access-type-btn selected">
+						{ t.User() }
+					</button>
+					<button type="button" data-recipient-type="group" onclick="selectStudentAccessRecipientType(this)" class="flex-1 px-3 py-2 rounded border student-access-type-btn">
+						{ t.Group() }
+					</button>
+				</div>
+				<input type="hidden" name="recipient_type" id="studentAccessRecipientType" value="user"/>
+				<div id="student-user-input">
+					<input type="email" name="email" placeholder={ t.SearchByEmail() } class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
+				</div>
+				<div id="student-group-input" class="hidden">
+					<select name="group_id" class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+						<option value="">{ t.SelectGroup() }</option>
+						for _, g := range groups {
+							<option value={ g.ID.String() }>{ g.Name }</option>
+						}
+					</select>
+				</div>
+			</div>
+			<div class="flex gap-3 justify-end mt-3">
+				<button type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+					{ t.Add() }
+				</button>
+			</div>
+		</form>
+	</div>
+	<script>
+		function selectStudentAccessRecipientType(btn) {
+			document.querySelectorAll('.student-access-type-btn').forEach(b => b.classList.remove('selected', 'bg-indigo-50', 'border-indigo-500'));
+			btn.classList.add('selected', 'bg-indigo-50', 'border-indigo-500');
+			const recipientType = btn.dataset.recipientType;
+			document.getElementById('studentAccessRecipientType').value = recipientType;
+			const userInput = document.getElementById('student-user-input');
+			const groupInput = document.getElementById('student-group-input');
+			if (recipientType === 'user') {
+				userInput.classList.remove('hidden');
+				groupInput.classList.add('hidden');
+			} else {
+				userInput.classList.add('hidden');
+				groupInput.classList.remove('hidden');
+			}
+		}
+	</script>
+}
+
+templ StudentAccessFormWithError(assetType string, assetID string, groups []db.UserGroup, errorMsg string, t locales.Translator) {
+	<div id="student-access-form-container" class="p-4 bg-gray-50 rounded-lg">
+		<h3 class="mb-3 text-lg font-medium">{ t.AddStudentAccess() }</h3>
+		<form
+			id="student-access-form"
+			hx-post={ fmt.Sprintf("/admin/assets/%s/%s/student-permission/access", assetType, assetID) }
+			hx-target="#student-access-container"
+			hx-swap="outerHTML"
+		>
+			<div id="student-access-form-error" class="mb-3 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200 flex items-center gap-2">
+				<i class="fas fa-exclamation-circle"></i>
+				<span>{ errorMsg }</span>
+			</div>
+			<div class="space-y-3">
+				<div class="flex gap-2">
+					<button type="button" data-recipient-type="user" onclick="selectStudentAccessRecipientType(this)" class="flex-1 px-3 py-2 rounded border student-access-type-btn selected">
+						{ t.User() }
+					</button>
+					<button type="button" data-recipient-type="group" onclick="selectStudentAccessRecipientType(this)" class="flex-1 px-3 py-2 rounded border student-access-type-btn">
+						{ t.Group() }
+					</button>
+				</div>
+				<input type="hidden" name="recipient_type" id="studentAccessRecipientType" value="user"/>
+				<div id="student-user-input">
+					<input type="email" name="email" placeholder={ t.SearchByEmail() } class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"/>
+				</div>
+				<div id="student-group-input" class="hidden">
+					<select name="group_id" class="w-full px-3 py-2 rounded-lg border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+						<option value="">{ t.SelectGroup() }</option>
+						for _, g := range groups {
+							<option value={ g.ID.String() }>{ g.Name }</option>
+						}
+					</select>
+				</div>
+			</div>
+			<div class="flex gap-3 justify-end mt-3">
+				<button type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
+					{ t.Add() }
+				</button>
+			</div>
+		</form>
+	</div>
+	<script>
+		function selectStudentAccessRecipientType(btn) {
+			document.querySelectorAll('.student-access-type-btn').forEach(b => b.classList.remove('selected', 'bg-indigo-50', 'border-indigo-500'));
+			btn.classList.add('selected', 'bg-indigo-50', 'border-indigo-500');
+			const recipientType = btn.dataset.recipientType;
+			document.getElementById('studentAccessRecipientType').value = recipientType;
+			const userInput = document.getElementById('student-user-input');
+			const groupInput = document.getElementById('student-group-input');
+			if (recipientType === 'user') {
+				userInput.classList.remove('hidden');
+				groupInput.classList.add('hidden');
+			} else {
+				userInput.classList.add('hidden');
+				groupInput.classList.remove('hidden');
+			}
+		}
+	</script>
+}

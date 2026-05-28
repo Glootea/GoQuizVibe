@@ -16,7 +16,7 @@ import (
 const createLearningMaterial = `-- name: CreateLearningMaterial :one
 INSERT INTO learning_materials (id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at
+RETURNING id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at, student_permission
 `
 
 type CreateLearningMaterialParams struct {
@@ -63,6 +63,7 @@ func (q *Queries) CreateLearningMaterial(ctx context.Context, arg CreateLearning
 		&i.MimeType,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.StudentPermission,
 	)
 	return i, err
 }
@@ -77,7 +78,7 @@ func (q *Queries) DeleteLearningMaterial(ctx context.Context, id uuid.UUID) erro
 }
 
 const getLearningMaterialByID = `-- name: GetLearningMaterialByID :one
-SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials WHERE id = $1
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at, student_permission FROM learning_materials WHERE id = $1
 `
 
 func (q *Queries) GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (LearningMaterial, error) {
@@ -96,12 +97,13 @@ func (q *Queries) GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (Le
 		&i.MimeType,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.StudentPermission,
 	)
 	return i, err
 }
 
 const getLearningMaterials = `-- name: GetLearningMaterials :many
-SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at, student_permission FROM learning_materials ORDER BY created_at DESC
 `
 
 func (q *Queries) GetLearningMaterials(ctx context.Context) ([]LearningMaterial, error) {
@@ -126,6 +128,67 @@ func (q *Queries) GetLearningMaterials(ctx context.Context) ([]LearningMaterial,
 			&i.MimeType,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.StudentPermission,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLearningMaterialsForStudent = `-- name: GetLearningMaterialsForStudent :many
+SELECT DISTINCT lm.id, lm.title, lm.description, lm.material_type, lm.owner_id, lm.source_path, lm.compiled_path, lm.resource_path, lm.file_size, lm.mime_type, lm.created_at, lm.updated_at, lm.student_permission FROM learning_materials lm
+WHERE (
+    lm.student_permission = 'open_to_all'
+    OR EXISTS (
+        SELECT 1 FROM student_access sa
+        WHERE sa.asset_type = 'learning_material' AND sa.asset_id = lm.id
+        AND ((sa.recipient_type = 'user' AND sa.recipient_id = $1)
+             OR (sa.recipient_type = 'group' AND sa.recipient_id = ANY($2::uuid[])))
+    )
+    OR EXISTS (
+        SELECT 1 FROM asset_permissions ap
+        WHERE ap.asset_type = 'learning_material' AND ap.asset_id = lm.id
+        AND ((ap.recipient_type = 'user' AND ap.recipient_id = $1)
+             OR (ap.recipient_type = 'group' AND ap.recipient_id = ANY($2::uuid[])))
+        AND ap.permission IN ('read', 'write', 'owner')
+    )
+)
+ORDER BY lm.created_at DESC
+`
+
+type GetLearningMaterialsForStudentParams struct {
+	RecipientID uuid.UUID   `json:"recipient_id"`
+	Column2     []uuid.UUID `json:"column_2"`
+}
+
+func (q *Queries) GetLearningMaterialsForStudent(ctx context.Context, arg GetLearningMaterialsForStudentParams) ([]LearningMaterial, error) {
+	rows, err := q.db.Query(ctx, getLearningMaterialsForStudent, arg.RecipientID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LearningMaterial{}
+	for rows.Next() {
+		var i LearningMaterial
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.MaterialType,
+			&i.OwnerID,
+			&i.SourcePath,
+			&i.CompiledPath,
+			&i.ResourcePath,
+			&i.FileSize,
+			&i.MimeType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -138,7 +201,7 @@ func (q *Queries) GetLearningMaterials(ctx context.Context) ([]LearningMaterial,
 }
 
 const getLearningMaterialsForUser = `-- name: GetLearningMaterialsForUser :many
-SELECT DISTINCT lm.id, lm.title, lm.description, lm.material_type, lm.owner_id, lm.source_path, lm.compiled_path, lm.resource_path, lm.file_size, lm.mime_type, lm.created_at, lm.updated_at FROM learning_materials lm
+SELECT DISTINCT lm.id, lm.title, lm.description, lm.material_type, lm.owner_id, lm.source_path, lm.compiled_path, lm.resource_path, lm.file_size, lm.mime_type, lm.created_at, lm.updated_at, lm.student_permission FROM learning_materials lm
 WHERE EXISTS (
     SELECT 1 FROM asset_permissions ap
     WHERE ap.asset_type = 'learning_material' AND ap.asset_id = lm.id
@@ -178,6 +241,7 @@ func (q *Queries) GetLearningMaterialsForUser(ctx context.Context, arg GetLearni
 			&i.MimeType,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -190,7 +254,7 @@ func (q *Queries) GetLearningMaterialsForUser(ctx context.Context, arg GetLearni
 }
 
 const getRecentLearningMaterials = `-- name: GetRecentLearningMaterials :many
-SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at FROM learning_materials ORDER BY created_at DESC LIMIT $1
+SELECT id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at, student_permission FROM learning_materials ORDER BY created_at DESC LIMIT $1
 `
 
 func (q *Queries) GetRecentLearningMaterials(ctx context.Context, limit int32) ([]LearningMaterial, error) {
@@ -215,6 +279,7 @@ func (q *Queries) GetRecentLearningMaterials(ctx context.Context, limit int32) (
 			&i.MimeType,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.StudentPermission,
 		); err != nil {
 			return nil, err
 		}
@@ -263,7 +328,7 @@ const updateLearningMaterial = `-- name: UpdateLearningMaterial :one
 UPDATE learning_materials
 SET title = $2, description = $3, source_path = $4, compiled_path = $5, resource_path = $6, file_size = $7, mime_type = $8, updated_at = $9
 WHERE id = $1
-RETURNING id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at
+RETURNING id, title, description, material_type, owner_id, source_path, compiled_path, resource_path, file_size, mime_type, created_at, updated_at, student_permission
 `
 
 type UpdateLearningMaterialParams struct {
@@ -304,6 +369,21 @@ func (q *Queries) UpdateLearningMaterial(ctx context.Context, arg UpdateLearning
 		&i.MimeType,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.StudentPermission,
 	)
 	return i, err
+}
+
+const updateLearningMaterialStudentPermission = `-- name: UpdateLearningMaterialStudentPermission :exec
+UPDATE learning_materials SET student_permission = $2 WHERE id = $1
+`
+
+type UpdateLearningMaterialStudentPermissionParams struct {
+	ID                uuid.UUID         `json:"id"`
+	StudentPermission StudentPermission `json:"student_permission"`
+}
+
+func (q *Queries) UpdateLearningMaterialStudentPermission(ctx context.Context, arg UpdateLearningMaterialStudentPermissionParams) error {
+	_, err := q.db.Exec(ctx, updateLearningMaterialStudentPermission, arg.ID, arg.StudentPermission)
+	return err
 }

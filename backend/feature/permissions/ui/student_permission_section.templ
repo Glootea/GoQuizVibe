@@ -1,0 +1,73 @@
+package ui
+
+import (
+	"fmt"
+
+	"github.com/goquizvibe/backend/feature/permissions/services"
+	"github.com/goquizvibe/backend/shared/db"
+	"github.com/goquizvibe/backend/shared/locales"
+)
+
+templ StudentPermissionSection(assetType string, assetID string, currentPermission db.StudentPermission, studentAccessList []services.StudentAccessWithRecipient, groups []db.UserGroup, t locales.Translator) {
+	<div id="student-permission-section">
+		<h2 class="mb-4 text-xl font-bold">{ t.StudentAccess() }</h2>
+		<form
+			id="student-permission-form"
+			hx-put={ fmt.Sprintf("/admin/assets/%s/%s/student-permission", assetType, assetID) }
+			hx-swap="outerHTML"
+			hx-target="#student-permission-section"
+		>
+			<input type="hidden" name="student_permission" id="studentPermissionValue" value={ string(currentPermission) }/>
+			<div class="flex gap-2 mb-4">
+				<button
+					type="button"
+					data-permission="open_to_all"
+					onclick="selectStudentPermission(this)"
+					class="flex-1 px-3 py-2 rounded border transition"
+					if currentPermission == "open_to_all" {
+						class="flex-1 px-3 py-2 rounded border bg-indigo-50 border-indigo-500"
+					}
+				>
+					<i class="fas fa-globe mr-1"></i>{ t.OpenToAll() }
+				</button>
+				<button
+					type="button"
+					data-permission="assigned"
+					onclick="selectStudentPermission(this)"
+					class="flex-1 px-3 py-2 rounded border transition"
+					if currentPermission == "assigned" {
+						class="flex-1 px-3 py-2 rounded border bg-indigo-50 border-indigo-500"
+					}
+				>
+					<i class="fas fa-user-check mr-1"></i>{ t.Assigned() }
+				</button>
+				<button
+					type="button"
+					data-permission="private"
+					onclick="selectStudentPermission(this)"
+					class="flex-1 px-3 py-2 rounded border transition"
+					if currentPermission == "private" {
+						class="flex-1 px-3 py-2 rounded border bg-indigo-50 border-indigo-500"
+					}
+				>
+					<i class="fas fa-lock mr-1"></i>{ t.Private() }
+				</button>
+			</div>
+		</form>
+<div id="student-access-container" class="transition-all duration-300 ease-in-out overflow-hidden">
+		if currentPermission == "assigned" {
+			@StudentAccessContainer(assetType, assetID, studentAccessList, groups, t)
+		}
+	</div>
+		<script>
+			function selectStudentPermission(btn) {
+				document.querySelectorAll('[data-permission]').forEach(b => {
+					b.classList.remove('bg-indigo-50', 'border-indigo-500');
+				});
+				btn.classList.add('bg-indigo-50', 'border-indigo-500');
+				document.getElementById('studentPermissionValue').value = btn.dataset.permission;
+				btn.closest('form').requestSubmit();
+			}
+		</script>
+	</div>
+}

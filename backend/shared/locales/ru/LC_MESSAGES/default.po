@@ -918,3 +918,43 @@ msgstr "Вы можете редактировать"
 
 msgid "You can view"
 msgstr "Вы можете просматривать"
+
+# Student Access
+
+msgid "Student Access"
+msgstr "Доступ для учеников"
+
+msgid "Student Access Level"
+msgstr "Уровень доступа для учеников"
+
+msgid "Open to All"
+msgstr "Открыт всем"
+
+msgid "Assigned"
+msgstr "Назначенные"
+
+msgid "Private"
+msgstr "Приватный"
+
+msgid "No Students With Access"
+msgstr "Нет учеников с доступом"
+
+msgid "Add Student Access"
+msgstr "Добавить доступ ученику"
+
+# Admin Access
+
+msgid "Admin Access"
+msgstr "Доступ для администраторов"
+
+msgid "Grant Admin Access"
+msgstr "Предоставить доступ администратору"
+
+msgid "Revoke Access Confirm"
+msgstr "Отозвать доступ?"
+
+msgid "User Not Found"
+msgstr "Пользователь не найден"
+
+msgid "Enter Email Or Select Group"
+msgstr "Введите email или выберите группу"

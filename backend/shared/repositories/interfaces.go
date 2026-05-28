@@ -19,9 +19,11 @@ type QuizRepository interface {
 	CreateQuiz(ctx context.Context, params db.CreateQuizParams) (db.Quiz, error)
 	GetQuizByID(ctx context.Context, id uuid.UUID) (db.Quiz, error)
 	GetQuizzesForUser(ctx context.Context, params db.GetQuizzesForUserParams) ([]db.Quiz, error)
+	GetQuizzesForStudent(ctx context.Context, params db.GetQuizzesForStudentParams) ([]db.Quiz, error)
 	GetNonArchivedQuizzes(ctx context.Context) ([]db.Quiz, error)
 	UpdateQuiz(ctx context.Context, params db.UpdateQuizParams) (db.Quiz, error)
 	UpdateQuizStatus(ctx context.Context, params db.UpdateQuizStatusParams) error
+	UpdateQuizStudentPermission(ctx context.Context, params db.UpdateQuizStudentPermissionParams) error
 	DeleteQuiz(ctx context.Context, id uuid.UUID) error
 }
 
@@ -69,7 +71,9 @@ type LearningMaterialRepository interface {
 	GetLearningMaterialByID(ctx context.Context, id uuid.UUID) (db.LearningMaterial, error)
 	GetLearningMaterials(ctx context.Context) ([]db.LearningMaterial, error)
 	GetLearningMaterialsForUser(ctx context.Context, params db.GetLearningMaterialsForUserParams) ([]db.LearningMaterial, error)
+	GetLearningMaterialsForStudent(ctx context.Context, params db.GetLearningMaterialsForStudentParams) ([]db.LearningMaterial, error)
 	UpdateLearningMaterial(ctx context.Context, params db.UpdateLearningMaterialParams) (db.LearningMaterial, error)
+	UpdateLearningMaterialStudentPermission(ctx context.Context, params db.UpdateLearningMaterialStudentPermissionParams) error
 	DeleteLearningMaterial(ctx context.Context, id uuid.UUID) error
 	GetRecentLearningMaterials(ctx context.Context, limit int32) ([]db.LearningMaterial, error)
 }
@@ -78,6 +82,7 @@ type UserGroupRepository interface {
 	CreateUserGroup(ctx context.Context, params db.CreateUserGroupParams) (db.UserGroup, error)
 	GetUserGroupByID(ctx context.Context, id uuid.UUID) (db.UserGroup, error)
 	GetUserGroupsByAdmin(ctx context.Context, userID uuid.UUID) ([]db.UserGroup, error)
+	GetUserGroupsForStudent(ctx context.Context, userID uuid.UUID) ([]db.UserGroup, error)
 	UpdateUserGroup(ctx context.Context, params db.UpdateUserGroupParams) (db.UserGroup, error)
 	DeleteUserGroup(ctx context.Context, params db.DeleteUserGroupParams) error
 	AddUserToGroup(ctx context.Context, params db.AddUserToGroupParams) (db.GroupMember, error)
@@ -99,4 +104,10 @@ type AssetPermissionRepository interface {
 	DeleteAssetPermissionsByAsset(ctx context.Context, params db.DeleteAssetPermissionsByAssetParams) error
 	HasPermission(ctx context.Context, params db.HasPermissionParams) (bool, error)
 	HasPermissionLevel(ctx context.Context, params db.HasPermissionLevelParams) (bool, error)
+}
+
+type StudentAccessRepository interface {
+	GrantStudentAccess(ctx context.Context, params db.GrantStudentAccessParams) (db.StudentAccess, error)
+	RevokeStudentAccess(ctx context.Context, params db.RevokeStudentAccessParams) error
+	GetStudentAccessList(ctx context.Context, params db.GetStudentAccessListParams) ([]db.GetStudentAccessListRow, error)
 }

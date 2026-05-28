@@ -19,14 +19,16 @@ var (
 )
 
 type PermissionsService struct {
-	perms  r.AssetPermissionRepository
-	groups r.UserGroupRepository
+	perms         r.AssetPermissionRepository
+	groups        r.UserGroupRepository
+	studentAccess r.StudentAccessRepository
 }
 
-func NewPermissionsService(perms r.AssetPermissionRepository, groups r.UserGroupRepository) *PermissionsService {
+func NewPermissionsService(perms r.AssetPermissionRepository, groups r.UserGroupRepository, studentAccess r.StudentAccessRepository) *PermissionsService {
 	return &PermissionsService{
-		perms:  perms,
-		groups: groups,
+		perms:         perms,
+		groups:        groups,
+		studentAccess: studentAccess,
 	}
 }
 
@@ -205,6 +207,59 @@ func (s *PermissionsService) RevokeAllForAsset(ctx context.Context, assetType db
 	return nil
 }
 
+func (s *PermissionsService) GrantStudentAccess(ctx context.Context, assetType db.AssetType, assetID uuid.UUID, recipientType db.RecipientType, recipientID uuid.UUID) error {
+	_, err := s.studentAccess.GrantStudentAccess(ctx, db.GrantStudentAccessParams{
+		ID:            uuid.New(),
+		AssetType:     assetType,
+		AssetID:       assetID,
+		RecipientType: recipientType,
+		RecipientID:   recipientID,
+		CreatedAt:     time.Now(),
+	})
+	if err != nil {
+		return fmt.Errorf("grant student access: %w", err)
+	}
+	return nil
+}
+
+func (s *PermissionsService) RevokeStudentAccess(ctx context.Context, assetType db.AssetType, assetID uuid.UUID, recipientType db.RecipientType, recipientID uuid.UUID) error {
+	err := s.studentAccess.RevokeStudentAccess(ctx, db.RevokeStudentAccessParams{
+		AssetType:     assetType,
+		AssetID:       assetID,
+		RecipientType: recipientType,
+		RecipientID:   recipientID,
+	})
+	if err != nil {
+		return fmt.Errorf("revoke student access: %w", err)
+	}
+	return nil
+}
+
+func (s *PermissionsService) GetStudentAccessList(ctx context.Context, assetType db.AssetType, assetID uuid.UUID) ([]StudentAccessWithRecipient, error) {
+	rows, err := s.studentAccess.GetStudentAccessList(ctx, db.GetStudentAccessListParams{
+		AssetType: assetType,
+		AssetID:   assetID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get student access list: %w", err)
+	}
+
+	result := make([]StudentAccessWithRecipient, 0, len(rows))
+	for _, r := range rows {
+		result = append(result, StudentAccessWithRecipient{
+			ID:            r.ID,
+			AssetType:     r.AssetType,
+			AssetID:       r.AssetID,
+			RecipientType: r.RecipientType,
+			RecipientID:   r.RecipientID,
+			CreatedAt:     r.CreatedAt,
+			RecipientName:  fmt.Sprintf("%v", r.RecipientName),
+			RecipientEmail: fmt.Sprintf("%v", r.RecipientEmail),
+		})
+	}
+	return result, nil
+}
+
 type PermissionWithGrantor struct {
 	ID            uuid.UUID
 	AssetType     db.AssetType
@@ -215,4 +270,15 @@ type PermissionWithGrantor struct {
 	GrantorID     uuid.UUID
 	CreatedAt     time.Time
 	RecipientName string
+}
+
+type StudentAccessWithRecipient struct {
+	ID             uuid.UUID
+	AssetType      db.AssetType
+	AssetID        uuid.UUID
+	RecipientType  db.RecipientType
+	RecipientID    uuid.UUID
+	CreatedAt      time.Time
+	RecipientName  string
+	RecipientEmail string
 }

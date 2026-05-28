@@ -30,8 +30,12 @@ type Translator interface {
 	AddOption() string
 	// "Add Question"
 	AddQuestion() string
+	// "Add Student Access"
+	AddStudentAccess() string
 	// "Admin"
 	Admin() string
+	// "Admin Access"
+	AdminAccess() string
 	// "Admins"
 	Admins() string
 	// "All"
@@ -164,6 +168,8 @@ type Translator interface {
 	Email() string
 	// "End quiz? This action cannot be undone."
 	EndQuizThisActionCannotBeUndone() string
+	// "Enter Email Or Select Group"
+	EnterEmailOrSelectGroup() string
 	// "Enter quiz topic above to generate prompt"
 	EnterQuizTopicAboveToGeneratePrompt() string
 	// "Enter your answer..."
@@ -196,6 +202,8 @@ type Translator interface {
 	Grade() string
 	// "Grant Access"
 	GrantAccess() string
+	// "Grant Admin Access"
+	GrantAdminAccess() string
 	// "Great job!"
 	GreatJob() string
 	// "Group"
@@ -316,12 +324,16 @@ type Translator interface {
 	NoQuizzesAvailableYet() string
 	// "No results yet"
 	NoResultsYet() string
+	// "No Students With Access"
+	NoStudentsWithAccess() string
 	// "Open"
 	Open() string
 	// "Open in New Tab"
 	OpenInNewTab() string
 	// "Open Resource"
 	OpenResource() string
+	// "Open to All"
+	OpenToAll() string
 	// "Options:"
 	Options() string
 	// "options (array of strings) - answer options for choice type, empty for others"
@@ -360,6 +372,8 @@ type Translator interface {
 	Preview() string
 	// "Preview Not Available"
 	PreviewNotAvailable() string
+	// "Private"
+	Private() string
 	// "Prompt for LLM question generation"
 	PromptForLlmQuestionGeneration() string
 	// "Question %d"
@@ -432,6 +446,8 @@ type Translator interface {
 	Retry() string
 	// "Revoke Access"
 	RevokeAccess() string
+	// "Revoke Access Confirm"
+	RevokeAccessConfirm() string
 	// "Role updated"
 	RoleUpdated() string
 	// "Satisfactory"
@@ -474,6 +490,10 @@ type Translator interface {
 	StreakDaysInARow() string
 	// "Student"
 	Student() string
+	// "Student Access"
+	StudentAccess() string
+	// "Student Access Level"
+	StudentAccessLevel() string
 	// "Students by Grade"
 	StudentsByGrade() string
 	// "Subject"
@@ -544,6 +564,8 @@ type Translator interface {
 	UploadJsonFile() string
 	// "User"
 	User() string
+	// "User Not Found"
+	UserNotFound() string
 	// "View All"
 	ViewAll() string
 	// "View student answers"
@@ -602,8 +624,16 @@ func (t *translator) AddQuestion() string {
 	return t.locale.Get("Add Question")
 }
 
+func (t *translator) AddStudentAccess() string {
+	return t.locale.Get("Add Student Access")
+}
+
 func (t *translator) Admin() string {
 	return t.locale.Get("Admin")
+}
+
+func (t *translator) AdminAccess() string {
+	return t.locale.Get("Admin Access")
 }
 
 func (t *translator) Admins() string {
@@ -870,6 +900,10 @@ func (t *translator) EndQuizThisActionCannotBeUndone() string {
 	return t.locale.Get("End quiz? This action cannot be undone.")
 }
 
+func (t *translator) EnterEmailOrSelectGroup() string {
+	return t.locale.Get("Enter Email Or Select Group")
+}
+
 func (t *translator) EnterQuizTopicAboveToGeneratePrompt() string {
 	return t.locale.Get("Enter quiz topic above to generate prompt")
 }
@@ -932,6 +966,10 @@ func (t *translator) Grade() string {
 
 func (t *translator) GrantAccess() string {
 	return t.locale.Get("Grant Access")
+}
+
+func (t *translator) GrantAdminAccess() string {
+	return t.locale.Get("Grant Admin Access")
 }
 
 func (t *translator) GreatJob() string {
@@ -1174,6 +1212,10 @@ func (t *translator) NoResultsYet() string {
 	return t.locale.Get("No results yet")
 }
 
+func (t *translator) NoStudentsWithAccess() string {
+	return t.locale.Get("No Students With Access")
+}
+
 func (t *translator) Open() string {
 	return t.locale.Get("Open")
 }
@@ -1184,6 +1226,10 @@ func (t *translator) OpenInNewTab() string {
 
 func (t *translator) OpenResource() string {
 	return t.locale.Get("Open Resource")
+}
+
+func (t *translator) OpenToAll() string {
+	return t.locale.Get("Open to All")
 }
 
 func (t *translator) Options() string {
@@ -1260,6 +1306,10 @@ func (t *translator) Preview() string {
 
 func (t *translator) PreviewNotAvailable() string {
 	return t.locale.Get("Preview Not Available")
+}
+
+func (t *translator) Private() string {
+	return t.locale.Get("Private")
 }
 
 func (t *translator) PromptForLlmQuestionGeneration() string {
@@ -1406,6 +1456,10 @@ func (t *translator) RevokeAccess() string {
 	return t.locale.Get("Revoke Access")
 }
 
+func (t *translator) RevokeAccessConfirm() string {
+	return t.locale.Get("Revoke Access Confirm")
+}
+
 func (t *translator) RoleUpdated() string {
 	return t.locale.Get("Role updated")
 }
@@ -1488,6 +1542,14 @@ func (t *translator) StreakDaysInARow() string {
 
 func (t *translator) Student() string {
 	return t.locale.Get("Student")
+}
+
+func (t *translator) StudentAccess() string {
+	return t.locale.Get("Student Access")
+}
+
+func (t *translator) StudentAccessLevel() string {
+	return t.locale.Get("Student Access Level")
 }
 
 func (t *translator) StudentsByGrade() string {
@@ -1628,6 +1690,10 @@ func (t *translator) UploadJsonFile() string {
 
 func (t *translator) User() string {
 	return t.locale.Get("User")
+}
+
+func (t *translator) UserNotFound() string {
+	return t.locale.Get("User Not Found")
 }
 
 func (t *translator) ViewAll() string {

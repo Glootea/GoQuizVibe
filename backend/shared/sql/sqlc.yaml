@@ -72,3 +72,6 @@ sql:
           - db_type: "asset_type"
             go_type:
               type: "AssetType"
+          - db_type: "student_permission"
+            go_type:
+              type: "StudentPermission"

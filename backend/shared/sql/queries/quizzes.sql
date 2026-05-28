@@ -51,5 +51,29 @@ UPDATE quizzes SET status = 'archived' WHERE id = $1;
 -- name: UpdateQuizStatus :exec
 UPDATE quizzes SET status = $2 WHERE id = $1;
 
+-- name: GetQuizzesForStudent :many
+SELECT DISTINCT q.* FROM quizzes q
+WHERE (
+    q.student_permission = 'open_to_all'
+    OR EXISTS (
+        SELECT 1 FROM student_access sa
+        WHERE sa.asset_type = 'quiz' AND sa.asset_id = q.id
+        AND ((sa.recipient_type = 'user' AND sa.recipient_id = $1)
+             OR (sa.recipient_type = 'group' AND sa.recipient_id = ANY($2::uuid[])))
+    )
+    OR EXISTS (
+        SELECT 1 FROM asset_permissions ap
+        WHERE ap.asset_type = 'quiz' AND ap.asset_id = q.id
+        AND ((ap.recipient_type = 'user' AND ap.recipient_id = $1)
+             OR (ap.recipient_type = 'group' AND ap.recipient_id = ANY($2::uuid[])))
+        AND ap.permission IN ('read', 'write', 'owner')
+    )
+)
+AND q.status = 'available'
+ORDER BY q.created_at DESC;
+
+-- name: UpdateQuizStudentPermission :exec
+UPDATE quizzes SET student_permission = $2 WHERE id = $1;
+
 -- name: QuizTitleExists :one
 SELECT EXISTS(SELECT 1 FROM quizzes WHERE title = $1);

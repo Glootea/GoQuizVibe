@@ -193,6 +193,39 @@ func (q *Queries) GetUserGroupsByAdmin(ctx context.Context, userID uuid.UUID) ([
 	return items, nil
 }
 
+const getUserGroupsForStudent = `-- name: GetUserGroupsForStudent :many
+SELECT g.id, g.name, g.description, g.owner_id, g.created_at FROM user_groups g
+JOIN group_members gm ON g.id = gm.group_id
+WHERE gm.user_id = $1
+ORDER BY g.created_at DESC
+`
+
+func (q *Queries) GetUserGroupsForStudent(ctx context.Context, userID uuid.UUID) ([]UserGroup, error) {
+	rows, err := q.db.Query(ctx, getUserGroupsForStudent, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []UserGroup{}
+	for rows.Next() {
+		var i UserGroup
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.OwnerID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserRoleInGroup = `-- name: GetUserRoleInGroup :one
 SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2
 `

@@ -915,3 +915,43 @@ msgstr "You can edit"
 
 msgid "You can view"
 msgstr "You can view"
+
+# Student Access
+
+msgid "Student Access"
+msgstr "Student Access"
+
+msgid "Student Access Level"
+msgstr "Student access level"
+
+msgid "Open to All"
+msgstr "Open to All"
+
+msgid "Assigned"
+msgstr "Assigned"
+
+msgid "Private"
+msgstr "Private"
+
+msgid "No Students With Access"
+msgstr "No students with access"
+
+msgid "Add Student Access"
+msgstr "Add Student Access"
+
+# Admin Access
+
+msgid "Admin Access"
+msgstr "Admin Access"
+
+msgid "Grant Admin Access"
+msgstr "Grant Admin Access"
+
+msgid "Revoke Access Confirm"
+msgstr "Revoke access?"
+
+msgid "User Not Found"
+msgstr "User not found"
+
+msgid "Enter Email Or Select Group"
+msgstr "Enter email or select group"

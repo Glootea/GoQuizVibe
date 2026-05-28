@@ -246,7 +246,7 @@ func ProvideUserGroupService(queries *db.Queries) *permissionsSvc.UserGroupServi
 }
 
 func ProvidePermissionsService(queries *db.Queries) *permissionsSvc.PermissionsService {
-	return permissionsSvc.NewPermissionsService(queries, queries)
+	return permissionsSvc.NewPermissionsService(queries, queries, queries)
 }
 
 func ProvideGroupsHandler(userGroupService *permissionsSvc.UserGroupService, users r.UserRepository, authService *authSvc.AuthService) *permissionsHdl.GroupsHandler {
