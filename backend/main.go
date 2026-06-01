@@ -154,10 +154,18 @@ func main() {
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap
 	requiredRoleMiddleware := app.RequireRoleMiddleware.Wrap
+	requireAssetOwnerMiddleware := app.RequireAssetOwnerMiddleware.Wrap
 	compressionMiddleware := app.CompressionMiddleware.Wrap
 	commonHeadersMiddleware := app.CommonHeadersMiddleware.Wrap
 	localeMiddleware := app.LocaleMiddleware.Wrap
 	metricsMiddleware := middleware.NewMetricsMiddleware().Wrap
+
+	requiresAssetOwner := func(method, pattern string) bool {
+		if !strings.HasPrefix(pattern, "/admin/assets/{type}/{id}/") {
+			return false
+		}
+		return !(method == "GET" && pattern == "/admin/assets/{type}/{id}/permissions")
+	}
 
 	wrapRoute := func(r Route) http.HandlerFunc {
 		wrapped := wrapHandler(r.Handler)
@@ -165,6 +173,9 @@ func main() {
 
 		} else if strings.HasPrefix(r.Pattern, "/admin") {
 			wrapped = requiredRoleMiddleware(wrapped)
+			if requiresAssetOwner(r.Method, r.Pattern) {
+				wrapped = requireAssetOwnerMiddleware(wrapped)
+			}
 		} else {
 			wrapped = requireAuthMiddleware(wrapped)
 		}

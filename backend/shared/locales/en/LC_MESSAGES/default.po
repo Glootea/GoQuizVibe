@@ -916,6 +916,9 @@ msgstr "You can edit"
 msgid "You can view"
 msgstr "You can view"
 
+msgid "You do not have permission to manage this asset"
+msgstr "You do not have permission to manage this asset"
+
 # Student Access
 
 msgid "Student Access"
