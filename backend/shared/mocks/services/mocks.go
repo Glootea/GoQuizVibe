@@ -215,6 +215,21 @@ func (mr *MockQuizRepositoryMockRecorder) GetQuizzesForUser(ctx, params any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuizzesForUser", reflect.TypeOf((*MockQuizRepository)(nil).GetQuizzesForUser), ctx, params)
 }
 
+// GetQuizzesForStudent mocks base method.
+func (m *MockQuizRepository) GetQuizzesForStudent(ctx context.Context, params db.GetQuizzesForStudentParams) ([]db.Quiz, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetQuizzesForStudent", ctx, params)
+	ret0, _ := ret[0].([]db.Quiz)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetQuizzesForStudent indicates an expected call of GetQuizzesForStudent.
+func (mr *MockQuizRepositoryMockRecorder) GetQuizzesForStudent(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuizzesForStudent", reflect.TypeOf((*MockQuizRepository)(nil).GetQuizzesForStudent), ctx, params)
+}
+
 // UpdateQuiz mocks base method.
 func (m *MockQuizRepository) UpdateQuiz(ctx context.Context, params db.UpdateQuizParams) (db.Quiz, error) {
 	m.ctrl.T.Helper()
@@ -242,6 +257,20 @@ func (m *MockQuizRepository) UpdateQuizStatus(ctx context.Context, params db.Upd
 func (mr *MockQuizRepositoryMockRecorder) UpdateQuizStatus(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuizStatus", reflect.TypeOf((*MockQuizRepository)(nil).UpdateQuizStatus), ctx, params)
+}
+
+// UpdateQuizStudentPermission mocks base method.
+func (m *MockQuizRepository) UpdateQuizStudentPermission(ctx context.Context, params db.UpdateQuizStudentPermissionParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateQuizStudentPermission", ctx, params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateQuizStudentPermission indicates an expected call of UpdateQuizStudentPermission.
+func (mr *MockQuizRepositoryMockRecorder) UpdateQuizStudentPermission(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuizStudentPermission", reflect.TypeOf((*MockQuizRepository)(nil).UpdateQuizStudentPermission), ctx, params)
 }
 
 // MockQuestionRepository is a mock of QuestionRepository interface.
@@ -841,6 +870,21 @@ func (mr *MockLearningMaterialRepositoryMockRecorder) GetLearningMaterialsForUse
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLearningMaterialsForUser", reflect.TypeOf((*MockLearningMaterialRepository)(nil).GetLearningMaterialsForUser), ctx, params)
 }
 
+// GetLearningMaterialsForStudent mocks base method.
+func (m *MockLearningMaterialRepository) GetLearningMaterialsForStudent(ctx context.Context, params db.GetLearningMaterialsForStudentParams) ([]db.LearningMaterial, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLearningMaterialsForStudent", ctx, params)
+	ret0, _ := ret[0].([]db.LearningMaterial)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLearningMaterialsForStudent indicates an expected call of GetLearningMaterialsForStudent.
+func (mr *MockLearningMaterialRepositoryMockRecorder) GetLearningMaterialsForStudent(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLearningMaterialsForStudent", reflect.TypeOf((*MockLearningMaterialRepository)(nil).GetLearningMaterialsForStudent), ctx, params)
+}
+
 // GetRecentLearningMaterials mocks base method.
 func (m *MockLearningMaterialRepository) GetRecentLearningMaterials(ctx context.Context, limit int32) ([]db.LearningMaterial, error) {
 	m.ctrl.T.Helper()
@@ -869,6 +913,20 @@ func (m *MockLearningMaterialRepository) UpdateLearningMaterial(ctx context.Cont
 func (mr *MockLearningMaterialRepositoryMockRecorder) UpdateLearningMaterial(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLearningMaterial", reflect.TypeOf((*MockLearningMaterialRepository)(nil).UpdateLearningMaterial), ctx, params)
+}
+
+// UpdateLearningMaterialStudentPermission mocks base method.
+func (m *MockLearningMaterialRepository) UpdateLearningMaterialStudentPermission(ctx context.Context, params db.UpdateLearningMaterialStudentPermissionParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLearningMaterialStudentPermission", ctx, params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLearningMaterialStudentPermission indicates an expected call of UpdateLearningMaterialStudentPermission.
+func (mr *MockLearningMaterialRepositoryMockRecorder) UpdateLearningMaterialStudentPermission(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLearningMaterialStudentPermission", reflect.TypeOf((*MockLearningMaterialRepository)(nil).UpdateLearningMaterialStudentPermission), ctx, params)
 }
 
 // MockUserGroupRepository is a mock of UserGroupRepository interface.
@@ -997,6 +1055,21 @@ func (m *MockUserGroupRepository) GetUserGroupsByAdmin(ctx context.Context, user
 func (mr *MockUserGroupRepositoryMockRecorder) GetUserGroupsByAdmin(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGroupsByAdmin", reflect.TypeOf((*MockUserGroupRepository)(nil).GetUserGroupsByAdmin), ctx, userID)
+}
+
+// GetUserGroupsForStudent mocks base method.
+func (m *MockUserGroupRepository) GetUserGroupsForStudent(ctx context.Context, userID uuid.UUID) ([]db.UserGroup, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserGroupsForStudent", ctx, userID)
+	ret0, _ := ret[0].([]db.UserGroup)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserGroupsForStudent indicates an expected call of GetUserGroupsForStudent.
+func (mr *MockUserGroupRepositoryMockRecorder) GetUserGroupsForStudent(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGroupsForStudent", reflect.TypeOf((*MockUserGroupRepository)(nil).GetUserGroupsForStudent), ctx, userID)
 }
 
 // GetUserRoleInGroup mocks base method.
@@ -1228,4 +1301,72 @@ func (m *MockAssetPermissionRepository) SetOwnerPermission(ctx context.Context, 
 func (mr *MockAssetPermissionRepositoryMockRecorder) SetOwnerPermission(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOwnerPermission", reflect.TypeOf((*MockAssetPermissionRepository)(nil).SetOwnerPermission), ctx, params)
+}
+
+// MockStudentAccessRepository is a mock of StudentAccessRepository interface.
+type MockStudentAccessRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockStudentAccessRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockStudentAccessRepositoryMockRecorder is the mock recorder for MockStudentAccessRepository.
+type MockStudentAccessRepositoryMockRecorder struct {
+	mock *MockStudentAccessRepository
+}
+
+// NewMockStudentAccessRepository creates a new mock instance.
+func NewMockStudentAccessRepository(ctrl *gomock.Controller) *MockStudentAccessRepository {
+	mock := &MockStudentAccessRepository{ctrl: ctrl}
+	mock.recorder = &MockStudentAccessRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockStudentAccessRepository) EXPECT() *MockStudentAccessRepositoryMockRecorder {
+	return m.recorder
+}
+
+// GetStudentAccessList mocks base method.
+func (m *MockStudentAccessRepository) GetStudentAccessList(ctx context.Context, params db.GetStudentAccessListParams) ([]db.GetStudentAccessListRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudentAccessList", ctx, params)
+	ret0, _ := ret[0].([]db.GetStudentAccessListRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudentAccessList indicates an expected call of GetStudentAccessList.
+func (mr *MockStudentAccessRepositoryMockRecorder) GetStudentAccessList(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudentAccessList", reflect.TypeOf((*MockStudentAccessRepository)(nil).GetStudentAccessList), ctx, params)
+}
+
+// GrantStudentAccess mocks base method.
+func (m *MockStudentAccessRepository) GrantStudentAccess(ctx context.Context, params db.GrantStudentAccessParams) (db.StudentAccess, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GrantStudentAccess", ctx, params)
+	ret0, _ := ret[0].(db.StudentAccess)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GrantStudentAccess indicates an expected call of GrantStudentAccess.
+func (mr *MockStudentAccessRepositoryMockRecorder) GrantStudentAccess(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GrantStudentAccess", reflect.TypeOf((*MockStudentAccessRepository)(nil).GrantStudentAccess), ctx, params)
+}
+
+// RevokeStudentAccess mocks base method.
+func (m *MockStudentAccessRepository) RevokeStudentAccess(ctx context.Context, params db.RevokeStudentAccessParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RevokeStudentAccess", ctx, params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RevokeStudentAccess indicates an expected call of RevokeStudentAccess.
+func (mr *MockStudentAccessRepositoryMockRecorder) RevokeStudentAccess(ctx, params any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeStudentAccess", reflect.TypeOf((*MockStudentAccessRepository)(nil).RevokeStudentAccess), ctx, params)
 }

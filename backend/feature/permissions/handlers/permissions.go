@@ -17,8 +17,6 @@ import (
 	r "github.com/goquizvibe/backend/shared/repositories"
 )
 
-var errUserNotFound = errors.New("user not found")
-
 type PermissionsHandler struct {
 	permService  *services.PermissionsService
 	groupService *services.UserGroupService
@@ -279,7 +277,7 @@ func (h *PermissionsHandler) RevokePermission(w http.ResponseWriter, r *http.Req
 	permissionStr := r.URL.Query().Get("permission")
 
 	if recipientIDStr == "" {
-		return ce.WithHTTPStatus(errors.New("recipient_id is required: recipient_type=" + recipientTypeStr + ", permission=" + permissionStr), http.StatusBadRequest)
+		return ce.WithHTTPStatus(errors.New("recipient_id is required: recipient_type="+recipientTypeStr+", permission="+permissionStr), http.StatusBadRequest)
 	}
 
 	recipientID, err := uuid.Parse(recipientIDStr)
@@ -484,16 +482,16 @@ func (h *PermissionsHandler) UpdateStudentPermission(w http.ResponseWriter, r *h
 		_, err = h.quizRepo.GetQuizByID(r.Context(), assetID)
 		if err == nil {
 			errUpdate = h.quizRepo.UpdateQuizStudentPermission(r.Context(), db.UpdateQuizStudentPermissionParams{
-				ID:                  assetID,
-				StudentPermission:   studentPermission,
+				ID:                assetID,
+				StudentPermission: studentPermission,
 			})
 		}
 	case "learning_material":
 		_, err = h.materialRepo.GetLearningMaterialByID(r.Context(), assetID)
 		if err == nil {
 			errUpdate = h.materialRepo.UpdateLearningMaterialStudentPermission(r.Context(), db.UpdateLearningMaterialStudentPermissionParams{
-				ID:                  assetID,
-				StudentPermission:   studentPermission,
+				ID:                assetID,
+				StudentPermission: studentPermission,
 			})
 		}
 	}

@@ -34,8 +34,6 @@ func serviceFunc(args ArgsType) (value, error) {
 ## База данных
 PostgreSQL + sqlc (`go tool sqlc generate`)
 
-## Внедрение зависимостей
-Wire (github.com/goforj/wire/cmd/wire), поддерживаемый аналог https://github.com/google/wire
 
 ## Деление на слои
 - handlers - обработка HTTP запросов, чтение аргументов, запись body и headers, делегирование остальной работы services

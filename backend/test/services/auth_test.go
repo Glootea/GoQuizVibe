@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/goquizvibe/backend/feature/auth/services"
 	"github.com/goquizvibe/backend/shared/db"
-	mocks "github.com/goquizvibe/backend/shared/mocks/services"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,13 +21,10 @@ func TestAuthService_Register(t *testing.T) {
 
 	t.Run("valid registration", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
-
-		mockUsers.EXPECT().CreateUser(ctx, gomock.Any()).Return(db.User{
+		m.Users.EXPECT().CreateUser(ctx, gomock.Any()).Return(db.User{
 			ID:    uuid.New(),
 			Name:  "Test User",
 			Email: "test@example.com",
@@ -46,13 +42,10 @@ func TestAuthService_Register(t *testing.T) {
 
 	t.Run("database error on create", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
-
-		mockUsers.EXPECT().CreateUser(ctx, gomock.Any()).Return(db.User{}, errors.New("database error"))
+		m.Users.EXPECT().CreateUser(ctx, gomock.Any()).Return(db.User{}, errors.New("database error"))
 
 		_, err := svc.Register(ctx, "Test", "test@example.com", "password123", db.RoleStudent)
 		if err == nil {
@@ -68,18 +61,15 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("valid login", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("correctpassword"), bcrypt.DefaultCost)
 		if err != nil {
 			t.Fatalf("failed to hash password: %v", err)
 		}
 
-		mockUsers.EXPECT().GetUserByEmail(ctx, "test@example.com").Return(db.User{
+		m.Users.EXPECT().GetUserByEmail(ctx, "test@example.com").Return(db.User{
 			ID:           uuid.New(),
 			Name:         "Test User",
 			Email:        "test@example.com",
@@ -98,13 +88,10 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("user not found", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
-
-		mockUsers.EXPECT().GetUserByEmail(ctx, "notfound@example.com").Return(db.User{}, errors.New("sql: no rows"))
+		m.Users.EXPECT().GetUserByEmail(ctx, "notfound@example.com").Return(db.User{}, errors.New("sql: no rows"))
 
 		_, err := svc.Login(ctx, "notfound@example.com", "password123")
 		if err == nil {
@@ -117,14 +104,11 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("wrong password", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("correctpassword"), bcrypt.DefaultCost)
-		mockUsers.EXPECT().GetUserByEmail(ctx, "test@example.com").Return(db.User{
+		m.Users.EXPECT().GetUserByEmail(ctx, "test@example.com").Return(db.User{
 			ID:           uuid.New(),
 			Email:        "test@example.com",
 			PasswordHash: string(hashedPassword),
@@ -147,11 +131,8 @@ func TestAuthService_GenerateToken(t *testing.T) {
 
 	t.Run("valid token generation", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		user := &db.User{
 			ID:    uuid.New(),
@@ -186,11 +167,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("invalid token", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		_, err := svc.ValidateToken("invalid-token")
 		if err == nil {
@@ -200,11 +178,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("expired token", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, -time.Hour)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, -time.Hour)
 
 		user := &db.User{
 			ID:    uuid.New(),
@@ -222,13 +197,10 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("wrong secret", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers1 := mocks.NewMockUserRepository(ctrl)
-		mockUsers2 := mocks.NewMockUserRepository(ctrl)
-		svc1 := services.NewAuthService(mockUsers1, "secret1", exp)
-		svc2 := services.NewAuthService(mockUsers2, "secret2", exp)
+		m1 := NewAuthServiceMocks(t)
+		m2 := NewAuthServiceMocks(t)
+		svc1 := services.NewAuthService(m1.Users, "secret1", exp)
+		svc2 := services.NewAuthService(m2.Users, "secret2", exp)
 
 		user := &db.User{
 			ID:    uuid.New(),
@@ -246,11 +218,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("missing user_id claim", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		tokenStr, _ := svc.GenerateToken(&db.User{ID: uuid.New(), Email: "test@example.com", Role: db.RoleStudent})
 		token, _ := jwt.Parse(tokenStr, nil)
@@ -267,11 +236,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("invalid UUID in user_id claim", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		tokenStr, _ := svc.GenerateToken(&db.User{ID: uuid.New(), Email: "test@example.com", Role: db.RoleStudent})
 		token, _ := jwt.Parse(tokenStr, nil)
@@ -288,11 +254,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("missing email claim", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		tokenStr, _ := svc.GenerateToken(&db.User{ID: uuid.New(), Email: "test@example.com", Role: db.RoleStudent})
 		token, _ := jwt.Parse(tokenStr, nil)
@@ -309,11 +272,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 
 	t.Run("missing role claim", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockUsers := mocks.NewMockUserRepository(ctrl)
-		svc := services.NewAuthService(mockUsers, secret, exp)
+		m := NewAuthServiceMocks(t)
+		svc := services.NewAuthService(m.Users, secret, exp)
 
 		tokenStr, _ := svc.GenerateToken(&db.User{ID: uuid.New(), Email: "test@example.com", Role: db.RoleStudent})
 		token, _ := jwt.Parse(tokenStr, nil)

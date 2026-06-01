@@ -2,17 +2,15 @@ package services_test
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"testing"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/goquizvibe/backend/shared/db"
 	"github.com/goquizvibe/backend/shared/infrastructure/timeprovider"
 	mocks "github.com/goquizvibe/backend/shared/mocks/services"
+	servicestest "github.com/goquizvibe/backend/shared/mocks/servicestest"
 	"github.com/goquizvibe/backend/shared/models"
 	"go.uber.org/mock/gomock"
 )
@@ -131,266 +129,6 @@ func NewTimeProvider(t time.Time) timeprovider.TimeProvider {
 	return &MockTimeProvider{now: t}
 }
 
-type UserBuilder struct {
-	user db.User
-}
-
-func NewUserBuilder() *UserBuilder {
-	return &UserBuilder{
-		user: db.User{
-			ID:    uuid.New(),
-			Name:  "Test User",
-			Email: "test@example.com",
-			Role:  db.RoleStudent,
-		},
-	}
-}
-
-func (b *UserBuilder) ID(id uuid.UUID) *UserBuilder {
-	b.user.ID = id
-	return b
-}
-
-func (b *UserBuilder) Email(email string) *UserBuilder {
-	b.user.Email = email
-	return b
-}
-
-func (b *UserBuilder) Name(name string) *UserBuilder {
-	b.user.Name = name
-	return b
-}
-
-func (b *UserBuilder) Role(role db.Role) *UserBuilder {
-	b.user.Role = role
-	return b
-}
-
-func (b *UserBuilder) PasswordHash(hash string) *UserBuilder {
-	b.user.PasswordHash = hash
-	return b
-}
-
-func (b *UserBuilder) Build() db.User {
-	return b.user
-}
-
-type QuizBuilder struct {
-	quiz db.Quiz
-}
-
-func NewQuizBuilder() *QuizBuilder {
-	return &QuizBuilder{
-		quiz: db.Quiz{
-			ID:               uuid.New(),
-			Title:            "Test Quiz",
-			Description:      "Test Description",
-			Subject:          "Math",
-			Grade:            5,
-			TimeLimit:        300,
-			QuestionPoolSize: 0,
-			Status:           db.QuizStatusAvailable,
-		},
-	}
-}
-
-func (b *QuizBuilder) ID(id uuid.UUID) *QuizBuilder {
-	b.quiz.ID = id
-	return b
-}
-
-func (b *QuizBuilder) Title(title string) *QuizBuilder {
-	b.quiz.Title = title
-	return b
-}
-
-func (b *QuizBuilder) Description(desc string) *QuizBuilder {
-	b.quiz.Description = desc
-	return b
-}
-
-func (b *QuizBuilder) Subject(subject string) *QuizBuilder {
-	b.quiz.Subject = subject
-	return b
-}
-
-func (b *QuizBuilder) Grade(grade int) *QuizBuilder {
-	b.quiz.Grade = grade
-	return b
-}
-
-func (b *QuizBuilder) TimeLimit(seconds int) *QuizBuilder {
-	b.quiz.TimeLimit = seconds
-	return b
-}
-
-func (b *QuizBuilder) PoolSize(size int) *QuizBuilder {
-	b.quiz.QuestionPoolSize = size
-	return b
-}
-
-func (b *QuizBuilder) Status(status db.QuizStatus) *QuizBuilder {
-	b.quiz.Status = status
-	return b
-}
-
-func (b *QuizBuilder) CreatedBy(userID uuid.UUID) *QuizBuilder {
-	b.quiz.CreatedBy = userID
-	return b
-}
-
-func (b *QuizBuilder) Build() db.Quiz {
-	return b.quiz
-}
-
-func (b *QuizBuilder) BuildWithQuestions(questions []models.QuestionWithImages) *models.QuizWithQuestionsAndImages {
-	return &models.QuizWithQuestionsAndImages{
-		Quiz:      b.quiz,
-		Questions: questions,
-	}
-}
-
-type QuestionBuilder struct {
-	question db.Question
-	options  []string
-	images   []db.QuestionImage
-}
-
-func NewQuestionBuilder() *QuestionBuilder {
-	return &QuestionBuilder{
-		question: db.Question{
-			ID:            uuid.New(),
-			Text:          "Test Question",
-			Type:          db.QuestionTypeChoice,
-			CorrectAnswer: "A",
-			Points:        10,
-		},
-		options: []string{"A", "B", "C", "D"},
-	}
-}
-
-func (b *QuestionBuilder) ID(id uuid.UUID) *QuestionBuilder {
-	b.question.ID = id
-	return b
-}
-
-func (b *QuestionBuilder) QuizID(quizID uuid.UUID) *QuestionBuilder {
-	b.question.QuizID = quizID
-	return b
-}
-
-func (b *QuestionBuilder) Text(text string) *QuestionBuilder {
-	b.question.Text = text
-	return b
-}
-
-func (b *QuestionBuilder) Type(qType db.QuestionType) *QuestionBuilder {
-	b.question.Type = qType
-	return b
-}
-
-func (b *QuestionBuilder) Options(opts []string) *QuestionBuilder {
-	b.options = opts
-	optsJSON, _ := json.Marshal(opts)
-	b.question.Options = optsJSON
-	return b
-}
-
-func (b *QuestionBuilder) CorrectAnswer(answer string) *QuestionBuilder {
-	b.question.CorrectAnswer = answer
-	return b
-}
-
-func (b *QuestionBuilder) Explanation(exp string) *QuestionBuilder {
-	b.question.Explanation = exp
-	return b
-}
-
-func (b *QuestionBuilder) Points(points int) *QuestionBuilder {
-	b.question.Points = points
-	return b
-}
-
-func (b *QuestionBuilder) Image(url string) *QuestionBuilder {
-	b.images = append(b.images, db.QuestionImage{
-		ID:         uuid.New(),
-		QuestionID: b.question.ID,
-		Url:        url,
-	})
-	return b
-}
-
-func (b *QuestionBuilder) Build() db.Question {
-	return b.question
-}
-
-func (b *QuestionBuilder) WithImages() models.QuestionWithImages {
-	return models.QuestionWithImages{
-		Question: b.question,
-		Images:   b.images,
-	}
-}
-
-type AttemptBuilder struct {
-	attempt db.QuizAttempt
-}
-
-func NewAttemptBuilder() *AttemptBuilder {
-	return &AttemptBuilder{
-		attempt: db.QuizAttempt{
-			ID:       uuid.New(),
-			UserID:   uuid.New(),
-			QuizID:   uuid.New(),
-			Score:    0,
-			MaxScore: 100,
-		},
-	}
-}
-
-func (b *AttemptBuilder) ID(id uuid.UUID) *AttemptBuilder {
-	b.attempt.ID = id
-	return b
-}
-
-func (b *AttemptBuilder) UserID(userID uuid.UUID) *AttemptBuilder {
-	b.attempt.UserID = userID
-	return b
-}
-
-func (b *AttemptBuilder) QuizID(quizID uuid.UUID) *AttemptBuilder {
-	b.attempt.QuizID = quizID
-	return b
-}
-
-func (b *AttemptBuilder) Score(score int) *AttemptBuilder {
-	b.attempt.Score = score
-	return b
-}
-
-func (b *AttemptBuilder) MaxScore(maxScore int) *AttemptBuilder {
-	b.attempt.MaxScore = maxScore
-	return b
-}
-
-func (b *AttemptBuilder) StartedAt(t time.Time) *AttemptBuilder {
-	b.attempt.StartedAt = t
-	return b
-}
-
-func (b *AttemptBuilder) CompletedAt(t time.Time) *AttemptBuilder {
-	b.attempt.CompletedAt = sql.NullTime{Time: t, Valid: true}
-	return b
-}
-
-func (b *AttemptBuilder) NotCompleted() *AttemptBuilder {
-	b.attempt.CompletedAt = sql.NullTime{}
-	return b
-}
-
-func (b *AttemptBuilder) Build() db.QuizAttempt {
-	return b.attempt
-}
-
 func MustParseTime(layout, value string) time.Time {
 	t, err := time.Parse(layout, value)
 	if err != nil {
@@ -419,96 +157,167 @@ func NewRequestWithCookie(method, urlStr string, cookie *http.Cookie) *http.Requ
 	return req
 }
 
-func ExpectQuizSetup(mockQuizzes *mocks.MockQuizRepository, mockQuestions *mocks.MockQuestionRepository, mockImages *mocks.MockImageRepository, quiz *models.QuizWithQuestionsAndImages) {
-	mockQuizzes.EXPECT().GetQuizByID(gomock.Any(), quiz.Quiz.ID).Return(quiz.Quiz, nil).AnyTimes()
-	if len(quiz.Questions) > 0 {
-		q := quiz.Questions[0]
-		mockQuestions.EXPECT().GetQuestionsByQuizID(gomock.Any(), quiz.Quiz.ID).Return([]db.Question{q.Question}, nil).AnyTimes()
-		mockImages.EXPECT().GetImagesByQuestionID(gomock.Any(), q.ID).Return(q.Images, nil).AnyTimes()
+type AuthServiceMocks struct {
+	Users *mocks.MockUserRepository
+}
+
+func NewAuthServiceMocks(t *testing.T) *AuthServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &AuthServiceMocks{
+		Users: mocks.NewMockUserRepository(ctrl),
 	}
 }
 
-type SessionBuilder struct {
-	session db.QuizSession
+func gomockController(t *testing.T) *gomock.Controller {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return ctrl
 }
 
-func NewSessionBuilder() *SessionBuilder {
-	return &SessionBuilder{
-		session: db.QuizSession{
-			ID:           uuid.New(),
-			UserID:       uuid.New(),
-			QuizID:       uuid.New(),
-			AttemptID:    uuid.New(),
-			CurrentIndex: 0,
-			Answers:      nil,
-			CreatedAt:    time.Now(),
-		},
+func gomockAny() gomock.Matcher {
+	return gomock.Any()
+}
+
+type GamificationServiceMocks struct {
+	Attempts *mocks.MockAttemptRepository
+	Stats    *mocks.MockStatsRepository
+}
+
+func NewGamificationServiceMocks(t *testing.T) *GamificationServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &GamificationServiceMocks{
+		Attempts: mocks.NewMockAttemptRepository(ctrl),
+		Stats:    mocks.NewMockStatsRepository(ctrl),
 	}
 }
 
-func (b *SessionBuilder) ID(id uuid.UUID) *SessionBuilder {
-	b.session.ID = id
-	return b
+type PermissionsServiceMocks struct {
+	Perms         *mocks.MockAssetPermissionRepository
+	Groups        *mocks.MockUserGroupRepository
+	StudentAccess *mocks.MockStudentAccessRepository
 }
 
-func (b *SessionBuilder) UserID(userID uuid.UUID) *SessionBuilder {
-	b.session.UserID = userID
-	return b
-}
-
-func (b *SessionBuilder) QuizID(quizID uuid.UUID) *SessionBuilder {
-	b.session.QuizID = quizID
-	return b
-}
-
-func (b *SessionBuilder) AttemptID(attemptID uuid.UUID) *SessionBuilder {
-	b.session.AttemptID = attemptID
-	return b
-}
-
-func (b *SessionBuilder) CurrentIndex(index int) *SessionBuilder {
-	b.session.CurrentIndex = index
-	return b
-}
-
-func (b *SessionBuilder) CreatedAt(t time.Time) *SessionBuilder {
-	b.session.CreatedAt = t
-	return b
-}
-
-func (b *SessionBuilder) Build() db.QuizSession {
-	return b.session
-}
-
-type StatsBuilder struct {
-	row db.GetUserStatsRow
-}
-
-func NewStatsBuilder() *StatsBuilder {
-	return &StatsBuilder{
-		row: db.GetUserStatsRow{
-			TotalXp:    0,
-			CorrectCnt: 0,
-			WrongCnt:   0,
-		},
+func NewPermissionsServiceMocks(t *testing.T) *PermissionsServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &PermissionsServiceMocks{
+		Perms:         mocks.NewMockAssetPermissionRepository(ctrl),
+		Groups:        mocks.NewMockUserGroupRepository(ctrl),
+		StudentAccess: mocks.NewMockStudentAccessRepository(ctrl),
 	}
 }
 
-func (b *StatsBuilder) XP(xp int64) *StatsBuilder {
-	b.row.TotalXp = xp
-	return b
+type QuizServiceMocks struct {
+	Quizzes   *mocks.MockQuizRepository
+	Questions *mocks.MockQuestionRepository
+	Images    *mocks.MockImageRepository
+	Attempts  *mocks.MockAttemptRepository
+	Groups    *mocks.MockUserGroupRepository
 }
 
-func (b *StatsBuilder) Correct(count int64) *StatsBuilder {
-	b.row.CorrectCnt = count
-	return b
+func NewQuizServiceMocks(t *testing.T) *QuizServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &QuizServiceMocks{
+		Quizzes:   mocks.NewMockQuizRepository(ctrl),
+		Questions: mocks.NewMockQuestionRepository(ctrl),
+		Images:    mocks.NewMockImageRepository(ctrl),
+		Attempts:  mocks.NewMockAttemptRepository(ctrl),
+		Groups:    mocks.NewMockUserGroupRepository(ctrl),
+	}
 }
 
-func (b *StatsBuilder) Wrong(count int64) *StatsBuilder {
-	b.row.WrongCnt = count
-	return b
+type QuizSessionServiceMocks struct {
+	Attempts  *mocks.MockAttemptRepository
+	Quizzes   *mocks.MockQuizRepository
+	Questions *mocks.MockQuestionRepository
+	Images    *mocks.MockImageRepository
+	Users     *mocks.MockUserRepository
+	Stats     *mocks.MockStatsRepository
 }
 
-func (b *StatsBuilder) Build() db.GetUserStatsRow {
-	return b.row
+func NewQuizSessionServiceMocks(t *testing.T) *QuizSessionServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &QuizSessionServiceMocks{
+		Attempts:  mocks.NewMockAttemptRepository(ctrl),
+		Quizzes:   mocks.NewMockQuizRepository(ctrl),
+		Questions: mocks.NewMockQuestionRepository(ctrl),
+		Images:    mocks.NewMockImageRepository(ctrl),
+		Users:     mocks.NewMockUserRepository(ctrl),
+		Stats:     mocks.NewMockStatsRepository(ctrl),
+	}
+}
+
+type DashboardServiceMocks struct {
+	Users     *mocks.MockUserRepository
+	Quizzes   *mocks.MockQuizRepository
+	Questions *mocks.MockQuestionRepository
+	Images    *mocks.MockImageRepository
+	Attempts  *mocks.MockAttemptRepository
+	Stats     *mocks.MockStatsRepository
+	Groups    *mocks.MockUserGroupRepository
+}
+
+func NewDashboardServiceMocks(t *testing.T) *DashboardServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &DashboardServiceMocks{
+		Users:     mocks.NewMockUserRepository(ctrl),
+		Quizzes:   mocks.NewMockQuizRepository(ctrl),
+		Questions: mocks.NewMockQuestionRepository(ctrl),
+		Images:    mocks.NewMockImageRepository(ctrl),
+		Attempts:  mocks.NewMockAttemptRepository(ctrl),
+		Stats:     mocks.NewMockStatsRepository(ctrl),
+		Groups:    mocks.NewMockUserGroupRepository(ctrl),
+	}
+}
+
+type AdminServiceMocks struct {
+	Users       *mocks.MockUserRepository
+	Quizzes     *mocks.MockQuizRepository
+	Questions   *mocks.MockQuestionRepository
+	Images      *mocks.MockImageRepository
+	Attempts    *mocks.MockAttemptRepository
+	Stats       *mocks.MockStatsRepository
+	Materials   *mocks.MockLearningMaterialRepository
+	Permissions *mocks.MockAssetPermissionRepository
+}
+
+func NewAdminServiceMocks(t *testing.T) *AdminServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &AdminServiceMocks{
+		Users:       mocks.NewMockUserRepository(ctrl),
+		Quizzes:     mocks.NewMockQuizRepository(ctrl),
+		Questions:   mocks.NewMockQuestionRepository(ctrl),
+		Images:      mocks.NewMockImageRepository(ctrl),
+		Attempts:    mocks.NewMockAttemptRepository(ctrl),
+		Stats:       mocks.NewMockStatsRepository(ctrl),
+		Materials:   mocks.NewMockLearningMaterialRepository(ctrl),
+		Permissions: mocks.NewMockAssetPermissionRepository(ctrl),
+	}
+}
+
+type StorageServiceMocks struct {
+	Minio *servicestest.MockMinioClient
+}
+
+func NewStorageServiceMocks(t *testing.T) *StorageServiceMocks {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	return &StorageServiceMocks{
+		Minio: servicestest.NewMockMinioClient(ctrl),
+	}
 }

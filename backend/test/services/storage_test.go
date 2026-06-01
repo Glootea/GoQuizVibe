@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"mime/multipart"
-
 	"github.com/goquizvibe/backend/shared/config"
 	storage "github.com/goquizvibe/backend/shared/infrastructure/storage"
-	servicestest "github.com/goquizvibe/backend/shared/mocks/servicestest"
 	"go.uber.org/mock/gomock"
 )
 
@@ -22,16 +20,13 @@ func TestStorageService_UploadImage(t *testing.T) {
 
 	t.Run("successful upload", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
 		header := createTestFileHeaderForStorage(t, "test.jpg", "image/jpeg")
-		mockClient.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-		mockClient.EXPECT().GetPresignedURL(ctx, gomock.Any(), 24*time.Hour).Return("http://localhost:9000/bucket/object", nil)
+		sm.Minio.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		sm.Minio.EXPECT().GetPresignedURL(ctx, gomock.Any(), 24*time.Hour).Return("http://localhost:9000/bucket/object", nil)
 
 		result, err := svc.UploadImage(ctx, header)
 		if err != nil {
@@ -44,15 +39,12 @@ func TestStorageService_UploadImage(t *testing.T) {
 
 	t.Run("PutObject error", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
 		header := createTestFileHeaderForStorage(t, "test.jpg", "image/jpeg")
-		mockClient.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("upload failed"))
+		sm.Minio.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("upload failed"))
 
 		_, err := svc.UploadImage(ctx, header)
 		if err == nil {
@@ -62,16 +54,13 @@ func TestStorageService_UploadImage(t *testing.T) {
 
 	t.Run("default content type", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
 		header := createTestFileHeaderForStorage(t, "test.jpg", "")
-		mockClient.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), "application/octet-stream").Return(nil)
-		mockClient.EXPECT().GetPresignedURL(ctx, gomock.Any(), 24*time.Hour).Return("http://localhost:9000/bucket/object", nil)
+		sm.Minio.EXPECT().PutObject(ctx, gomock.Any(), gomock.Any(), "application/octet-stream").Return(nil)
+		sm.Minio.EXPECT().GetPresignedURL(ctx, gomock.Any(), 24*time.Hour).Return("http://localhost:9000/bucket/object", nil)
 
 		_, err := svc.UploadImage(ctx, header)
 		if err != nil {
@@ -85,14 +74,11 @@ func TestStorageService_DeleteImage(t *testing.T) {
 
 	t.Run("successful delete", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().RemoveObject(ctx, "object-name").Return(nil)
+		sm.Minio.EXPECT().RemoveObject(ctx, "object-name").Return(nil)
 
 		err := svc.DeleteImage(ctx, "object-name")
 		if err != nil {
@@ -102,14 +88,11 @@ func TestStorageService_DeleteImage(t *testing.T) {
 
 	t.Run("RemoveObject error", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().RemoveObject(ctx, "object-name").Return(errors.New("delete failed"))
+		sm.Minio.EXPECT().RemoveObject(ctx, "object-name").Return(errors.New("delete failed"))
 
 		err := svc.DeleteImage(ctx, "object-name")
 		if err == nil {
@@ -121,14 +104,11 @@ func TestStorageService_DeleteImage(t *testing.T) {
 func TestStorageService_GetPresignedURL(t *testing.T) {
 	t.Run("presigned URL success", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().GetPresignedURL(context.Background(), "object-name", 24*time.Hour).Return("http://localhost:9000/bucket/object-name", nil)
+		sm.Minio.EXPECT().GetPresignedURL(context.Background(), "object-name", 24*time.Hour).Return("http://localhost:9000/bucket/object-name", nil)
 
 		result := svc.GetPresignedURL("object-name")
 		if result == "" {
@@ -138,15 +118,12 @@ func TestStorageService_GetPresignedURL(t *testing.T) {
 
 	t.Run("presigned URL error fallback", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().GetPresignedURL(context.Background(), "object-name", 24*time.Hour).Return("", errors.New("presign error"))
-		mockClient.EXPECT().Endpoint().Return("localhost:9000")
+		sm.Minio.EXPECT().GetPresignedURL(context.Background(), "object-name", 24*time.Hour).Return("", errors.New("presign error"))
+		sm.Minio.EXPECT().Endpoint().Return("localhost:9000")
 
 		result := svc.GetPresignedURL("object-name")
 		expected := "http://localhost:9000/test-bucket/object-name"
@@ -161,15 +138,12 @@ func TestStorageService_EnsureBucket(t *testing.T) {
 
 	t.Run("bucket already exists", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().EnsureBucket(ctx).Return(nil)
-		mockClient.EXPECT().SetBucketPolicy(ctx, "test-bucket", gomock.Any()).Return(nil)
+		sm.Minio.EXPECT().EnsureBucket(ctx).Return(nil)
+		sm.Minio.EXPECT().SetBucketPolicy(ctx, "test-bucket", gomock.Any()).Return(nil)
 
 		err := svc.EnsureBucket(ctx)
 		if err != nil {
@@ -179,14 +153,11 @@ func TestStorageService_EnsureBucket(t *testing.T) {
 
 	t.Run("EnsureBucket error", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().EnsureBucket(ctx).Return(errors.New("bucket check failed"))
+		sm.Minio.EXPECT().EnsureBucket(ctx).Return(errors.New("bucket check failed"))
 
 		err := svc.EnsureBucket(ctx)
 		if err == nil {
@@ -196,15 +167,12 @@ func TestStorageService_EnsureBucket(t *testing.T) {
 
 	t.Run("SetBucketPolicy error", func(t *testing.T) {
 		t.Parallel()
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		sm := NewStorageServiceMocks(t)
+		sm.Minio.EXPECT().Bucket().Return("test-bucket")
+		svc := storage.NewStorageService(sm.Minio)
 
-		mockClient := servicestest.NewMockMinioClient(ctrl)
-		mockClient.EXPECT().Bucket().Return("test-bucket")
-		svc := storage.NewStorageService(mockClient)
-
-		mockClient.EXPECT().EnsureBucket(ctx).Return(nil)
-		mockClient.EXPECT().SetBucketPolicy(ctx, "test-bucket", gomock.Any()).Return(errors.New("policy failed"))
+		sm.Minio.EXPECT().EnsureBucket(ctx).Return(nil)
+		sm.Minio.EXPECT().SetBucketPolicy(ctx, "test-bucket", gomock.Any()).Return(errors.New("policy failed"))
 
 		err := svc.EnsureBucket(ctx)
 		if err == nil {

@@ -15,8 +15,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/goforj/wire"
-
 	adminHndl "github.com/goquizvibe/backend/feature/admin/handlers"
 	adminSvc "github.com/goquizvibe/backend/feature/admin/services"
 	authHndl "github.com/goquizvibe/backend/feature/auth/handlers"
@@ -256,53 +254,3 @@ func ProvideGroupsHandler(userGroupService *permissionsSvc.UserGroupService, use
 func ProvidePermissionsHandler(permissionsService *permissionsSvc.PermissionsService, userGroupService *permissionsSvc.UserGroupService, authService *authSvc.AuthService, queries *db.Queries) *permissionsHdl.PermissionsHandler {
 	return permissionsHdl.NewPermissionsHandler(permissionsService, userGroupService, authService, queries, queries, queries)
 }
-
-var ServiceSet = wire.NewSet(
-	ProvideConfig,
-	ProvideDBPool,
-	ProvideDB,
-	ProvideRedis,
-	ProvideCacheService,
-	ProvideAuthService,
-	ProvideGamificationService,
-	ProvideQuizService,
-	ProvideStorageService,
-	ProvideAdminService,
-	ProvideQuizSessionService,
-	ProvideQuizTimerService,
-	ProvideDashboardService,
-	ProvideLocaleService,
-	ProvideTimeProvider,
-	ProvideTypstGRPCClient,
-	ProvideLearningMaterialService,
-	ProvideUserGroupService,
-	ProvidePermissionsService,
-)
-
-var HandlerSet = wire.NewSet(
-	ProvideAuthHandler,
-	ProvideDashboardHandler,
-	ProvideQuizHandler,
-	ProvideAdminHandler,
-	ProvideEditorHandler,
-	ProvideTypstHandler,
-	ProvidePromptGenerator,
-	ProvideLearningMaterialsHandler,
-	ProvideGroupsHandler,
-	ProvidePermissionsHandler,
-)
-
-var MiddlewareSet = wire.NewSet(
-	ProvideRequireAuthMiddleware,
-	ProvideRequireRoleMiddleware,
-	ProvideCompressionMiddleware,
-	ProvideCommonHeadersMiddleware,
-	ProvideLocaleMiddleware,
-)
-
-var AppSet = wire.NewSet(
-	ServiceSet,
-	HandlerSet,
-	MiddlewareSet,
-	wire.Struct(new(App), "Config", "AuthService", "QuizService", "QuizSessionService", "QuizTimerService", "AdminService", "DashboardService", "GamificationService", "StorageService", "CacheService", "LearningMaterialService", "AuthHandler", "DashboardHandler", "QuizHandler", "AdminHandler", "EditorHandler", "TypstHandler", "RequireAuthMiddleware", "RequireRoleMiddleware", "CompressionMiddleware", "CommonHeadersMiddleware", "LocaleMiddleware", "LocaleService", "UserGroupService", "PermissionsService", "GroupsHandler", "PermissionsHandler"),
-)
