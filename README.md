@@ -1,43 +1,126 @@
 # GoQuizVibe
-Интерактивная платформа для проведения викторин с геймификацией.
+Платформа для обучения и проведения викторин
+
+## Stack
+**Backend**
+- Go, `net/http` + `http.ServeMux` (method-prefixed routing)
+- [Templ](https://templ.guide/) — type-safe HTML-шаблоны
+- [HTMX](https://htmx.org/) — интерактивность без SPA
+- Tailwind CSS + [rustywind](https://github.com/avencera/rustywind) (сортировка классов)
+
+**Хранение и инфраструктура**
+- PostgreSQL 18 + [sqlc](https://sqlc.dev/) (type-safe SQL → Go), миграции — `golang-migrate`
+- MinIO (S3-compatible) — хранение изображений к вопросам
+- Redis 8 — кэш, сессии викторин, таймеры
+- Nginx — reverse proxy
+
+**Микросервисы**
+- `typst` — gRPC-сервис компиляции Typst-разметки в изображения (с интеграцией с MinIO)
+
+**Auth & конфигурация**
+- JWT в HttpOnly cookie (stateless auth)
+- `.env` → `config/config.go`
+- [Wire](https://github.com/google/wire) — внедрение зависимостей
+
+**Локализация**
+- `gettextgocodegen` — генерация type-safe переводов из `.po` файлов (ru/en)
+
+**Наблюдаемость**
+- Prometheus + Grafana + node-exporter
+- Adminer — веб-интерфейс для PostgreSQL
+
+**Контейнеризация**
+- podman-compose / docker-compose
+
+## Features
+- 👥 **Роли:** `teacher` и `student` с разделением доступа
+- 📝 **Викторины** с типами вопросов: `choice` (одиночный/множественный выбор), `open` (свободный ответ), `fill` (заполнение пропусков)
+- 🖼 **Изображения к вопросам** — загрузка в MinIO с предпросмотром в админке
+- 🏆 **Геймификация** — прогресс, достижения, мотивационные механики (`feature/gamification`)
+- 📚 **Учебные материалы** (`feature/learning_materials`) — привязка материалов к викторинам
+- ✏️ **Typst-редактор** — компиляция Typst-разметки в изображения (gRPC-микросервис)
+- 📊 **Дашборд** студента и учителя с историей попыток и статистикой
+- 🌍 **Локализация** интерфейса (ru/en) с авто-определением по `Accept-Language`
+- ⚡ **HTMX-обновления** — partial HTML без перезагрузки страницы
+- 🛡 **Stateless JWT-auth** в HttpOnly cookie
+- 🚦 **Мониторинг** — метрики Prometheus, дашборды Grafana
+
+## Запуск через docker-compose
+
+### 1. Подготовка окружения
+```bash
+# Клонирование
+git clone https://github.com/Glootea/GoQuizVibe.git
+cd GoQuizVibe
+
+# Перенаправление трафика на MinIO (обязательно)
+echo "127.0.0.1 minio" | sudo tee -a /etc/hosts
+```
+
+### 2. Конфигурация `.env`
+Файл `deployment/.env` уже содержит рабочие моковые значения по умолчанию. При необходимости отредактируйте пароли и хосты.
+
+### 3. Запуск инфраструктуры (БД, MinIO, Redis, Typst, мониторинг, Nginx)
+```bash
+cd deployment
+podman compose up -d
+# или: docker compose up -d
+```
+
+Поднимутся контейнеры:
+| Сервис       | Порт  | Назначение                                  |
+|--------------|-------|---------------------------------------------|
+| `db`         | 5432  | PostgreSQL 18                               |
+| `minio`      | 9000  | S3 API                                      |
+| `minio`      | 9001  | MinIO Console (http://localhost:9001)       |
+| `redis`      | 6379  | Кэш/сессии                                  |
+| `typst`      | 9091  | gRPC-микросервис Typst (→ 9090 в контейнере)|
+| `adminer`    | 8081  | Веб-интерфейс PostgreSQL                    |
+| `prometheus` | 9090  | Сбор метрик                                 |
+| `grafana`    | 3000  | Дашборды (admin / admin123)                 |
+| `nginx`      | 80    | Reverse proxy                               |
+
+### 4. Запуск backend (приложение)
+Сервис `server` в compose помечен профилем `with-server` — по умолчанию не стартует. В dev-режиме backend запускается локально:
+```bash
+cd scripts
+make dev        # dc-up + генерация шаблонов/locales + watch
+# или
+make generate   # одноразовая генерация всех ассетов
+make run        # запуск без watcher'ов
+```
+
+Если хотите собрать backend в контейнере:
+```bash
+cd deployment
+podman compose --profile with-server up -d --build server
+# сервер будет доступен на http://localhost:7890
+```
+
+### 5. Полезные команды
+```bash
+# Остановить всё
+make dc-down
+# или
+cd deployment && podman compose down
+
+# Только мониторинг
+make monitoring-up
+make monitoring-down
+
+# Полная очистка (с удалением томов)
+cd deployment && podman compose down -v
+```
 
 Важно: для работы minio нужно перенаправить трафик (в /etc/hosts (macos/linux) вставить `127.0.0.1 minio`)
+
 ## Архитектурные решения
 ### HTML-first с HTMX
 Фронтенд построен на **Templ** (Go-шаблонизатор с type-safety) в сочетании с **HTMX** для интерактивности без SPA-сложности.
-**Почему:** Простой проект — простой стек. Не нужен React/Vue для CRUD-приложения с парой интерактивных элементов. HTMX позволяет обновлять отдельные части страницы (`hx-target`, `hx-swap`) без перезагрузки.
-**Как работает:**
-- Первая загрузка страницы — полный HTML через Templ
-- Последующие взаимодействия (ответ на вопрос, навигация) — HTMX-requests, возвращающие partial HTML
-- Сервер определяет HTMX по заголовку `HX-Request` и решает, какой HTML отдать (полная страница или partial)
-```go
-// handlers/quiz.go:83
-isHtmx := r.Header.Get("HX-Request") == "true"
-if !isHtmx {
-    return pages.QuizPage(data).Render(r.Context(), w)
-}
-return pages.QuestionCard(quiz, index, sessionIDStr).Render(r.Context(), w)
-```
+
 ### SQL-first база данных
 **sqlc** генерирует type-safe Go-код из SQL-запросов. Запросы живут в `sql/queries/*.sql`, код генерируется в `db/*.sql.go`.
-**Почему:** 
-- SQL проще читать и поддерживать, чем ORM-построение цепочек
-- Генерённый код гарантирует соответствие запросов схеме
-- Нет проблемы N+1 — запросы явные
-**Структура:**
-```
-sql/
-├── migrations/     # Миграции (golang-migrate)
-└── queries/       # SQL для sqlc
-```
-### Разделение ответственности
-```
-handlers/    → HTTP-логика (парсинг, валидация, ответ)
-services/    → Бизнес-логика (quin, session, auth)
-db/          → Уровень данных (сгенерирован sqlc)
-pages/       → Templ-компоненты (представление)
-```
-**Принцип:** Handlers не содержат логики. Они получают данные из сервисов и рендерят страницы. Сервисы не знают о HTTP.
+
 ### Custom errors с HTTP status
 Ошибки несут HTTP-статус через интерфейс `HTTPStatus() int`:
 ```go
@@ -51,126 +134,14 @@ func WithHTTPStatus(err error, status int) error {
 // handlers/quiz.go:36
 return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 ```
-### JSONB для гибких данных
-Колонки `options` (вопросы), `answers` (сессии) хранят JSONB для гибкости без схемы:
-```go
-// services/quiz.go:99
-if err := json.Unmarshal(session.Answers, &answers); err != nil { ... }
-```
 ### Stateless auth с JWT в cookie
 JWT хранится в HttpOnly cookie (`token`). На каждом запросе middleware валидирует токен.
-**Почему не сессии:** Простота. Не нужен Redis для sessions. Минус — нельзя "выйти из всех устройств".
+
 ### S3-compatible storage для изображений
 MinIO используется для хранения изображений вопросов. Это позволяет легко переключиться на S3 в продакшене.
-```go
-// services/admin.go:264
-url, err := s.storageService.UploadImage(ctx, fileHeader)
-```
-## Структура проекта
-```
-├── main.go                    # Инициализация, роутинг
-├── config/                    # Загрузка из .env
-├── database/                  # Подключение, миграции, сиды
-├── db/                        # sqlc-generated код
-│   └── models.go              # Enum типы
-├── models/                    # Доменные модели
-├── handlers/                  # HTTP обработчики
-├── services/                  # Бизнес-логика
-├── pages/                     # Templ компоненты (.templ файлы)
-├── middleware/                # Auth, Role, Compression
-├── custom_errors/             # Ошибки с HTTP status
-└── types/                     # Data transfer objects для страниц
-```
-## База данных
-### Сущности
-| Таблица | Назначение |
-|---------|------------|
-| `users` | Учителя и студенты (роль — enum) |
-| `quizzes` | Викторины (статус — enum) |
-| `questions` | Вопросы с типами choice/open/fill |
-| `quiz_attempts` | Попытки прохождения |
-| `user_answers` | Ответы пользователя |
-| `quiz_sessions` | Активные сессии (current_index, answers JSONB) |
-| `question_images` | Изображения вопросов |
-### Enums
-```sql
-role = 'teacher' | 'student'
-quiz_status = 'available' | 'assigned' | 'completed' | 'archived'
-question_type = 'choice' | 'open' | 'fill'
-```
-## API дизайн
-### REST-простой роутинг
-Используется `http.ServeMux` с методом-префиксом (`GET /path`, `POST /path`).
-**Простая админка:** Нет CRUD-паттернов — каждый ресурс имеет свои endpoints (`/admin/quizzes/new`, `/admin/quizzes/{id}/question`).
-### Обработка ошибок
-```go
-// ErrorHandler统一处理所有 ошибки
-wrapHandler := func(handler any) http.HandlerFunc {
-    switch h := handler.(type) {
-    case func(w http.ResponseWriter, r *http.Request) error:
-        return handlers.ErrorHandler(h)
-    }
-}
-```
-### HTMX-ответы
-Админка возвращает partial HTML для HTMX-targets:
-```go
-if r.Header.Get("HX-Request") == "true" {
-    return admin.QuestionsSection(quizWithQuestions, questions).Render(r.Context(), w)
-}
-```
+
+
 ## Локализация
 Используется **gettextgocodegen** для генерации type-safe функций перевода из `.po` файлов.
 
-### Структура
-```
-locales/
-├── locales.go              # Сгенерированный (НЕ редактировать вручную)
-├── service.go              # Service для создания Translator
-├── en/LC_MESSAGES/
-│   └── default.po         # Английские переводы
-└── ru/LC_MESSAGES/
-    └── default.po          # Русские переводы
-```
 
-### Принцип работы
-1. `.po` файлы содержат `msgid` (ключ) и `msgstr` (перевод)
-2. `go tool gettextgocodegen -dir=locales -lang=ru` генерирует `locales/locales.go`
-3. Интерфейс `Translator` содержит методы для каждой строки
-4. `locales.Service` создаёт Translator при старте приложения
-5. Выбор языка по `Accept-Language` header (en/ru)
-
-### Использование в шаблонах
-```templ
-templ DashboardPage(data types.DashboardData, t locales.Translator) {
-    <h1>{ t.Welcome() }</h1>
-    <p>{ t.YouHaveNoMistakesYetKeepItUp() }</p>
-}
-```
-
-### Генерация переводов
-```bash
-# После изменения .po файлов
-go tool gettextgocodegen -dir=locales -lang=ru
-go tool templ generate
-```
-
-**Важно:** `locales/locales.go` генерируется автоматически и будет перезаписан. Все переводы добавляются только в `.po` файлы.
-
-## Запуск
-```bash
-# Генерация templ шаблонов
-go tool templ generate
-
-# Генерация переводов (после изменения .po)
-go tool gettextgocodegen -dir=locales -lang=ru
-
-# Запуск
-go run .
-```
-
-Makefile содержит полезные dev команды:
-```bash
-make generate    # templ + gettextgocodegen
-make run          # запуск
-```
