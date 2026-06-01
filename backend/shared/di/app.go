@@ -57,6 +57,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 	requireAuthMiddleware := ProvideRequireAuthMiddleware(authService)
 	requireRoleMiddleware := ProvideRequireRoleMiddleware(authService)
 	requireAssetOwnerMiddleware := ProvideRequireAssetOwnerMiddleware(authService, permissionsService, localeService)
+	requireLearningMaterialAccessMiddleware := ProvideRequireLearningMaterialAccessMiddleware(authService, permissionsService, queries, localeService)
 	compressionMiddleware := ProvideCompressionMiddleware()
 	commonHeaders := ProvideCommonHeadersMiddleware()
 	localeMiddleware := ProvideLocaleMiddleware(localeService)
@@ -84,12 +85,13 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		LearningMaterialsHandler:    learningMaterialsHandler,
 		GroupsHandler:               groupsHandler,
 		PermissionsHandler:          permissionsHandler,
-		RequireAuthMiddleware:       requireAuthMiddleware,
-		RequireRoleMiddleware:       requireRoleMiddleware,
-		RequireAssetOwnerMiddleware: requireAssetOwnerMiddleware,
-		CompressionMiddleware:       compressionMiddleware,
-		CommonHeadersMiddleware:     commonHeaders,
-		LocaleMiddleware:            localeMiddleware,
-		LocaleService:               localeService,
+		RequireAuthMiddleware:                  requireAuthMiddleware,
+		RequireRoleMiddleware:                  requireRoleMiddleware,
+		RequireAssetOwnerMiddleware:            requireAssetOwnerMiddleware,
+		RequireLearningMaterialAccessMiddleware: requireLearningMaterialAccessMiddleware,
+		CompressionMiddleware:                  compressionMiddleware,
+		CommonHeadersMiddleware:                commonHeaders,
+		LocaleMiddleware:                       localeMiddleware,
+		LocaleService:                          localeService,
 	}, nil
 }

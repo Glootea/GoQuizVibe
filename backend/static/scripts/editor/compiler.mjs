@@ -6,11 +6,10 @@ export async function initCompiler(materialId) {
 }
 
 export async function compileTypst(source) {
-    const resp = await fetch('/api/typst/compile', {
+    const resp = await fetch('/api/typst/compile/' + currentMaterialId, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            material_id: currentMaterialId,
             source: source
         }),
     });

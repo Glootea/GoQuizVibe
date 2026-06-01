@@ -958,3 +958,6 @@ msgstr "User not found"
 
 msgid "Enter Email Or Select Group"
 msgstr "Enter email or select group"
+
+msgid "You do not have permission to access this learning material"
+msgstr "You do not have permission to access this learning material"

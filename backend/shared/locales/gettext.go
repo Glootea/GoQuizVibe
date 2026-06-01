@@ -580,6 +580,8 @@ type Translator interface {
 	YouCanEdit() string
 	// "You can view"
 	YouCanView() string
+	// "You do not have permission to access this learning material"
+	YouDoNotHavePermissionToAccessThisLearningMaterial() string
 	// "You do not have permission to manage this asset"
 	YouDoNotHavePermissionToManageThisAsset() string
 	// "You have full access"
@@ -1724,6 +1726,10 @@ func (t *translator) YouCanEdit() string {
 
 func (t *translator) YouCanView() string {
 	return t.locale.Get("You can view")
+}
+
+func (t *translator) YouDoNotHavePermissionToAccessThisLearningMaterial() string {
+	return t.locale.Get("You do not have permission to access this learning material")
 }
 
 func (t *translator) YouDoNotHavePermissionToManageThisAsset() string {

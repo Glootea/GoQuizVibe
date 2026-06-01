@@ -61,12 +61,13 @@ type App struct {
 	GroupsHandler            *permissionsHdl.GroupsHandler
 	PermissionsHandler       *permissionsHdl.PermissionsHandler
 
-	RequireAuthMiddleware       middleware.RequireAuthMiddleware
-	RequireRoleMiddleware       middleware.RequireRoleMiddleware
-	RequireAssetOwnerMiddleware middleware.RequireAssetOwnerMiddleware
-	CompressionMiddleware       *middleware.CompressionMiddleware
-	CommonHeadersMiddleware     *middleware.CommonHeaders
-	LocaleMiddleware            *middleware.LocaleMiddleware
+	RequireAuthMiddleware                  middleware.RequireAuthMiddleware
+	RequireRoleMiddleware                  middleware.RequireRoleMiddleware
+	RequireAssetOwnerMiddleware            middleware.RequireAssetOwnerMiddleware
+	RequireLearningMaterialAccessMiddleware middleware.RequireLearningMaterialAccessMiddleware
+	CompressionMiddleware                  *middleware.CompressionMiddleware
+	CommonHeadersMiddleware                *middleware.CommonHeaders
+	LocaleMiddleware                       *middleware.LocaleMiddleware
 
 	LocaleService *locales.Service
 }
@@ -230,6 +231,10 @@ func ProvideRequireRoleMiddleware(authService *authSvc.AuthService) middleware.R
 
 func ProvideRequireAssetOwnerMiddleware(authService *authSvc.AuthService, permissionsService *permissionsSvc.PermissionsService, localeService *locales.Service) middleware.RequireAssetOwnerMiddleware {
 	return middleware.NewRequireAssetOwnerMiddleware(authService, permissionsService, localeService)
+}
+
+func ProvideRequireLearningMaterialAccessMiddleware(authService *authSvc.AuthService, permissionsService *permissionsSvc.PermissionsService, materialRepo r.LearningMaterialRepository, localeService *locales.Service) middleware.RequireLearningMaterialAccessMiddleware {
+	return middleware.NewRequireLearningMaterialAccessMiddleware(authService, permissionsService, materialRepo, localeService)
 }
 
 func ProvideCompressionMiddleware() *middleware.CompressionMiddleware {

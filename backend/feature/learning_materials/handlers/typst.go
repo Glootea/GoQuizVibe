@@ -29,21 +29,25 @@ func (h *TypstHandler) Compile(w http.ResponseWriter, r *http.Request) error {
 		return ce.WithHTTPStatus(errors.Join(ce.ErrUnauthorized, err), http.StatusUnauthorized)
 	}
 
+	materialIDStr := r.PathValue("id")
+	if materialIDStr == "" {
+		return ce.WithHTTPStatus(errors.New("material id required"), http.StatusBadRequest)
+	}
+
+	materialID, err := uuid.Parse(materialIDStr)
+	if err != nil {
+		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	}
+
 	var req struct {
-		MaterialID string `json:"material_id"`
-		Source     string `json:"source"`
+		Source string `json:"source"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return ce.WithHTTPStatus(err, http.StatusBadRequest)
 	}
 
-	if req.MaterialID == "" || req.Source == "" {
-		return ce.WithHTTPStatus(errors.New("material_id and source required"), http.StatusBadRequest)
-	}
-
-	materialID, err := uuid.Parse(req.MaterialID)
-	if err != nil {
-		return ce.WithHTTPStatus(errors.Join(ce.ErrInvalidRequest, err), http.StatusBadRequest)
+	if req.Source == "" {
+		return ce.WithHTTPStatus(errors.New("source required"), http.StatusBadRequest)
 	}
 
 	url, err := h.materialService.CompileAndGetURL(r.Context(), materialID, []byte(req.Source))

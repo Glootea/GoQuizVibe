@@ -88,12 +88,12 @@ func (h *LearningMaterialsHandler) New(w http.ResponseWriter, r *http.Request) e
 				}
 
 				if middleware.IsHTMXRequest(r) {
-					w.Header().Set("HX-Redirect", "/editor?material_id="+material.ID.String())
+					w.Header().Set("HX-Redirect", "/editor/"+material.ID.String())
 					w.WriteHeader(http.StatusOK)
 					return nil
 				}
 
-				http.Redirect(w, r, "/editor?material_id="+material.ID.String(), http.StatusFound)
+				http.Redirect(w, r, "/editor/"+material.ID.String(), http.StatusFound)
 				return nil
 			}
 

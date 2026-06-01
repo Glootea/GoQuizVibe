@@ -961,3 +961,6 @@ msgstr "Пользователь не найден"
 
 msgid "Enter Email Or Select Group"
 msgstr "Введите email или выберите группу"
+
+msgid "You do not have permission to access this learning material"
+msgstr "У вас нет прав на доступ к этому учебному материалу"

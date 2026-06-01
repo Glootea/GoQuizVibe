@@ -73,10 +73,10 @@ templ LearningMaterialsViewPage(user *db.User, material *db.LearningMaterial, ur
 					<div class="flex justify-between items-center mb-4">
 						<h2 class="text-xl font-semibold">{ t.Preview() }</h2>
 						<div class="flex gap-3">
-							<a
-								href={ templ.URL("/editor?material_id=" + material.ID.String()) }
-								class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700"
-							>
+						<a
+							href={ templ.URL("/editor/" + material.ID.String()) }
+							class="py-2 px-4 text-white bg-indigo-600 rounded-lg transition hover:bg-indigo-700"
+						>
 								<i class="mr-1 fas fa-edit"></i>{ t.Edit() }
 							</a>
 							<a

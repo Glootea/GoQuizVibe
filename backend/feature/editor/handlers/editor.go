@@ -18,7 +18,7 @@ func NewEditor(ms *services.LearningMaterialService) *EditorHandler {
 }
 
 func (h *EditorHandler) EditorPage(w http.ResponseWriter, r *http.Request) error {
-	materialIDStr := r.URL.Query().Get("material_id")
+	materialIDStr := r.PathValue("id")
 
 	var initialSource string
 	var materialID string

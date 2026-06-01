@@ -102,7 +102,7 @@ func main() {
 		{"GET", "/quiz/{id}/result", app.QuizHandler.QuizResult},
 		{"GET", "/errors", app.QuizHandler.ErrorsPage},
 		{"GET", "/leaderboard", app.QuizHandler.LeaderboardPage},
-		{"GET", "/editor", app.EditorHandler.EditorPage},
+		{"GET", "/editor/{id}", app.EditorHandler.EditorPage},
 		{"GET", "/admin", app.AdminHandler.Dashboard},
 		{"GET", "/admin/quizzes", app.AdminHandler.Quizzes},
 		{"GET", "/admin/quizzes/new", app.AdminHandler.QuizzesNew},
@@ -130,7 +130,7 @@ func main() {
 		{"DELETE", "/admin/learning-materials/{id}", app.LearningMaterialsHandler.Delete},
 		{"GET", "/admin/learning-materials/{id}/preview", app.LearningMaterialsHandler.Preview},
 		{"POST", "/admin/learning-materials/{id}/compile", app.LearningMaterialsHandler.Compile},
-		{"POST", "/api/typst/compile", app.TypstHandler.Compile},
+		{"POST", "/api/typst/compile/{id}", app.TypstHandler.Compile},
 		{"GET", "/admin/groups", app.GroupsHandler.ListGroups},
 		{"GET", "/admin/groups/new", app.GroupsHandler.CreateGroupForm},
 		{"POST", "/admin/groups/new", app.GroupsHandler.CreateGroup},
@@ -155,6 +155,7 @@ func main() {
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap
 	requiredRoleMiddleware := app.RequireRoleMiddleware.Wrap
 	requireAssetOwnerMiddleware := app.RequireAssetOwnerMiddleware.Wrap
+	requireLearningMaterialAccessMiddleware := app.RequireLearningMaterialAccessMiddleware.Wrap
 	compressionMiddleware := app.CompressionMiddleware.Wrap
 	commonHeadersMiddleware := app.CommonHeadersMiddleware.Wrap
 	localeMiddleware := app.LocaleMiddleware.Wrap
@@ -178,6 +179,9 @@ func main() {
 			}
 		} else {
 			wrapped = requireAuthMiddleware(wrapped)
+		}
+		if app.RequireLearningMaterialAccessMiddleware.IsProtectedPattern(r.Pattern) {
+			wrapped = requireLearningMaterialAccessMiddleware(wrapped)
 		}
 		wrapped = compressionMiddleware(wrapped)
 		wrapped = commonHeadersMiddleware(wrapped)
