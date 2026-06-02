@@ -4,22 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import com.glootea.goquiz.core.di.AppGraph
+import com.glootea.goquiz.core.di.AppGraphFactory
 
 class MainActivity : ComponentActivity() {
+
+    private val graph: AppGraph by lazy { AppGraphFactory.create() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
         setContent {
-            App()
+            AppContent(graph)
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }

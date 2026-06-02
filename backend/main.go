@@ -131,6 +131,10 @@ func main() {
 		{"GET", "/admin/learning-materials/{id}/preview", app.LearningMaterialsHandler.Preview},
 		{"POST", "/admin/learning-materials/{id}/compile", app.LearningMaterialsHandler.Compile},
 		{"POST", "/api/typst/compile", app.TypstHandler.Compile},
+		{"POST", "/api/v1/auth/register", app.AuthHandler.RegisterJSON},
+		{"POST", "/api/v1/auth/login", app.AuthHandler.LoginJSON},
+		{"POST", "/api/v1/auth/logout", app.AuthHandler.LogoutJSON},
+		{"GET", "/api/v1/auth/me", app.AuthHandler.MeJSON},
 	}
 
 	requireAuthMiddleware := app.RequireAuthMiddleware.Wrap
@@ -140,13 +144,21 @@ func main() {
 	localeMiddleware := app.LocaleMiddleware.Wrap
 	metricsMiddleware := middleware.NewMetricsMiddleware().Wrap
 
+	publicAPIAuthRoutes := map[string]bool{
+		"/api/v1/auth/register": true,
+		"/api/v1/auth/login":    true,
+		"/api/v1/auth/logout":   true,
+	}
 	wrapRoute := func(r Route) http.HandlerFunc {
 		wrapped := wrapHandler(r.Handler)
-		if r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register" {
-
-		} else if strings.HasPrefix(r.Pattern, "/admin") {
+		switch {
+		case r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register":
+		case strings.HasPrefix(r.Pattern, "/admin"):
 			wrapped = requiredRoleMiddleware(wrapped)
-		} else {
+		case publicAPIAuthRoutes[r.Pattern]:
+		case strings.HasPrefix(r.Pattern, "/api/"):
+			wrapped = requireAuthMiddleware(wrapped)
+		default:
 			wrapped = requireAuthMiddleware(wrapped)
 		}
 		wrapped = compressionMiddleware(wrapped)

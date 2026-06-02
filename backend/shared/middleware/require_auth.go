@@ -16,7 +16,7 @@ type RequireAuthMiddleware struct {
 
 func (m RequireAuthMiddleware) Wrap(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie(cookieNameToken)
+		cookie, err := r.Cookie(CookieNameToken)
 		if err != nil {
 			HandleAuthFailure(w, r)
 			return
