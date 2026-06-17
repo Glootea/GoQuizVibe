@@ -1,13 +1,13 @@
 package com.glootea.goquiz.feature.auth
 
-import com.glootea.goquiz.feature.auth.domain.usecase.LogoutUseCase
-import com.glootea.goquiz.feature.auth.domain.usecase.ObserveMeUseCase
+import com.glootea.goquiz.feature.auth.domain.repository.AuthRepository
 import com.glootea.goquiz.feature.auth.presentation.AuthState
 import com.glootea.goquiz.feature.auth.presentation.AuthStateHolder
+import com.glootea.goquiz.feature.auth.presentation.LoginState
 import com.glootea.goquiz.feature.auth.presentation.LoginViewModel
+import com.glootea.goquiz.feature.auth.presentation.RegisterState
 import com.glootea.goquiz.feature.auth.presentation.RegisterViewModel
-import com.glootea.goquiz.feature.auth.domain.usecase.LoginUseCase
-import com.glootea.goquiz.feature.auth.domain.usecase.RegisterUseCase
+import com.glootea.goquiz.feature.auth.presentation.isSubmitEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -20,6 +20,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -36,22 +37,21 @@ class AuthViewModelsTest {
         Dispatchers.resetMain()
     }
 
-    private fun CoroutineScope.holder(repo: com.glootea.goquiz.feature.auth.domain.repository.AuthRepository) =
-        AuthStateHolder(ObserveMeUseCase(repo), LogoutUseCase(repo), this)
+    private fun CoroutineScope.holder(repo: AuthRepository) =
+        AuthStateHolder(repo, this)
 
     @Test
     fun loginViewModel_submit_succeedsAndUpdatesStateHolder() = runTest {
         val repo = FakeAuthRepository(loginResult = Result.success(TestUsers.student))
         val stateHolder = backgroundScope.holder(repo)
-        val vm = LoginViewModel(LoginUseCase(repo), stateHolder)
+        val vm = LoginViewModel(repo, stateHolder)
 
         vm.onEmailChange("a@b.c")
         vm.onPasswordChange("secret")
         vm.submit()
         advanceUntilIdle()
 
-        assertFalse(vm.state.value.isLoading)
-        assertNull(vm.state.value.error)
+        assertIs<LoginState.Editing>(vm.state.value)
         assertEquals(AuthState.Authenticated(TestUsers.student), stateHolder.state.value)
     }
 
@@ -59,15 +59,16 @@ class AuthViewModelsTest {
     fun loginViewModel_submit_setsErrorOnFailure() = runTest {
         val repo = FakeAuthRepository(loginResult = Result.failure(IllegalStateException("bad creds")))
         val stateHolder = backgroundScope.holder(repo)
-        val vm = LoginViewModel(LoginUseCase(repo), stateHolder)
+        val vm = LoginViewModel(repo, stateHolder)
 
         vm.onEmailChange("a@b.c")
         vm.onPasswordChange("secret")
         vm.submit()
         advanceUntilIdle()
 
-        assertEquals(false, vm.state.value.isLoading)
-        assertEquals("bad creds", vm.state.value.error)
+        val state = vm.state.value
+        assertIs<LoginState.Error>(state)
+        assertEquals("bad creds", state.message)
         assertEquals(AuthState.Unknown, stateHolder.state.value)
     }
 
@@ -75,7 +76,7 @@ class AuthViewModelsTest {
     fun loginViewModel_submit_doesNothingWhenDisabled() = runTest {
         val repo = FakeAuthRepository()
         val stateHolder = backgroundScope.holder(repo)
-        val vm = LoginViewModel(LoginUseCase(repo), stateHolder)
+        val vm = LoginViewModel(repo, stateHolder)
 
         vm.submit()
         advanceUntilIdle()
@@ -84,10 +85,40 @@ class AuthViewModelsTest {
     }
 
     @Test
+    fun loginViewModel_submit_invokesRepositoryOnceWhenCalledTwiceInARow() = runTest {
+        val repo = FakeAuthRepository(loginResult = Result.success(TestUsers.student))
+        val stateHolder = backgroundScope.holder(repo)
+        val vm = LoginViewModel(repo, stateHolder)
+
+        vm.onEmailChange("a@b.c")
+        vm.onPasswordChange("secret")
+        vm.submit()
+        vm.submit()
+
+        advanceUntilIdle()
+
+        assertEquals(1, repo.loginCalls)
+    }
+
+    @Test
+    fun loginViewModel_trimsEmailOnSubmit() = runTest {
+        val repo = FakeAuthRepository(loginResult = Result.success(TestUsers.student))
+        val stateHolder = backgroundScope.holder(repo)
+        val vm = LoginViewModel(repo, stateHolder)
+
+        vm.onEmailChange("  test@example.com  ")
+        vm.onPasswordChange("secret")
+        vm.submit()
+        advanceUntilIdle()
+
+        assertEquals("test@example.com", repo.lastLoginEmail)
+    }
+
+    @Test
     fun registerViewModel_submit_succeedsForValidInput() = runTest {
         val repo = FakeAuthRepository(registerResult = Result.success(TestUsers.student))
         val stateHolder = backgroundScope.holder(repo)
-        val vm = RegisterViewModel(RegisterUseCase(repo), stateHolder)
+        val vm = RegisterViewModel(repo, stateHolder)
 
         vm.onNameChange("Bob")
         vm.onEmailChange("bob@x.com")
@@ -97,13 +128,13 @@ class AuthViewModelsTest {
         advanceUntilIdle()
 
         assertEquals(AuthState.Authenticated(TestUsers.student), stateHolder.state.value)
-        assertNull(vm.state.value.error)
+        assertIs<RegisterState.Editing>(vm.state.value)
     }
 
     @Test
     fun registerViewModel_submit_disabledForShortPassword() = runTest {
         val repo = FakeAuthRepository()
-        val vm = RegisterViewModel(RegisterUseCase(repo), backgroundScope.holder(repo))
+        val vm = RegisterViewModel(repo, backgroundScope.holder(repo))
 
         vm.onNameChange("Bob")
         vm.onEmailChange("bob@x.com")

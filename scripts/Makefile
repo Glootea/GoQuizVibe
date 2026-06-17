@@ -82,6 +82,18 @@ sql-generate:
 wire-generate:
 	cd ../backend && go generate ./...
 
+# auth-proto: regenerate auth gRPC stubs
+auth-proto:
+	cd ../backend && \
+	  protoc --proto_path=shared/grpc/proto \
+	    --go_out=shared/grpc/proto --go_opt=paths=source_relative \
+	    --go-grpc_out=shared/grpc/proto --go-grpc_opt=paths=source_relative \
+	    shared/grpc/proto/auth.proto
+
+# wire-proto: regenerate Wire Kotlin gRPC stubs (auto-runs on build)
+wire-proto:
+	cd ../app && ./gradlew :sharedLogic:generateCommonMainProtos
+
 # docker-build: build docker image
 docker-build:
 	cd ../deployment && podman build -t goquizvibe:latest -f ../Dockerfile ..

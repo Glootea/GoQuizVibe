@@ -10,9 +10,10 @@ COPY backend/shared/pkg /app/pkg
 COPY microservices/typst /app/typst
 
 WORKDIR /app/typst
-RUN go mod download
 
-RUN go build -o /typst-server .
+RUN --mount=type=cache,target=$HOME/go/pkg/mod \
+--mount=type=cache,target=$HOME/.cache/go-build \
+go mod download && go build -o /typst-server .
 
 FROM alpine:3.23.4
 

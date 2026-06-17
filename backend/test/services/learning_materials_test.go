@@ -18,9 +18,8 @@ func TestMaterialWithURL(t *testing.T) {
 	}
 
 	mwu := types.MaterialWithURL{
-		Material:  material,
-		PublicURL: "http://example.com",
-		Type:      string(db.LearningMaterialTypeTypst),
+		Material: material,
+		Type:     string(db.LearningMaterialTypeTypst),
 	}
 
 	if mwu.Material.Title != "Test" {
@@ -63,17 +62,10 @@ func getMaterialTypeClass(materialType string) string {
 
 func TestLearningMaterialService_GetPublicUrl(t *testing.T) {
 	t.Parallel()
-	material := db.LearningMaterial{
-		ID:           uuid.New(),
-		Title:        "Test",
-		MaterialType: db.LearningMaterialTypeTypst,
-	}
 
 	url, _ := url.Parse("http://example.com/material.pdf")
 	mwu := types.MaterialWithURL{
-		Material:  material,
 		PublicURL: url.String(),
-		Type:      string(db.LearningMaterialTypeTypst),
 	}
 
 	if mwu.PublicURL == "" {

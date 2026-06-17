@@ -17,7 +17,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.glootea.goquiz.LocalAppGraph
-import com.glootea.goquiz.feature.auth.presentation.RegisterViewModel
+import com.glootea.goquiz.feature.auth.presentation.RegisterState
+import com.glootea.goquiz.feature.auth.presentation.errorMessage
+import com.glootea.goquiz.feature.auth.presentation.isSubmitEnabled
 import com.glootea.goquiz.feature.auth.ui.components.AppTextField
 import com.glootea.goquiz.feature.auth.ui.components.AuthFormScaffold
 import com.glootea.goquiz.feature.auth.ui.components.PrimaryButton
@@ -35,7 +37,7 @@ fun RegisterScreen(
     GoQuizTheme {
         AuthFormScaffold(
             title = "Регистрация",
-            errorMessage = state.error
+            errorMessage = state.errorMessage
         ) {
             AppTextField(
                 value = state.name,
@@ -61,7 +63,7 @@ fun RegisterScreen(
                 text = "Создать аккаунт",
                 onClick = viewModel::submit,
                 enabled = state.isSubmitEnabled,
-                isLoading = state.isLoading
+                isLoading = state is RegisterState.Submitting
             )
             Spacer(Modifier.height(8.dp))
             Row(

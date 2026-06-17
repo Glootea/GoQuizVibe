@@ -76,6 +76,7 @@ func InitializeApp(ctx context.Context) (*App, error) {
 		CommonHeadersMiddleware: commonHeaders,
 		LocaleMiddleware:        localeMiddleware,
 		LocaleService:            service,
+		Queries:                 queries,
 	}
 	return app, nil
 }

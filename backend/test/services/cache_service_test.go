@@ -8,19 +8,6 @@ import (
 	cacheSvc "github.com/goquizvibe/backend/shared/infrastructure/cache"
 )
 
-func TestCacheService_Interface(t *testing.T) {
-	t.Parallel()
-
-	t.Run("cache service can be nil", func(t *testing.T) {
-		t.Parallel()
-		var cs *cacheSvc.CacheService
-
-		if cs != nil {
-			t.Error("cache should be nil")
-		}
-	})
-}
-
 func TestCacheHelpers_GetOrFetch_NilCache(t *testing.T) {
 	t.Parallel()
 

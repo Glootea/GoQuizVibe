@@ -23,12 +23,15 @@ services:
   server:
     image: server:latest
     pull_policy: never
-    build: 
+    build:
       context: ./../
       dockerfile: backend/Dockerfile
-    profiles: ["with-server"]     
+    profiles: ["with-server"]
     ports:
       - "7890:7890"
+      - "9100:9100"
+    environment:
+      GRPC_PORT: ${GRPC_PORT}
     depends_on:
       typst:
         condition: service_healthy
@@ -120,7 +123,7 @@ services:
     image: docker.io/prom/node-exporter:master-distroless
     container_name: goquizvibe_node_exporter
     ports:
-      - "9100:9100"
+      - "9101:9100"
     command:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'

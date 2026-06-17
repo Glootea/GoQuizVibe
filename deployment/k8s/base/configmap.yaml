@@ -13,3 +13,4 @@ data:
   MINIO_BUCKET: "question-images"
   REDIS_CACHE_TTL: "15m"
   QUIZ_TIMER_CRON_INTERVAL: "10m"
+  GRPC_PORT: "9100"

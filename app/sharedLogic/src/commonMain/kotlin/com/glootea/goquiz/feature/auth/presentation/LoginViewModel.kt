@@ -2,41 +2,57 @@ package com.glootea.goquiz.feature.auth.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.glootea.goquiz.feature.auth.domain.usecase.LoginUseCase
+import com.glootea.goquiz.feature.auth.domain.repository.AuthRepository
+import com.glootea.goquiz.core.di.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import com.glootea.goquiz.core.di.AppScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @SingleIn(AppScope::class)
 @Inject
 class LoginViewModel(
-    private val login: LoginUseCase,
+    private val authRepository: AuthRepository,
     private val stateHolder: AuthStateHolder
 ) : ViewModel() {
 
-    private val _state: MutableStateFlow<LoginState> = MutableStateFlow(LoginState())
-    val state: StateFlow<LoginState> = _state.asStateFlow()
+    val state: StateFlow<LoginState>
+        field: MutableStateFlow<LoginState> = MutableStateFlow(LoginState.Editing())
 
-    fun onEmailChange(value: String) = _state.update { it.copy(email = value, error = null) }
-    fun onPasswordChange(value: String) = _state.update { it.copy(password = value, error = null) }
+    fun onEmailChange(value: String) = state.update { current ->
+        when (current) {
+            is LoginState.Editing -> current.copy(email = value)
+            is LoginState.Submitting -> current.copy(email = value)
+            is LoginState.Error -> current.copy(email = value)
+        }
+    }
+
+    fun onPasswordChange(value: String) = state.update { current ->
+        when (current) {
+            is LoginState.Editing -> current.copy(password = value)
+            is LoginState.Submitting -> current.copy(password = value)
+            is LoginState.Error -> current.copy(password = value)
+        }
+    }
 
     fun submit() {
-        val current = _state.value
-        if (!current.isSubmitEnabled) return
-        _state.update { it.copy(isLoading = true, error = null) }
+        val current = state.value
+        if (current !is LoginState.Editing || !current.isSubmitEnabled) return
+        state.value = LoginState.Submitting(current.email, current.password)
         viewModelScope.launch {
-            runCatching { login(current.email, current.password) }
+            runCatching { authRepository.login(current.email.trim(), current.password) }
                 .onSuccess { user ->
                     stateHolder.setAuthenticated(user)
-                    _state.update { it.copy(isLoading = false, error = null) }
+                    state.value = LoginState.Editing()
                 }
                 .onFailure { e ->
-                    _state.update { it.copy(isLoading = false, error = e.message ?: "Login failed") }
+                    state.value = LoginState.Error(
+                        email = current.email,
+                        password = current.password,
+                        message = e.message ?: "Login failed"
+                    )
                 }
         }
     }

@@ -18,7 +18,9 @@
 - `typst` — gRPC-сервис компиляции Typst-разметки в изображения (с интеграцией с MinIO)
 
 **Auth & конфигурация**
-- JWT в HttpOnly cookie (stateless auth)
+- JWT в HttpOnly cookie для web (HTMX) + gRPC `authorization: Bearer <jwt>` для мобильного/десктоп‑клиента
+- gRPC `AuthService` на отдельном порту `GRPC_PORT` (по умолчанию `9100`); REST JSON‑роуты `/api/v1/auth/*` удалены
+- KMP‑клиент использует [Square Wire](https://square.github.io/wire/) (Kotlin/Java/Swift gRPC) + OkHttp transport
 - `.env` → `config/config.go`
 - [Wire](https://github.com/google/wire) — внедрение зависимостей
 
@@ -42,7 +44,7 @@
 - 📊 **Дашборд** студента и учителя с историей попыток и статистикой
 - 🌍 **Локализация** интерфейса (ru/en) с авто-определением по `Accept-Language`
 - ⚡ **HTMX-обновления** — partial HTML без перезагрузки страницы
-- 🛡 **Stateless JWT-auth** в HttpOnly cookie
+- 🛡 **Stateless JWT-auth** в HttpOnly cookie (web) + Bearer в gRPC metadata (mobile/desktop)
 - 🚦 **Мониторинг** — метрики Prometheus, дашборды Grafana
 
 ## Запуск через docker-compose
@@ -75,6 +77,7 @@ podman compose up -d
 | `minio`      | 9001  | MinIO Console (http://localhost:9001)       |
 | `redis`      | 6379  | Кэш/сессии                                  |
 | `typst`      | 9091  | gRPC-микросервис Typst (→ 9090 в контейнере)|
+| `server`     | 7890  | HTTP-роутер (HTMX) + gRPC AuthService (9100) |
 | `adminer`    | 8081  | Веб-интерфейс PostgreSQL                    |
 | `prometheus` | 9090  | Сбор метрик                                 |
 | `grafana`    | 3000  | Дашборды (admin / admin123)                 |
@@ -134,8 +137,10 @@ func WithHTTPStatus(err error, status int) error {
 // handlers/quiz.go:36
 return ce.WithHTTPStatus(errors.Join(ce.ErrNotFound, err), http.StatusNotFound)
 ```
-### Stateless auth с JWT в cookie
-JWT хранится в HttpOnly cookie (`token`). На каждом запросе middleware валидирует токен.
+### Stateless auth с JWT
+JWT используется двумя способами:
+- **Web (HTMX):** токен хранится в HttpOnly cookie (`token`); backend middleware (`backend/shared/middleware/require_auth.go`) валидирует токен на каждом запросе.
+- **Mobile/Desktop (Compose Multiplatform):** токен хранится в KSafe (`eu.anifantakis:ksafe:2.1.2`, hardware‑backed encryption), передаётся в gRPC metadata `authorization: Bearer <jwt>`. gRPC‑interceptor `AuthInterceptor` (`backend/feature/auth/grpc/interceptor.go`) валидирует токен. Клиент сгенерирован через [Square Wire](https://square.github.io/wire/) (см. `app/sharedLogic/src/commonMain/proto/auth.proto` + `wire {}` block в `app/sharedLogic/build.gradle.kts`).
 
 ### S3-compatible storage для изображений
 MinIO используется для хранения изображений вопросов. Это позволяет легко переключиться на S3 в продакшене.

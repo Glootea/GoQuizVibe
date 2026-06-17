@@ -10,6 +10,9 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11
     }
+    compilerOptions {
+        freeCompilerArgs.addAll(listOf("-Xexpect-actual-classes", "-Xexplicit-backing-fields"))
+    }
 }
 dependencies {
     implementation(projects.sharedUI)

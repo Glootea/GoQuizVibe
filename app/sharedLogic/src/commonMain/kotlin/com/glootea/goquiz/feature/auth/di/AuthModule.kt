@@ -2,28 +2,22 @@ package com.glootea.goquiz.feature.auth.di
 
 import com.glootea.goquiz.core.di.AppCoroutineScope
 import com.glootea.goquiz.core.di.AppScope
-import com.glootea.goquiz.core.http.ApiConfig
-import com.glootea.goquiz.core.http.HttpClientFactory
+import com.glootea.goquiz.feature.auth.data.AuthTokenStore
+import com.glootea.goquiz.feature.auth.data.KSafeFactory
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
-import io.ktor.client.HttpClient
+import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.serialization.json.Json
 
 @ContributesTo(AppScope::class)
 interface AuthModule {
 
     companion object {
         @Provides
-        fun provideHttpClient(): HttpClient = HttpClientFactory.create(ApiConfig)
+        fun provideKSafe(): KSafe = KSafeFactory.create()
 
         @Provides
-        fun provideJson(): Json = Json {
-            ignoreUnknownKeys = true
-            isLenient = true
-            explicitNulls = false
-            encodeDefaults = true
-        }
+        fun provideAuthTokenStore(ksafe: KSafe): AuthTokenStore = AuthTokenStore(ksafe)
 
         @Provides
         fun provideCoroutineScope(appScope: AppCoroutineScope): CoroutineScope = appScope.value

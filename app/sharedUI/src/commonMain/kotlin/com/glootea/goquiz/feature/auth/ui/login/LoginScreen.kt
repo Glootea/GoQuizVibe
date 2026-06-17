@@ -17,10 +17,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.glootea.goquiz.LocalAppGraph
+import com.glootea.goquiz.feature.auth.presentation.LoginState
 import com.glootea.goquiz.feature.auth.ui.components.AppTextField
 import com.glootea.goquiz.feature.auth.ui.components.AuthFormScaffold
 import com.glootea.goquiz.feature.auth.ui.components.PrimaryButton
-import com.glootea.goquiz.feature.auth.presentation.LoginViewModel
+import com.glootea.goquiz.feature.auth.presentation.errorMessage
+import com.glootea.goquiz.feature.auth.presentation.isSubmitEnabled
 import com.glootea.goquiz.theme.GoQuizTheme
 
 @Composable
@@ -35,7 +37,7 @@ fun LoginScreen(
     GoQuizTheme {
         AuthFormScaffold(
             title = "Вход в аккаунт",
-            errorMessage = state.error
+            errorMessage = state.errorMessage
         ) {
             AppTextField(
                 value = state.email,
@@ -55,7 +57,7 @@ fun LoginScreen(
                 text = "Войти",
                 onClick = viewModel::submit,
                 enabled = state.isSubmitEnabled,
-                isLoading = state.isLoading
+                isLoading = state is LoginState.Submitting
             )
             Spacer(Modifier.height(8.dp))
             Row(

@@ -1,7 +1,6 @@
 package com.glootea.goquiz.feature.auth
 
-import com.glootea.goquiz.feature.auth.domain.usecase.LogoutUseCase
-import com.glootea.goquiz.feature.auth.domain.usecase.ObserveMeUseCase
+import com.glootea.goquiz.feature.auth.domain.repository.AuthRepository
 import com.glootea.goquiz.feature.auth.presentation.AuthState
 import com.glootea.goquiz.feature.auth.presentation.AuthStateHolder
 import kotlinx.coroutines.CoroutineScope
@@ -14,8 +13,8 @@ import kotlin.test.assertTrue
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class AuthStateHolderTest {
 
-    private fun CoroutineScope.holder(repo: com.glootea.goquiz.feature.auth.domain.repository.AuthRepository) =
-        AuthStateHolder(ObserveMeUseCase(repo), LogoutUseCase(repo), this)
+    private fun CoroutineScope.holder(repo: AuthRepository) =
+        AuthStateHolder(repo, this)
 
     @Test
     fun initial_bootstrapAuthenticated_whenMeReturnsUser() = runTest {
@@ -41,7 +40,7 @@ class AuthStateHolderTest {
 
     @Test
     fun initial_bootstrapUnauthenticated_whenMeThrows() = runTest {
-        val brokenRepo = object : com.glootea.goquiz.feature.auth.domain.repository.AuthRepository {
+        val brokenRepo = object : AuthRepository {
             override suspend fun login(email: String, password: String) = error("nope")
             override suspend fun register(name: String, email: String, password: String) = error("nope")
             override suspend fun logout() = Unit

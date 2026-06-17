@@ -33,6 +33,7 @@ type MinioConfig struct {
 
 type ServiceConfig struct {
 	TypstServiceAddr string
+	GrpcPort         string
 }
 
 type RedisConfig struct {
@@ -136,6 +137,7 @@ func Load() *Config {
 		Redis: RedisConfig{Host: redis_host, Password: redis_pass, CacheTTL: redisCacheTTL, TimerCronInterval: timerCronInterval},
 		ServiceConfig: ServiceConfig{
 			TypstServiceAddr: os.Getenv("TYPST_SERVICE_ADDR"),
+			GrpcPort:         os.Getenv("GRPC_PORT"),
 		},
 	}
 }

@@ -3,12 +3,11 @@ package com.glootea.goquiz.feature.auth.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.glootea.goquiz.feature.auth.domain.model.User
+import com.glootea.goquiz.core.di.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-import com.glootea.goquiz.core.di.AppScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -18,8 +17,8 @@ class HomeViewModel(
     private val stateHolder: AuthStateHolder
 ) : ViewModel() {
 
-    private val _state: MutableStateFlow<HomeState> = MutableStateFlow(HomeState())
-    val state: StateFlow<HomeState> = _state.asStateFlow()
+    val state: StateFlow<HomeState>
+        field: MutableStateFlow<HomeState> = MutableStateFlow(HomeState())
 
     init {
         viewModelScope.launch {
@@ -33,11 +32,11 @@ class HomeViewModel(
     }
 
     private fun applyUser(user: User) {
-        _state.update { it.copy(userName = user.name, userEmail = user.email) }
+        state.update { it.copy(userName = user.name, userEmail = user.email) }
     }
 
     fun logout() {
-        _state.update { it.copy(isLoggingOut = true) }
+        state.update { it.copy(isLoggingOut = true) }
         stateHolder.performLogout()
     }
 }

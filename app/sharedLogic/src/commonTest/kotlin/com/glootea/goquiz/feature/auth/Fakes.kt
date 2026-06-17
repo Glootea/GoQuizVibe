@@ -16,9 +16,11 @@ class FakeAuthRepository(
 
     var lastLoginEmail: String? = null
     var lastLoginPassword: String? = null
+    var loginCalls: Int = 0
     var lastRegisterName: String? = null
     var lastRegisterEmail: String? = null
     var lastRegisterPassword: String? = null
+    var registerCalls: Int = 0
     var logoutCalled: Int = 0
     var meResult: User? = null
     var meCalled: Int = 0
@@ -26,6 +28,7 @@ class FakeAuthRepository(
     override suspend fun login(email: String, password: String): User {
         lastLoginEmail = email
         lastLoginPassword = password
+        loginCalls++
         return loginResult.getOrThrow()
     }
 
@@ -33,6 +36,7 @@ class FakeAuthRepository(
         lastRegisterName = name
         lastRegisterEmail = email
         lastRegisterPassword = password
+        registerCalls++
         return registerResult.getOrThrow()
     }
 
