@@ -18,6 +18,8 @@ spec:
           image: localhost/backend
           ports:
             - containerPort: 443
+            - containerPort: 9100
+              name: grpc
           envFrom:
             - configMapRef:
                 name: goquizvibe-config

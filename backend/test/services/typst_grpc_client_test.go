@@ -94,15 +94,6 @@ func TestCompileResponse_EmptyPaths(t *testing.T) {
 func TestTypstGRPCClient_Interface(t *testing.T) {
 	t.Parallel()
 
-	t.Run("typst compiler client interface", func(t *testing.T) {
-		t.Parallel()
-		var client proto.TypstCompilerClient
-
-		if client != nil {
-			t.Error("client should be nil by default")
-		}
-	})
-
 	t.Run("nil context handling", func(t *testing.T) {
 		t.Parallel()
 		ctx := context.Background()

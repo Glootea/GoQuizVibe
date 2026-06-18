@@ -6,7 +6,7 @@ import (
 
 const (
 	RedirectToLogin  = "/login"
-	cookieNameToken = "token"
+	CookieNameToken = "token"
 )
 
 func IsHTMXRequest(r *http.Request) bool {
@@ -19,4 +19,13 @@ func HandleAuthFailure(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, RedirectToLogin, http.StatusFound)
+}
+
+func ClearTokenCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   CookieNameToken,
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
 }

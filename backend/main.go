@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,10 +11,14 @@ import (
 	"syscall"
 	"time"
 
+	authgrpc "github.com/goquizvibe/backend/feature/auth/grpc"
+	authproto "github.com/goquizvibe/backend/shared/grpc/proto"
 	"github.com/goquizvibe/backend/shared/database"
 	"github.com/goquizvibe/backend/shared/di"
 	"github.com/goquizvibe/backend/shared/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -51,6 +56,25 @@ func main() {
 	}()
 
 	go app.QuizTimerService.StartCronJob(timerCtx, app.Config.Redis.TimerCronInterval)
+
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(authgrpc.AuthInterceptor(app.AuthService)))
+	authproto.RegisterAuthServer(grpcServer, authgrpc.NewAuthServer(app.AuthService, app.Queries))
+	reflection.Register(grpcServer)
+
+	grpcPort := app.Config.ServiceConfig.GrpcPort
+	if grpcPort == "" {
+		grpcPort = "9100"
+	}
+	grpcLis, err := net.Listen("tcp", ":"+grpcPort)
+	if err != nil {
+		log.Fatalf("Failed to listen gRPC: %v", err)
+	}
+	go func() {
+		log.Printf("gRPC auth server listening on :%s", grpcPort)
+		if err := grpcServer.Serve(grpcLis); err != nil {
+			log.Printf("gRPC server stopped: %v", err)
+		}
+	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -140,13 +164,17 @@ func main() {
 	localeMiddleware := app.LocaleMiddleware.Wrap
 	metricsMiddleware := middleware.NewMetricsMiddleware().Wrap
 
+	publicAPIAuthRoutes := map[string]bool{}
 	wrapRoute := func(r Route) http.HandlerFunc {
 		wrapped := wrapHandler(r.Handler)
-		if r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register" {
-
-		} else if strings.HasPrefix(r.Pattern, "/admin") {
+		switch {
+		case r.Pattern == "/" || r.Pattern == "/login" || r.Pattern == "/register":
+		case strings.HasPrefix(r.Pattern, "/admin"):
 			wrapped = requiredRoleMiddleware(wrapped)
-		} else {
+		case publicAPIAuthRoutes[r.Pattern]:
+		case strings.HasPrefix(r.Pattern, "/api/"):
+			wrapped = requireAuthMiddleware(wrapped)
+		default:
 			wrapped = requireAuthMiddleware(wrapped)
 		}
 		wrapped = compressionMiddleware(wrapped)
