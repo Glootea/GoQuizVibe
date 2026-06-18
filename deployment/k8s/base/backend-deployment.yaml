@@ -18,6 +18,7 @@ spec:
           image: localhost:5000/server:latest
           ports:
             - containerPort: 443
+              name: https
             - containerPort: 9100
               name: grpc
           envFrom:
