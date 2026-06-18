@@ -1,39 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: typst
   namespace: goquizvibe
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: typst
   template:
     metadata:
       labels:
-        app: backend
+        app: typst
     spec:
       containers:
-        - name: backend
-          image: localhost:5000/server:latest
+        - name: typst
+          image: localhost:5000/typst:latest
           ports:
-            - containerPort: 443
-            - containerPort: 9100
-              name: grpc
+            - containerPort: 9090
+          env:
+            - name: GRPC_PORT
+              value: "9090"
           envFrom:
             - configMapRef:
                 name: goquizvibe-config
             - secretRef:
                 name: goquizvibe-secrets
           livenessProbe:
-            httpGet:
-              path: /health
-              port: 443
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            tcpSocket:
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /health
-              port: 443
+            tcpSocket:
+              port: 9090
             initialDelaySeconds: 5
             periodSeconds: 5

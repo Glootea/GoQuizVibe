@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+
+REGISTRY = "localhost:5000"
+IMAGES = [
+    ("server:latest", "backend/Dockerfile"),
+    ("typst:latest", "microservices/typst/Dockerfile"),
+]
 
 
 def get_kubectl_cmd(use_k3s: bool) -> list[str]:
@@ -18,9 +26,39 @@ def run_kubectl(kubectl: list[str], cmd: list[str], check: bool = False) -> subp
     return result
 
 
+def build_and_push_images(project_root: Path) -> None:
+    container_tool = shutil.which("docker") or shutil.which("podman")
+    if not container_tool:
+        print("ERROR: neither docker nor podman found in PATH")
+        sys.exit(1)
+    print(f"Using container tool: {container_tool}")
+
+    for tag, dockerfile in IMAGES:
+        registry_tag = f"{REGISTRY}/{tag}"
+        print(f"=== Building {registry_tag} ===")
+        result = subprocess.run(
+            [container_tool, "build", "-t", registry_tag, "-f", dockerfile, str(project_root)],
+        )
+        if result.returncode != 0:
+            print(f"Build failed for {tag}")
+            sys.exit(1)
+        print(f"=== Pushing {registry_tag} ===")
+        result = subprocess.run(
+            [container_tool, "push", registry_tag],
+        )
+        if result.returncode != 0:
+            print(f"Push failed for {registry_tag}")
+            sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Deploy GoQuizVibe to k3s")
     parser.add_argument("--use-k3s", action="store_true", help="Use k3s kubectl")
+    parser.add_argument(
+        "--build",
+        action="store_true",
+        help="Build container images and push them to the local registry before deploying",
+    )
     parser.add_argument(
         "--destroy",
         action="store_true",
@@ -39,7 +77,11 @@ def main():
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent.resolve()
+    project_root = script_dir.parent.parent
     kubectl = get_kubectl_cmd(args.use_k3s)
+
+    if args.build:
+        build_and_push_images(project_root)
 
     overlay_path = script_dir / "overlays" / "k3s"
     generated = run_kubectl(kubectl, ["kustomize", str(overlay_path)])
@@ -68,7 +110,7 @@ def main():
         sys.exit(1)
 
     print("=== Waiting for pods ===")
-    for app in ["postgres", "redis", "minio", "backend"]:
+    for app in ["postgres", "redis", "minio", "typst", "prometheus", "grafana", "node-exporter", "adminer", "nginx", "backend"]:
         result = subprocess.run(
             [
                 *kubectl,

@@ -8,15 +8,32 @@ resources:
   - postgres-pvc.yaml
   - redis-pvc.yaml
   - minio-pvc.yaml
+  - prometheus-pvc.yaml
+  - grafana-pvc.yaml
   - postgres-deployment.yaml
   - postgres-service.yaml
   - redis-deployment.yaml
   - redis-service.yaml
   - minio-deployment.yaml
   - minio-service.yaml
+  - typst-deployment.yaml
+  - typst-service.yaml
   - backend-deployment.yaml
   - backend-service.yaml
   - backend-ingress.yaml
+  - prometheus-configmap.yaml
+  - prometheus-deployment.yaml
+  - prometheus-service.yaml
+  - grafana-provisioning-configmap.yaml
+  - grafana-deployment.yaml
+  - grafana-service.yaml
+  - node-exporter-daemonset.yaml
+  - node-exporter-service.yaml
+  - adminer-deployment.yaml
+  - adminer-service.yaml
+  - nginx-configmap.yaml
+  - nginx-deployment.yaml
+  - nginx-service.yaml
 
 configMapGenerator:
   - name: goquizvibe-config

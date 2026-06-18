@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: goquizvibe
+data:
+  nginx.conf: |
+    server {
+      listen 9000;
+      server_name minio;
+
+      location / {
+        proxy_pass http://minio-service:9000;
+      }
+    }
